@@ -4,6 +4,7 @@ export default function BarraDeuda({ nombre, saldo, saldoInicial }) {
   const pagado = Math.max(0, saldoInicial - saldo);
   const porcentaje = saldoInicial > 0 ? Math.min(100, Math.round((pagado / saldoInicial) * 100)) : 0;
   const color = CATEGORIA_COLOR[nombre] || "var(--color-positivo)";
+  const saldada = saldo <= 0;
 
   return (
     <div className="py-4 dashed-row">
@@ -15,8 +16,12 @@ export default function BarraDeuda({ nombre, saldo, saldoInicial }) {
           />
           {ETIQUETAS_CATEGORIA[nombre] || nombre}
         </span>
-        <span className="font-serif-num font-semibold text-[16px] text-[var(--color-negativo)]">
-          {formatoCOP(saldo)}
+        <span
+          className={`font-serif-num font-semibold text-[16px] ${
+            saldada ? "text-[var(--color-positivo)]" : "text-[var(--color-negativo)]"
+          }`}
+        >
+          {saldada ? "✓ Pagada" : formatoCOP(saldo)}
         </span>
       </div>
       <div className="h-[3px] bg-[var(--color-ledger-rule)] relative rounded-full overflow-hidden">

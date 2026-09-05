@@ -5,6 +5,7 @@ import ListaMovimientos from "../components/ListaMovimientos";
 
 export default function Historial() {
   const [movimientos, setMovimientos] = useState(null);
+  const [expandidas, setExpandidas] = useState(new Set());
 
   function cargar() {
     api.getHistorial().then(setMovimientos);
@@ -33,10 +34,21 @@ export default function Historial() {
   // Lo que Jerardith registra que gasto de su propio bolsillo es solo
   // visibilidad para ella -- no es una segunda salida de dinero (ya se
   // conto cuando Rafael se lo asigno), asi que no se vuelve a restar aqui.
+  const noDobleConteo = (m) => !(m.categoria === "jerardith" && m.registradoPor === "jerardith");
+
   const totalConfirmado = movimientos
     .filter((m) => m.confirmado !== false)
-    .filter((m) => !(m.categoria === "jerardith" && m.registradoPor === "jerardith"))
+    .filter(noDobleConteo)
     .reduce((acc, m) => acc + (m.tipo === "ingreso" ? m.monto : -m.monto), 0);
+
+  function alternar(quincenaId) {
+    setExpandidas((prev) => {
+      const nuevo = new Set(prev);
+      if (nuevo.has(quincenaId)) nuevo.delete(quincenaId);
+      else nuevo.add(quincenaId);
+      return nuevo;
+    });
+  }
 
   return (
     <div className="min-h-screen px-5 py-6 flex flex-col max-w-lg mx-auto">
@@ -63,17 +75,38 @@ export default function Historial() {
           {formatoCOP(totalConfirmado)}
         </span>
         <span className="text-xs text-white/50 mt-1 block">
-          {movimientos.length} movimientos registrados en total
+          {movimientos.length} movimientos registrados en total · {porQuincena.length} quincenas
         </span>
       </div>
 
-      {porQuincena.map((grupo) => (
-        <div key={grupo.quincenaId} className="ledger-card p-6 mb-6">
-          <h2 className="section-title-editorial mb-1">{formatoQuincena(grupo.quincenaId)}</h2>
-          <p className="text-xs text-[var(--color-muted)] mb-2">{grupo.movimientos.length} movimientos</p>
-          <ListaMovimientos movimientos={grupo.movimientos} onCambio={cargar} />
-        </div>
-      ))}
+      {porQuincena.map((grupo, i) => {
+        const abierta = expandidas.has(grupo.quincenaId) || (expandidas.size === 0 && i === 0);
+        const netoQuincena = grupo.movimientos
+          .filter((m) => m.confirmado !== false)
+          .filter(noDobleConteo)
+          .reduce((a, m) => a + (m.tipo === "ingreso" ? m.monto : -m.monto), 0);
+
+        return (
+          <div key={grupo.quincenaId} className="ledger-card p-6 mb-6">
+            <button onClick={() => alternar(grupo.quincenaId)} className="w-full text-left">
+              <div className="flex justify-between items-baseline">
+                <h2 className="section-title-editorial">
+                  {abierta ? "▾" : "▸"} {formatoQuincena(grupo.quincenaId)}
+                </h2>
+                <span
+                  className={`font-serif-num font-semibold text-[14px] ${
+                    netoQuincena >= 0 ? "text-[var(--color-positivo)]" : "text-[var(--color-negativo)]"
+                  }`}
+                >
+                  {formatoCOP(netoQuincena)}
+                </span>
+              </div>
+              <p className="text-xs text-[var(--color-muted)] mb-2">{grupo.movimientos.length} movimientos</p>
+            </button>
+            {abierta && <ListaMovimientos movimientos={grupo.movimientos} onCambio={cargar} />}
+          </div>
+        );
+      })}
     </div>
   );
 }
