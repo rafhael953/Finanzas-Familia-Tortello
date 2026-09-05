@@ -23,7 +23,7 @@
     "decameron": 2200000
   },
   "cuotasRecomendadas": {
-    "falabella": 700000,
+    "falabella": 900000,
     "rappi": 1100000,
     "auteco": 600000,
     "numama": 600000,
@@ -264,5 +264,17 @@
   "comprasTarjeta": [],
   "deudasFechaCreacion": {
     "decameron": "2026-09"
+  },
+  "historialCuotas": {
+    "falabella": [
+      {
+        "desde": "0000-00",
+        "valor": 700000
+      },
+      {
+        "desde": "2026-09",
+        "valor": 900000
+      }
+    ]
   }
 }
