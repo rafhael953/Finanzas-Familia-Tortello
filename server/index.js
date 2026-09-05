@@ -9,52 +9,51 @@ import cuentasRouter from "./routes/cuentas.js";
 import jerardithRouter from "./routes/jerardith.js";
 import movimientosRouter from "./routes/movimientos.js";
 import { readDB } from "./db.js";
+import {
+  leerSesion,
+  exigirSesion,
+  credencialesValidas,
+  setCookieSesion,
+  borrarCookieSesion,
+} from "./auth.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
+app.use(leerSesion);
 
-// Acceso restringido a la familia: sin esto, cualquiera con la URL podia ver
-// y editar las finanzas. El navegador pide usuario/clave una sola vez y los
-// recuerda. Usuarios y clave se configuran por variable de entorno
-// (APP_USERS separado por comas, APP_PASS) — nunca quedan escritos en el
-// codigo ni en git; solo viven en las Variables del servicio en Railway.
-const APP_USERS = (process.env.APP_USERS || "tortello")
-  .split(",")
-  .map((u) => u.trim().toLowerCase());
-const APP_PASS = process.env.APP_PASS || "cambiaesto";
+app.get("/api/health", (req, res) => res.json({ ok: true }));
 
-// Solo se exige en Railway (donde la app es publica). En desarrollo local
-// el cliente y el servidor corren en puertos distintos y el navegador no
-// maneja bien Basic Auth entre origenes distintos, asi que se omite.
-const EXIGIR_AUTH = !!process.env.RAILWAY_ENVIRONMENT;
-
-app.use((req, res, next) => {
-  if (!EXIGIR_AUTH || req.path === "/api/health") return next();
-
-  const header = req.headers.authorization || "";
-  const [tipo, credenciales] = header.split(" ");
-  if (tipo === "Basic" && credenciales) {
-    const [usuario, clave] = Buffer.from(credenciales, "base64").toString().split(":");
-    if (APP_USERS.includes((usuario || "").trim().toLowerCase()) && clave === APP_PASS) {
-      return next();
-    }
-  }
-
-  res.set("WWW-Authenticate", 'Basic realm="Tortello Finanzas"');
-  res.status(401).send("Acceso restringido");
+app.get("/api/whoami", (req, res) => {
+  res.json({ usuario: req.usuario || null });
 });
+
+app.post("/api/login", (req, res) => {
+  const { usuario, clave } = req.body || {};
+  if (!credencialesValidas(usuario, clave)) {
+    return res.status(401).json({ error: "Usuario o contraseña incorrectos" });
+  }
+  setCookieSesion(res, usuario);
+  res.json({ ok: true, usuario });
+});
+
+app.post("/api/logout", (req, res) => {
+  borrarCookieSesion(res);
+  res.json({ ok: true });
+});
+
+// A partir de aqui, todo requiere sesion (excepto lo de arriba: health,
+// whoami, login). En desarrollo local esto no bloquea nada.
+app.use("/api", exigirSesion);
 
 app.use("/api/registros", registrosRouter);
 app.use("/api/deudas", deudasRouter);
 app.use("/api/cuentas", cuentasRouter);
 app.use("/api/jerardith", jerardithRouter);
 app.use("/api/movimientos", movimientosRouter);
-
-app.get("/api/health", (req, res) => res.json({ ok: true }));
 
 app.get("/api/config", async (req, res) => {
   const db = await readDB();

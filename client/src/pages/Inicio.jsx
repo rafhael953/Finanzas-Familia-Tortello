@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { api } from "../api";
 
 export default function Inicio() {
   const navigate = useNavigate();
@@ -6,6 +7,11 @@ export default function Inicio() {
   function elegir(perfil) {
     localStorage.setItem("perfil", perfil);
     navigate(perfil === "rafael" ? "/rafael" : "/jerardith");
+  }
+
+  async function salir() {
+    await api.logout().catch(() => {});
+    window.location.reload();
   }
 
   return (
@@ -19,17 +25,21 @@ export default function Inicio() {
       <div className="w-full max-w-sm flex flex-col gap-4">
         <button
           onClick={() => elegir("rafael")}
-          className="bg-[var(--color-acento)] text-white rounded-md py-6 text-lg font-semibold tracking-tight active:scale-95 transition-transform"
+          className="bg-[var(--color-acento)] text-white rounded-md py-6 text-lg font-semibold tracking-tight active:scale-95 transition-transform shadow-sm hover:shadow-md transition-shadow"
         >
           Rafael
         </button>
         <button
           onClick={() => elegir("jerardith")}
-          className="ledger-card text-[var(--color-acento)] rounded-md py-6 text-lg font-semibold tracking-tight active:scale-95 transition-transform"
+          className="ledger-card text-[var(--color-acento)] rounded-md py-6 text-lg font-semibold tracking-tight active:scale-95 transition-transform shadow-sm hover:shadow-md transition-shadow"
         >
           Jerardith
         </button>
       </div>
+
+      <button onClick={salir} className="text-xs text-[var(--color-muted)] underline">
+        cerrar sesión
+      </button>
     </div>
   );
 }

@@ -6,6 +6,7 @@ const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://
 async function request(path, options = {}) {
   const res = await fetch(`${BASE_URL}${path}`, {
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     ...options,
   });
   if (!res.ok) {
@@ -16,6 +17,11 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  whoami: () => request("/api/whoami"),
+  login: (usuario, clave) =>
+    request("/api/login", { method: "POST", body: JSON.stringify({ usuario, clave }) }),
+  logout: () => request("/api/logout", { method: "POST" }),
+
   getConfig: () => request("/api/config"),
 
   getQuincenaActual: () => request("/api/registros/actual"),
