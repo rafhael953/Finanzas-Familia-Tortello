@@ -39,6 +39,9 @@ export const api = {
   getDeudas: () => request("/api/deudas"),
   getDeudasProyeccion: () => request("/api/deudas/proyeccion"),
   getAlertasDeudas: () => request("/api/deudas/alertas"),
+  getComprasTarjeta: () => request("/api/deudas/compras"),
+  registrarCompraTarjeta: (compra) =>
+    request("/api/deudas/compra", { method: "POST", body: JSON.stringify(compra) }),
 
   getCuentas: () => request("/api/cuentas"),
   getEvolucionNU: () => request("/api/cuentas/evolucion-nu"),

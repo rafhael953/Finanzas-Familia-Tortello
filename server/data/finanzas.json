@@ -16,14 +16,14 @@
     "binanceUSD": 95
   },
   "deudasIniciales": {
-    "falabella": 3600000,
+    "falabella": 3300000,
     "rappi": 5200000,
     "auteco": 5000000,
     "numama": 3400000,
     "decameron": 2200000
   },
   "cuotasRecomendadas": {
-    "falabella": 800000,
+    "falabella": 700000,
     "rappi": 1100000,
     "auteco": 600000,
     "numama": 600000,
@@ -261,15 +261,5 @@
     "inversion": {},
     "ingreso": {}
   },
-  "comprasTarjeta": [
-    {
-      "id": "compra-1788582125386-461",
-      "tarjeta": "falabella",
-      "monto": 300000,
-      "cuotas": 3,
-      "cuotaMensual": 100000,
-      "fecha": "2026-09-05",
-      "descripcion": ""
-    }
-  ]
+  "comprasTarjeta": []
 }

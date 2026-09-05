@@ -1,12 +1,62 @@
 import { Router } from "express";
-import { readDB } from "../db.js";
+import { readDB, withDB } from "../db.js";
 import { calcularAlertasDeudas } from "../calculos.js";
 
 const router = Router();
 
+// Tarjetas de credito reales, donde tiene sentido registrar una compra
+// nueva y prorratearla en cuotas. Las demas deudas (moto, prestamos) no
+// funcionan como una tarjeta que se puede volver a usar.
+const TARJETAS = ["falabella", "rappi"];
+
 router.get("/alertas", async (req, res) => {
   const db = await readDB();
   res.json(calcularAlertasDeudas(db));
+});
+
+router.get("/compras", async (req, res) => {
+  const db = await readDB();
+  res.json(db.comprasTarjeta || []);
+});
+
+// Registrar una compra nueva con tarjeta: se suma al saldo pendiente de esa
+// tarjeta, y la cuota mensual recomendada sube lo necesario para pagarla en
+// el numero de cuotas elegido (ademas de lo que ya se venia pagando).
+router.post("/compra", async (req, res) => {
+  const { tarjeta, monto, cuotas, fecha, descripcion } = req.body || {};
+  if (!TARJETAS.includes(tarjeta)) {
+    return res.status(400).json({ error: "Esa deuda no admite compras nuevas a cuotas" });
+  }
+  const montoNum = Number(monto);
+  const cuotasNum = Number(cuotas);
+  if (!montoNum || montoNum <= 0) {
+    return res.status(400).json({ error: "Monto inválido" });
+  }
+  if (!cuotasNum || cuotasNum <= 0 || !Number.isInteger(cuotasNum)) {
+    return res.status(400).json({ error: "Número de cuotas inválido" });
+  }
+
+  const cuotaMensual = Math.round(montoNum / cuotasNum);
+
+  const compra = await withDB(async (db) => {
+    db.deudasIniciales[tarjeta] += montoNum;
+    db.cuotasRecomendadas[tarjeta] += cuotaMensual;
+
+    db.comprasTarjeta = db.comprasTarjeta || [];
+    const registro = {
+      id: `compra-${Date.now()}-${Math.round(Math.random() * 1000)}`,
+      tarjeta,
+      monto: montoNum,
+      cuotas: cuotasNum,
+      cuotaMensual,
+      fecha: fecha || new Date().toISOString().slice(0, 10),
+      descripcion: descripcion || "",
+    };
+    db.comprasTarjeta.push(registro);
+    return registro;
+  });
+
+  res.json(compra);
 });
 
 const ORDEN_ABONO_EXTRA = ["rappi", "falabella", "auteco"];
