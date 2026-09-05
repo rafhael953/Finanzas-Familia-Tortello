@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   api,
@@ -13,6 +13,7 @@ import FormMovimiento from "../components/FormMovimiento";
 import ListaMovimientos from "../components/ListaMovimientos";
 import GraficoDona from "../components/GraficoDona";
 import SelectorQuincena from "../components/SelectorQuincena";
+import SeccionPlegable from "../components/SeccionPlegable";
 
 export default function PanelRafael() {
   const [quincenaIdActual, setQuincenaIdActual] = useState(null);
@@ -23,9 +24,10 @@ export default function PanelRafael() {
   const [resumenJerardith, setResumenJerardith] = useState(null);
   const [alertas, setAlertas] = useState([]);
   const [mostrarForm, setMostrarForm] = useState(false);
-  const [mostrarLista, setMostrarLista] = useState(false);
   const [mostrarSelector, setMostrarSelector] = useState(false);
+  const [alertaAbierta, setAlertaAbierta] = useState(false);
   const [cargando, setCargando] = useState(true);
+  const inicioDeslizar = useRef(null);
 
   const cargarTodo = useCallback(async (id) => {
     const [est, d, c, j, a] = await Promise.all([
@@ -81,7 +83,22 @@ export default function PanelRafael() {
   const haySiguiente = idxActual >= 0 && idxActual < lista.length - 1;
 
   const deudaTotal = deudas.reduce((a, d) => a + d.saldo, 0);
+  const faltanteTotal = alertas.reduce((a, x) => a + x.faltante, 0);
   const balanceNegativo = estado.balanceConfirmado < 0;
+
+  // Deslizar la tarjeta de quincena para moverse entre periodos, ademas de
+  // las flechas: en el celular es el gesto natural.
+  function alEmpezarDeslizar(e) {
+    inicioDeslizar.current = e.touches[0].clientX;
+  }
+  function alSoltarDeslizar(e) {
+    if (inicioDeslizar.current == null) return;
+    const recorrido = e.changedTouches[0].clientX - inicioDeslizar.current;
+    inicioDeslizar.current = null;
+    if (Math.abs(recorrido) < 55) return; // un toque, no un deslizamiento
+    if (recorrido < 0 && haySiguiente) cambiarQuincena(lista[idxActual + 1]);
+    if (recorrido > 0 && hayAnterior) cambiarQuincena(lista[idxActual - 1]);
+  }
   const hayPendientes = estado.balanceProyectado !== estado.balanceConfirmado;
   // La prima solo llega en junio y diciembre — el resto del año no tiene
   // sentido ofrecerla para confirmar.
@@ -125,43 +142,82 @@ export default function PanelRafael() {
       <div className="h-px bg-[var(--color-ledger-rule)] my-6" />
 
       {alertas.length > 0 && (
-        <div className="tile-suave bg-[var(--color-suave-ambar)] mb-4 flex gap-3 items-start">
-          <div className="w-[34px] h-[34px] rounded-xl bg-[#e0a93e] text-white font-bold text-[15px] flex items-center justify-center flex-shrink-0">
-            !
-          </div>
-          <div className="min-w-0">
-            <p className="text-[12.5px] font-bold text-[var(--color-suave-ambar-texto)]">
-              {alertas.length} {alertas.length === 1 ? "cuota atrasada" : "cuotas atrasadas"}
-            </p>
-            <p className="text-[11.5px] text-[#9a7434] mt-0.5">
-              {alertas.map((a) => ETIQUETAS_CATEGORIA[a.categoria] || a.categoria).join(", ")} —
-              págalas antes del 15.
-            </p>
-          </div>
+        <div className="tile-suave bg-[var(--color-suave-ambar)] mb-4">
+          <button
+            onClick={() => setAlertaAbierta((v) => !v)}
+            className="flex gap-3 items-start w-full text-left"
+          >
+            <div className="w-[34px] h-[34px] rounded-xl bg-[#e0a93e] text-white font-bold text-[15px] flex items-center justify-center flex-shrink-0">
+              !
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[12.5px] font-bold text-[var(--color-suave-ambar-texto)]">
+                {alertas.length} {alertas.length === 1 ? "cuota atrasada" : "cuotas atrasadas"}
+              </p>
+              <p className="text-[11.5px] text-[#9a7434] mt-0.5">
+                Faltan {formatoCOP(faltanteTotal)} en total ·{" "}
+                <span className="underline">{alertaAbierta ? "ocultar" : "ver cuáles"}</span>
+              </p>
+            </div>
+          </button>
+
+          {alertaAbierta && (
+            <div className="mt-3 pt-3 border-t border-[#e7c98f]">
+              {alertas.map((a) => (
+                <div
+                  key={a.categoria}
+                  className="flex justify-between items-baseline py-1.5 text-[12.5px]"
+                >
+                  <span className="text-[var(--color-suave-ambar-texto)] font-semibold">
+                    {ETIQUETAS_CATEGORIA[a.categoria] || a.categoria}
+                  </span>
+                  <span className="font-serif-num font-bold text-[var(--color-suave-ambar-texto)]">
+                    {formatoCOP(a.faltante)}
+                  </span>
+                </div>
+              ))}
+              <Link
+                to="/rafael/deudas"
+                className="text-[11.5px] text-[#9a7434] underline block mt-2"
+              >
+                Ir a deudas para pagarlas →
+              </Link>
+            </div>
+          )}
         </div>
       )}
 
       <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="tile-suave bg-[var(--color-suave-rojo)]">
+        <Link
+          to="/rafael/deudas"
+          className="tile-suave bg-[var(--color-suave-rojo)] hover:brightness-[0.97] active:scale-[0.98] transition-all"
+        >
           <div className="text-[11px] font-semibold text-[var(--color-suave-rojo-texto)] opacity-80">
-            Deuda total
+            Deuda total ›
           </div>
           <div className="font-serif-num text-[19px] font-bold text-[var(--color-suave-rojo-texto)] mt-1">
             {formatoCOP(deudaTotal)}
           </div>
-        </div>
-        <div className="tile-suave bg-[var(--color-suave-verde)]">
+        </Link>
+        <Link
+          to="/dashboard"
+          className="tile-suave bg-[var(--color-suave-verde)] hover:brightness-[0.97] active:scale-[0.98] transition-all"
+        >
           <div className="text-[11px] font-semibold text-[var(--color-suave-verde-texto)] opacity-80">
-            Ahorro NU
+            Ahorro NU ›
           </div>
           <div className="font-serif-num text-[19px] font-bold text-[var(--color-suave-verde-texto)] mt-1">
             {formatoCOP(cuentas.nu)}
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Tarjeta de quincena / ledger -- es el "titular" de la pagina */}
-      <div className="ledger-card ledger-card--hero p-6 mb-6">
+      <div
+        className="ledger-card ledger-card--hero p-6 mb-6"
+        onTouchStart={alEmpezarDeslizar}
+        onTouchEnd={alSoltarDeslizar}
+      >
         <div className="dashed-row pb-3 mb-3">
           <div className="flex justify-between items-center">
             <button
@@ -179,7 +235,9 @@ export default function PanelRafael() {
               <span className="text-[15px] font-bold tracking-tight text-center">
                 {formatoQuincena(quincenaIdActual)}
               </span>
-              <span className="text-[10px] text-white/60 underline">▾ cambiar</span>
+              <span className="text-[10px] text-white/60 underline">
+                ▾ cambiar · desliza ←→
+              </span>
             </button>
             <button
               disabled={!haySiguiente}
@@ -278,25 +336,23 @@ export default function PanelRafael() {
       )}
 
       {/* Lista editable de movimientos: confirmar/editar/borrar item a item */}
-      <div className="ledger-card p-6 mb-6">
-        <button
-          onClick={() => setMostrarLista((v) => !v)}
-          className="section-title-editorial mb-1 w-full text-left"
-        >
-          {mostrarLista ? "▾" : "▸"} Movimientos de la quincena ({estado.movimientos.length})
-        </button>
-        <p className="text-xs text-[var(--color-muted)] mb-2">
-          Toca el monto para editarlo, el círculo para confirmar/marcar como plan.
-        </p>
-        {mostrarLista && (
-          <ListaMovimientos movimientos={estado.movimientos} onCambio={() => cargarTodo(quincenaIdActual)} />
-        )}
-      </div>
+      <SeccionPlegable
+        titulo={`Movimientos de la quincena (${estado.movimientos.length})`}
+        descripcion="Toca el monto o la fecha para editarlo, el círculo para confirmar."
+        abiertaPorDefecto={false}
+      >
+        <ListaMovimientos
+          movimientos={estado.movimientos}
+          onCambio={() => cargarTodo(quincenaIdActual)}
+        />
+      </SeccionPlegable>
 
       {/* Categorias — cada una con confirmacion rapida si aun esta en $0 */}
-      <div className="ledger-card p-6 mb-6">
-        <h2 className="section-title-editorial mb-1">Ingresos</h2>
-        <p className="text-xs text-[var(--color-muted)] mb-2">Confirma cada uno apenas te llegue.</p>
+      <SeccionPlegable
+        titulo="Ingresos"
+        descripcion="Confirma cada uno apenas te llegue."
+        resumen={formatoCOP(estado.ingresosConfirmado)}
+      >
         {estado.ingresos
           .filter((i) => i.categoria !== "prima" || mesPrimaHabilitado || i.total > 0)
           .map((i) => (
@@ -311,11 +367,13 @@ export default function PanelRafael() {
               onCambio={() => cargarTodo(quincenaIdActual)}
             />
           ))}
-      </div>
+      </SeccionPlegable>
 
-      <div className="ledger-card p-6 mb-6">
-        <h2 className="section-title-editorial mb-1">Gastos de la quincena</h2>
-        <p className="text-xs text-[var(--color-muted)] mb-2">Confirma cada uno a medida que lo pagas.</p>
+      <SeccionPlegable
+        titulo="Gastos de la quincena"
+        descripcion="Confirma cada uno a medida que lo pagas."
+        resumen={formatoCOP(estado.gastosConfirmado)}
+      >
         {estado.gastos
           .filter((g) => g.total > 0 || g.presupuesto > 0)
           .map((g) => (
@@ -330,11 +388,13 @@ export default function PanelRafael() {
               onCambio={() => cargarTodo(quincenaIdActual)}
             />
           ))}
-      </div>
+      </SeccionPlegable>
 
-      <div className="ledger-card p-6 mb-6">
-        <h2 className="section-title-editorial mb-1">Estado de las deudas</h2>
-        <p className="text-xs text-[var(--color-muted)] mb-2">Confirma cada cuota cuando la pagues.</p>
+      <SeccionPlegable
+        titulo="Estado de las deudas"
+        descripcion="Confirma cada cuota cuando la pagues."
+        resumen={formatoCOP(estado.deudasConfirmado)}
+      >
         {estado.deudas.map((d) => (
           <FilaCategoria
             key={d.categoria}
@@ -348,13 +408,13 @@ export default function PanelRafael() {
             onCambio={() => cargarTodo(quincenaIdActual)}
           />
         ))}
-      </div>
+      </SeccionPlegable>
 
-      <div className="ledger-card p-6 mb-6">
-        <h2 className="section-title-editorial mb-1">Inversiones y ahorro</h2>
-        <p className="text-xs text-[var(--color-muted)] mb-2">
-          Confirma aquí lo que realmente moviste. El saldo de NU sube solo con lo que confirmes.
-        </p>
+      <SeccionPlegable
+        titulo="Inversiones y ahorro"
+        descripcion="El saldo de NU sube solo con lo que confirmes aquí."
+        resumen={formatoCOP(estado.inversionesConfirmado)}
+      >
         {estado.inversiones.map((r) => (
           <FilaCategoria
             key={r.categoria}
@@ -367,7 +427,7 @@ export default function PanelRafael() {
             onCambio={() => cargarTodo(quincenaIdActual)}
           />
         ))}
-      </div>
+      </SeccionPlegable>
 
       <Link
         to="/rafael/deudas"
