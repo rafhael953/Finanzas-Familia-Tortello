@@ -19,13 +19,15 @@
     "falabella": 3300000,
     "rappi": 5200000,
     "auteco": 5000000,
-    "numama": 3400000
+    "numama": 3400000,
+    "decameron": 1980000
   },
   "cuotasRecomendadas": {
     "falabella": 700000,
     "rappi": 1100000,
     "auteco": 600000,
-    "numama": 600000
+    "numama": 600000,
+    "decameron": 220000
   },
   "gastosFijos": {
     "q1": {
@@ -36,8 +38,7 @@
       "salud": 200000,
       "combustible": 0,
       "ocio": 250500,
-      "efectivo": 200000,
-      "decameron": 220000
+      "efectivo": 200000
     },
     "q2": {
       "arriendo": 0,
@@ -47,8 +48,7 @@
       "salud": 0,
       "combustible": 100000,
       "ocio": 464000,
-      "efectivo": 200000,
-      "decameron": 0
+      "efectivo": 200000
     }
   },
   "reservasMes": {
@@ -252,5 +252,8 @@
     }
   ],
   "registros": [],
-  "gastosJerardith": []
+  "gastosJerardith": [],
+  "activacionesJerardith": {
+    "2026-09-Q1": false
+  }
 }

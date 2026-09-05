@@ -1,11 +1,4 @@
-import { formatoCOP, CATEGORIA_COLOR } from "../api";
-
-const NOMBRES = {
-  falabella: "Falabella",
-  rappi: "Rappi",
-  auteco: "Auteco (moto)",
-  numama: "NU mamá",
-};
+import { formatoCOP, CATEGORIA_COLOR, ETIQUETAS_CATEGORIA } from "../api";
 
 export default function BarraDeuda({ nombre, saldo, saldoInicial }) {
   const pagado = Math.max(0, saldoInicial - saldo);
@@ -20,7 +13,7 @@ export default function BarraDeuda({ nombre, saldo, saldoInicial }) {
             className="inline-block w-2 h-2 rounded-full flex-shrink-0"
             style={{ background: color }}
           />
-          {NOMBRES[nombre] || nombre}
+          {ETIQUETAS_CATEGORIA[nombre] || nombre}
         </span>
         <span className="font-serif-num font-semibold text-[16px] text-[var(--color-negativo)]">
           {formatoCOP(saldo)}

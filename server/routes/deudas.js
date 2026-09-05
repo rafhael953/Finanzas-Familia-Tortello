@@ -21,6 +21,7 @@ function tasasPorDeuda(config) {
     rappi: tasaMensual(config.tasaTC),
     auteco: tasaMensual(config.tasaAuteco),
     numama: 0,
+    decameron: 0,
   };
 }
 

@@ -2,8 +2,8 @@ import { useState } from "react";
 import { ETIQUETAS_CATEGORIA } from "../api";
 
 const CATEGORIAS_POR_TIPO = {
-  gasto: ["arriendo", "servicios", "mercado", "cuidado", "salud", "combustible", "ocio", "efectivo", "decameron", "medicaBucaramanga", "jerardith"],
-  deuda: ["falabella", "rappi", "auteco", "numama"],
+  gasto: ["arriendo", "servicios", "mercado", "cuidado", "salud", "combustible", "ocio", "efectivo", "medicaBucaramanga", "jerardith"],
+  deuda: ["falabella", "rappi", "auteco", "numama", "decameron"],
   inversion: ["xtb"],
   ingreso: ["salario", "prima", "extra"],
 };
