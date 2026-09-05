@@ -1,4 +1,4 @@
-import { readFile, writeFile, rename, copyFile } from "fs/promises";
+import { readFile, writeFile, rename, copyFile, mkdir, access } from "fs/promises";
 import { fileURLToPath } from "url";
 import path from "path";
 import { execFile } from "child_process";
@@ -11,13 +11,35 @@ const PROJECT_ROOT = path.join(__dirname, "..");
 const DB_PATH = path.join(__dirname, "data", "finanzas.json");
 const TMP_PATH = DB_PATH + ".tmp";
 const BACKUP_PATH = DB_PATH + ".bak";
+// La semilla vive FUERA de server/data a proposito: si en produccion se
+// monta un volumen persistente en server/data, ese volumen puede llegar
+// vacio la primera vez y tapar el archivo que traia el codigo. Al estar
+// afuera, la semilla siempre esta disponible para reponer los datos.
+const SEED_PATH = path.join(__dirname, "seed", "finanzas-seed.json");
+
+let sembrado = false;
+
+async function asegurarDB() {
+  if (sembrado) return;
+  try {
+    await access(DB_PATH);
+  } catch {
+    // No existe (volumen nuevo/vacio): sembrar con el ultimo estado conocido.
+    await mkdir(path.dirname(DB_PATH), { recursive: true });
+    await copyFile(SEED_PATH, DB_PATH);
+    console.log("finanzas.json no existia — sembrado desde server/seed/finanzas-seed.json");
+  }
+  sembrado = true;
+}
 
 export async function readDB() {
+  await asegurarDB();
   const raw = await readFile(DB_PATH, "utf-8");
   return JSON.parse(raw);
 }
 
 export async function writeDB(data) {
+  await asegurarDB();
   // Respaldo del estado anterior antes de sobreescribir, por si algo sale mal.
   await copyFile(DB_PATH, BACKUP_PATH).catch(() => {});
 
@@ -30,7 +52,8 @@ export async function writeDB(data) {
 
   // Historial permanente: cada cambio queda como un commit de git con fecha,
   // para poder ver/recuperar el estado de las finanzas en cualquier momento
-  // del pasado sin depender de nada mas que este repositorio.
+  // del pasado sin depender de nada mas que este repositorio. En produccion
+  // (sin credenciales de git) esto simplemente no hace nada, en silencio.
   commitSilencioso().catch(() => {});
 }
 
