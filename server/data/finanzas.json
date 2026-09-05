@@ -260,6 +260,17 @@
       "fecha": "2026-09-05",
       "registradoPor": "rafael",
       "confirmado": true
+    },
+    {
+      "id": "mov-1788583477902-146",
+      "quincenaId": "2026-09-Q1",
+      "tipo": "gasto",
+      "categoria": "jerardith",
+      "monto": 50000,
+      "descripcion": "TEST gasto personal",
+      "fecha": "2026-09-05",
+      "registradoPor": "jerardith",
+      "confirmado": true
     }
   ],
   "registros": [],
