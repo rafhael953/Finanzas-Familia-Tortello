@@ -41,11 +41,29 @@ export function calcularEstadoQuincena(db, id) {
   const presupuestoDeudas = db.cuotasRecomendadas;
   const salarioDefault = q === 1 ? db.config.ingresoQ1 : db.config.ingresoQ2;
 
-  const gastos = Object.keys(presupuestoGastos).map((cat) => ({
+  const gastosPresupuestados = Object.keys(presupuestoGastos).map((cat) => ({
     categoria: cat,
     presupuesto: presupuestoGastos[cat],
     ...totales(movs, "gasto", cat),
   }));
+
+  // Gastos sin presupuesto fijo: no son un monto fijo cada quincena (lo que
+  // le des a Jerardith varia, la reserva medica tambien), asi que su
+  // presupuesto siempre es 0 -- solo cuentan lo que realmente se registro.
+  // Lo que Jerardith registra como gastado de su propio bolsillo es solo
+  // visibilidad para ella (ver jerardith.js) -- no es una segunda salida de
+  // dinero de la familia, asi que no se vuelve a contar aqui.
+  const categoriasGastoVariable = ["medicaBucaramanga", "jerardith"];
+  const gastosVariables = categoriasGastoVariable.map((cat) => {
+    const movsCategoria = cat === "jerardith" ? movs.filter((m) => m.registradoPor !== "jerardith") : movs;
+    return {
+      categoria: cat,
+      presupuesto: 0,
+      ...totales(movsCategoria, "gasto", cat),
+    };
+  });
+
+  const gastos = [...gastosPresupuestados, ...gastosVariables];
 
   // Las cuotas de deuda son mensuales, no por quincena: si ya se pago en la
   // otra quincena del mismo mes, no hay que volver a sugerirla aqui.
@@ -63,11 +81,11 @@ export function calcularEstadoQuincena(db, id) {
     };
   });
 
-  const categoriasReserva = ["xtb", "medicaBucaramanga", "jerardith"];
-  const reservas = categoriasReserva.map((cat) => ({
+  const categoriasInversion = ["xtb"];
+  const inversiones = categoriasInversion.map((cat) => ({
     categoria: cat,
     presupuesto: 0,
-    ...totales(movs, "reserva", cat),
+    ...totales(movs, "inversion", cat),
   }));
 
   // Ingresos: como cualquier otra categoria, arranca en $0 hasta que se
@@ -92,11 +110,11 @@ export function calcularEstadoQuincena(db, id) {
   const gastosTotal = sumar(gastos, "total");
   const deudasConfirmado = sumar(deudas, "confirmado");
   const deudasTotal = sumar(deudas, "total");
-  const reservasConfirmado = sumar(reservas, "confirmado");
-  const reservasTotal = sumar(reservas, "total");
+  const inversionesConfirmado = sumar(inversiones, "confirmado");
+  const inversionesTotal = sumar(inversiones, "total");
 
-  const egresoConfirmado = gastosConfirmado + deudasConfirmado + reservasConfirmado;
-  const egresoTotal = gastosTotal + deudasTotal + reservasTotal;
+  const egresoConfirmado = gastosConfirmado + deudasConfirmado + inversionesConfirmado;
+  const egresoTotal = gastosTotal + deudasTotal + inversionesTotal;
 
   const balanceConfirmado = ingresosConfirmado - egresoConfirmado;
   const balanceProyectado = ingresosTotal - egresoTotal;
@@ -108,7 +126,7 @@ export function calcularEstadoQuincena(db, id) {
   // gastado, por si algo se paso de presupuesto) y solo el remanente real
   // se considera sobrante seguro para mover a NU.
   const egresoEsperado = (lista) => lista.reduce((a, x) => a + Math.max(x.presupuesto, x.total), 0);
-  const egresoEsperadoTotal = egresoEsperado(gastos) + egresoEsperado(deudas) + reservasTotal;
+  const egresoEsperadoTotal = egresoEsperado(gastos) + egresoEsperado(deudas) + inversionesTotal;
   const sobranteSeguro = ingresosConfirmado - egresoEsperadoTotal;
 
   const sobrante = sobranteSeguro > 0 ? sobranteSeguro : 0;
@@ -132,9 +150,9 @@ export function calcularEstadoQuincena(db, id) {
     deudas,
     deudasConfirmado,
     deudasTotal,
-    reservas,
-    reservasConfirmado,
-    reservasTotal,
+    inversiones,
+    inversionesConfirmado,
+    inversionesTotal,
     egresoConfirmado,
     egresoTotal,
     balanceConfirmado,
@@ -230,6 +248,6 @@ export function calcularResumenMensual(db, id) {
     mes: prefijo,
     gastos: totalPorCategoria("gasto"),
     deudas: totalPorCategoria("deuda"),
-    reservas: totalPorCategoria("reserva"),
+    inversiones: totalPorCategoria("inversion"),
   };
 }

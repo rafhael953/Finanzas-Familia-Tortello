@@ -4,12 +4,14 @@ import { api, formatoCOP, ETIQUETAS_CATEGORIA, ETIQUETAS_TIPO, CATEGORIA_COLOR }
 export default function ListaMovimientos({ movimientos, onCambio }) {
   const [editando, setEditando] = useState(null);
   const [valorEdit, setValorEdit] = useState("");
+  const [fechaEdit, setFechaEdit] = useState("");
   const [ocupado, setOcupado] = useState(null);
   const [error, setError] = useState("");
 
   function iniciarEdicion(m) {
     setEditando(m.id);
     setValorEdit(String(m.monto));
+    setFechaEdit(m.fecha);
   }
 
   async function guardarEdicion(id) {
@@ -20,7 +22,7 @@ export default function ListaMovimientos({ movimientos, onCambio }) {
     setOcupado(id);
     setError("");
     try {
-      await api.editarMovimiento(id, { monto: Number(valorEdit) });
+      await api.editarMovimiento(id, { monto: Number(valorEdit), fecha: fechaEdit });
       setEditando(null);
       await onCambio();
     } catch (err) {
@@ -65,6 +67,7 @@ export default function ListaMovimientos({ movimientos, onCambio }) {
       {error && <p className="text-[var(--color-negativo)] text-sm mb-2">{error}</p>}
       {movimientos.map((m) => {
         const confirmado = m.confirmado !== false;
+        const enEdicion = editando === m.id;
         return (
           <div key={m.id} className="dashed-row py-2.5">
             <div className="flex items-center justify-between gap-2">
@@ -81,13 +84,25 @@ export default function ListaMovimientos({ movimientos, onCambio }) {
                     {ETIQUETAS_TIPO[m.tipo]}
                   </span>
                 </div>
-                <span className="text-[11px] text-[var(--color-muted)]">
-                  {m.fecha} {m.descripcion ? `· ${m.descripcion}` : ""}
-                </span>
+                {enEdicion ? (
+                  <input
+                    type="date"
+                    value={fechaEdit}
+                    onChange={(e) => setFechaEdit(e.target.value)}
+                    className="text-[11px] border border-[var(--color-ledger-border)] rounded-md px-1.5 py-0.5 mt-1 bg-[var(--color-fondo)]/40"
+                  />
+                ) : (
+                  <button
+                    onClick={() => iniciarEdicion(m)}
+                    className="text-[11px] text-[var(--color-muted)] underline decoration-dotted text-left"
+                  >
+                    {m.fecha} {m.descripcion ? `· ${m.descripcion}` : ""}
+                  </button>
+                )}
               </div>
 
               <div className="flex items-center gap-2 flex-shrink-0">
-                {editando === m.id ? (
+                {enEdicion ? (
                   <>
                     <input
                       type="number"

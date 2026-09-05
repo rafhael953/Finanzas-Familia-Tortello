@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { api, formatoCOP, formatoQuincena } from "../api";
+import { api, formatoCOP, formatoQuincena, partesQuincena } from "../api";
 import TarjetaSaldo from "../components/TarjetaSaldo";
 import FilaCategoria from "../components/FilaCategoria";
 import FormMovimiento from "../components/FormMovimiento";
@@ -78,6 +78,9 @@ export default function PanelRafael() {
   const deudaTotal = deudas.reduce((a, d) => a + d.saldo, 0);
   const balanceNegativo = estado.balanceConfirmado < 0;
   const hayPendientes = estado.balanceProyectado !== estado.balanceConfirmado;
+  // La prima solo llega en junio y diciembre — el resto del año no tiene
+  // sentido ofrecerla para confirmar.
+  const mesPrimaHabilitado = [6, 12].includes(partesQuincena(quincenaIdActual).mes);
 
   return (
     <div className="min-h-screen px-5 py-6 flex flex-col max-w-lg mx-auto">
@@ -203,7 +206,7 @@ export default function PanelRafael() {
           segmentos={[
             { nombre: "Gastos", valor: estado.gastosConfirmado },
             { nombre: "Deudas", valor: estado.deudasConfirmado },
-            { nombre: "Reservas", valor: estado.reservasConfirmado },
+            { nombre: "Inversiones", valor: estado.inversionesConfirmado },
           ]}
         />
       </div>
@@ -246,18 +249,20 @@ export default function PanelRafael() {
       <div className="ledger-card p-5 mb-5">
         <h2 className="section-title-editorial mb-1">Ingresos</h2>
         <p className="text-xs text-[var(--color-muted)] mb-2">Confirma cada uno apenas te llegue.</p>
-        {estado.ingresos.map((i) => (
-          <FilaCategoria
-            key={i.categoria}
-            categoria={i.categoria}
-            tipo="ingreso"
-            confirmado={i.confirmado}
-            pendiente={i.pendiente}
-            presupuesto={i.presupuesto}
-            quincenaId={quincenaIdActual}
-            onCambio={() => cargarTodo(quincenaIdActual)}
-          />
-        ))}
+        {estado.ingresos
+          .filter((i) => i.categoria !== "prima" || mesPrimaHabilitado || i.total > 0)
+          .map((i) => (
+            <FilaCategoria
+              key={i.categoria}
+              categoria={i.categoria}
+              tipo="ingreso"
+              confirmado={i.confirmado}
+              pendiente={i.pendiente}
+              presupuesto={i.presupuesto}
+              quincenaId={quincenaIdActual}
+              onCambio={() => cargarTodo(quincenaIdActual)}
+            />
+          ))}
       </div>
 
       <div className="ledger-card p-5 mb-5">
@@ -298,13 +303,13 @@ export default function PanelRafael() {
       </div>
 
       <div className="ledger-card p-5 mb-5">
-        <h2 className="section-title-editorial mb-1">Reservas</h2>
-        <p className="text-xs text-[var(--color-muted)] mb-2">Opcional — solo si apartaste algo esta quincena.</p>
-        {estado.reservas.map((r) => (
+        <h2 className="section-title-editorial mb-1">Inversiones</h2>
+        <p className="text-xs text-[var(--color-muted)] mb-2">Opcional — solo si invertiste algo esta quincena.</p>
+        {estado.inversiones.map((r) => (
           <FilaCategoria
             key={r.categoria}
             categoria={r.categoria}
-            tipo="reserva"
+            tipo="inversion"
             confirmado={r.confirmado}
             pendiente={r.pendiente}
             presupuesto={0}

@@ -132,5 +132,5 @@ export const ETIQUETAS_TIPO = {
   ingreso: "Ingreso",
   gasto: "Gasto",
   deuda: "Deuda",
-  reserva: "Reserva",
+  inversion: "Inversión",
 };

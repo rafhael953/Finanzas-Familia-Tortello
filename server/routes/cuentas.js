@@ -12,7 +12,7 @@ router.get("/", async (req, res) => {
 
   let xtbUSD = db.saldosIniciales.xtbUSD;
   for (const m of db.movimientos || []) {
-    if (m.tipo === "reserva" && m.categoria === "xtb" && m.confirmado !== false) {
+    if (m.tipo === "inversion" && m.categoria === "xtb" && m.confirmado !== false) {
       xtbUSD += Number(m.monto || 0) / (db.config.trm || 1);
     }
   }

@@ -8,7 +8,7 @@ const router = Router();
 const MAPA_RUBRO = {
   mercado: { tipo: "gasto", categoria: "mercado" },
   cuidado: { tipo: "gasto", categoria: "cuidado" },
-  esposa: { tipo: "reserva", categoria: "jerardith" },
+  esposa: { tipo: "gasto", categoria: "jerardith" },
 };
 
 function presupuestoRubro(db, rubro, q) {
@@ -28,7 +28,7 @@ router.get("/gastos", async (req, res) => {
       id: m.id,
       fecha: m.fecha,
       quincena: m.quincenaId,
-      rubro: m.tipo === "reserva" ? "esposa" : m.categoria,
+      rubro: m.categoria === "jerardith" ? "esposa" : m.categoria,
       monto: m.monto,
       descripcion: m.descripcion,
       registradoPor: "jerardith",
@@ -103,7 +103,7 @@ router.get("/resumen", async (req, res) => {
   // registrada por el) como presupuesto, y lo que ella misma registro haber
   // gastado de eso como "gastado". Si el aun no se lo ha entregado, es 0.
   const movsJerardith = (db.movimientos || []).filter(
-    (m) => m.quincenaId === idActual && m.tipo === "reserva" && m.categoria === "jerardith" && m.confirmado !== false
+    (m) => m.quincenaId === idActual && m.tipo === "gasto" && m.categoria === "jerardith" && m.confirmado !== false
   );
   const asignadoPorRafael = movsJerardith
     .filter((m) => m.registradoPor !== "jerardith")
@@ -134,7 +134,7 @@ router.get("/resumen", async (req, res) => {
       id: m.id,
       fecha: m.fecha,
       quincena: m.quincenaId,
-      rubro: m.tipo === "reserva" ? "esposa" : m.categoria,
+      rubro: m.categoria === "jerardith" ? "esposa" : m.categoria,
       monto: m.monto,
       descripcion: m.descripcion,
     }))

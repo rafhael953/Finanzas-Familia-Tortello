@@ -5,9 +5,9 @@ import { quincenaId } from "../calculos.js";
 const router = Router();
 
 const CATEGORIAS_POR_TIPO = {
-  gasto: ["arriendo", "servicios", "mercado", "cuidado", "salud", "combustible", "ocio", "efectivo", "decameron"],
+  gasto: ["arriendo", "servicios", "mercado", "cuidado", "salud", "combustible", "ocio", "efectivo", "decameron", "medicaBucaramanga", "jerardith"],
   deuda: ["falabella", "rappi", "auteco", "numama"],
-  reserva: ["xtb", "medicaBucaramanga", "jerardith"],
+  inversion: ["xtb"],
   ingreso: ["salario", "prima", "extra"],
 };
 
