@@ -1,6 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { api, formatoCOP, formatoQuincena, partesQuincena } from "../api";
+import {
+  api,
+  formatoCOP,
+  formatoQuincena,
+  partesQuincena,
+  ETIQUETAS_CATEGORIA,
+  CATEGORIA_COLOR,
+} from "../api";
 import TarjetaSaldo from "../components/TarjetaSaldo";
 import FilaCategoria from "../components/FilaCategoria";
 import FormMovimiento from "../components/FormMovimiento";
@@ -80,6 +87,25 @@ export default function PanelRafael() {
   // La prima solo llega en junio y diciembre — el resto del año no tiene
   // sentido ofrecerla para confirmar.
   const mesPrimaHabilitado = [6, 12].includes(partesQuincena(quincenaIdActual).mes);
+
+  // Distribucion por categoria real, no por los tres grandes grupos: decir
+  // "gastos 100%" no informa nada, lo util es ver en QUE se fue la plata.
+  // Se muestran las 6 mas grandes y el resto se agrupa en "Otros".
+  const TOPE_SEGMENTOS = 6;
+  const porCategoria = [...estado.gastos, ...estado.deudas, ...estado.inversiones]
+    .filter((x) => x.confirmado > 0)
+    .sort((a, b) => b.confirmado - a.confirmado);
+
+  const segmentosDistribucion = porCategoria.slice(0, TOPE_SEGMENTOS).map((x) => ({
+    nombre: ETIQUETAS_CATEGORIA[x.categoria] || x.categoria,
+    valor: x.confirmado,
+    color: CATEGORIA_COLOR[x.categoria],
+  }));
+
+  const resto = porCategoria.slice(TOPE_SEGMENTOS).reduce((a, x) => a + x.confirmado, 0);
+  if (resto > 0) {
+    segmentosDistribucion.push({ nombre: "Otros", valor: resto, color: "#B8AC98" });
+  }
 
   return (
     <div className="min-h-screen px-5 py-6 flex flex-col max-w-lg mx-auto">
@@ -209,17 +235,14 @@ export default function PanelRafael() {
       </div>
 
       <Link to="/dashboard" className="ledger-card p-6 mb-6 block hover:shadow-md transition-shadow">
-        <div className="flex justify-between items-baseline mb-3">
-          <h2 className="section-title-editorial">Distribución (confirmado)</h2>
+        <div className="flex justify-between items-baseline mb-1">
+          <h2 className="section-title-editorial">En qué se ha ido</h2>
           <span className="text-xs text-[var(--color-muted)] underline">ver gráficas completas →</span>
         </div>
-        <GraficoDona
-          segmentos={[
-            { nombre: "Gastos", valor: estado.gastosConfirmado },
-            { nombre: "Deudas", valor: estado.deudasConfirmado },
-            { nombre: "Inversiones", valor: estado.inversionesConfirmado },
-          ]}
-        />
+        <p className="text-xs text-[var(--color-muted)] mb-3">
+          De {formatoCOP(estado.egresoConfirmado)} confirmados esta quincena
+        </p>
+        <GraficoDona segmentos={segmentosDistribucion} />
       </Link>
 
       {/* Agregar movimiento */}
