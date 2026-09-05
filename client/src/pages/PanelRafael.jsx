@@ -5,6 +5,8 @@ import {
   formatoCOP,
   formatoQuincena,
   partesQuincena,
+  quincenaAnterior,
+  quincenaSiguiente,
   ETIQUETAS_CATEGORIA,
   CATEGORIA_COLOR,
 } from "../api";
@@ -17,7 +19,6 @@ import SeccionPlegable from "../components/SeccionPlegable";
 
 export default function PanelRafael() {
   const [quincenaIdActual, setQuincenaIdActual] = useState(null);
-  const [lista, setLista] = useState([]);
   const [estado, setEstado] = useState(null);
   const [deudas, setDeudas] = useState([]);
   const [cuentas, setCuentas] = useState(null);
@@ -46,13 +47,12 @@ export default function PanelRafael() {
 
   useEffect(() => {
     (async () => {
-      const [actual, listaQ] = await Promise.all([api.getQuincenaActual(), api.getListaQuincenas()]);
+      const actual = await api.getQuincenaActual();
       // Siempre abre en la quincena del sueldo con el que se esta viviendo
       // hoy (ver quincenaId en el servidor), para no registrar por error en
       // un periodo que no corresponde.
       const idInicial = actual.id;
       setQuincenaIdActual(idInicial);
-      setLista(listaQ.includes(idInicial) ? listaQ : [...listaQ, idInicial].sort());
       await cargarTodo(idInicial);
       setCargando(false);
     })();
@@ -62,7 +62,6 @@ export default function PanelRafael() {
     setCargando(true);
     setQuincenaIdActual(id);
     localStorage.setItem("ultimaQuincena", id);
-    setLista((prev) => (prev.includes(id) ? prev : [...prev, id].sort()));
     await cargarTodo(id);
     setCargando(false);
     setMostrarSelector(false);
@@ -78,10 +77,6 @@ export default function PanelRafael() {
     return <div className="p-6 text-center font-serif-num text-lg">Cargando...</div>;
   }
 
-  const idxActual = lista.indexOf(quincenaIdActual);
-  const hayAnterior = idxActual > 0;
-  const haySiguiente = idxActual >= 0 && idxActual < lista.length - 1;
-
   const deudaTotal = deudas.reduce((a, d) => a + d.saldo, 0);
   const faltanteTotal = alertas.reduce((a, x) => a + x.faltante, 0);
   const balanceNegativo = estado.balanceConfirmado < 0;
@@ -96,8 +91,9 @@ export default function PanelRafael() {
     const recorrido = e.changedTouches[0].clientX - inicioDeslizar.current;
     inicioDeslizar.current = null;
     if (Math.abs(recorrido) < 55) return; // un toque, no un deslizamiento
-    if (recorrido < 0 && haySiguiente) cambiarQuincena(lista[idxActual + 1]);
-    if (recorrido > 0 && hayAnterior) cambiarQuincena(lista[idxActual - 1]);
+    cambiarQuincena(
+      recorrido < 0 ? quincenaSiguiente(quincenaIdActual) : quincenaAnterior(quincenaIdActual)
+    );
   }
   const hayPendientes = estado.balanceProyectado !== estado.balanceConfirmado;
   // La prima solo llega en junio y diciembre — el resto del año no tiene
@@ -200,7 +196,7 @@ export default function PanelRafael() {
           </div>
         </Link>
         <Link
-          to="/dashboard"
+          to="/ahorro"
           className="tile-suave bg-[var(--color-suave-verde)] hover:brightness-[0.97] active:scale-[0.98] transition-all"
         >
           <div className="text-[11px] font-semibold text-[var(--color-suave-verde-texto)] opacity-80">
@@ -221,9 +217,8 @@ export default function PanelRafael() {
         <div className="dashed-row pb-3 mb-3">
           <div className="flex justify-between items-center">
             <button
-              disabled={!hayAnterior}
-              onClick={() => cambiarQuincena(lista[idxActual - 1])}
-              className="text-white/50 disabled:opacity-20 text-lg leading-none px-1"
+              onClick={() => cambiarQuincena(quincenaAnterior(quincenaIdActual))}
+              className="text-white/70 hover:text-white text-2xl leading-none px-3 py-1 -my-1"
               aria-label="Quincena anterior"
             >
               ‹
@@ -240,9 +235,8 @@ export default function PanelRafael() {
               </span>
             </button>
             <button
-              disabled={!haySiguiente}
-              onClick={() => cambiarQuincena(lista[idxActual + 1])}
-              className="text-white/50 disabled:opacity-20 text-lg leading-none px-1"
+              onClick={() => cambiarQuincena(quincenaSiguiente(quincenaIdActual))}
+              className="text-white/70 hover:text-white text-2xl leading-none px-3 py-1 -my-1"
               aria-label="Quincena siguiente"
             >
               ›
@@ -306,10 +300,10 @@ export default function PanelRafael() {
         </Link>
       </div>
 
-      <Link to="/dashboard" className="ledger-card p-6 mb-6 block hover:shadow-md transition-shadow">
+      <Link to="/graficas" className="ledger-card p-6 mb-6 block hover:shadow-md transition-shadow">
         <div className="flex justify-between items-baseline mb-1">
           <h2 className="section-title-editorial">En qué se ha ido</h2>
-          <span className="text-xs text-[var(--color-muted)] underline">ver gráficas completas →</span>
+          <span className="text-xs text-[var(--color-muted)] underline">ver gráficas →</span>
         </div>
         <p className="text-xs text-[var(--color-muted)] mb-3">
           De {formatoCOP(estado.egresoConfirmado)} confirmados esta quincena
@@ -457,28 +451,11 @@ export default function PanelRafael() {
               </span>
             </div>
           ))}
-          <button
-            onClick={async () => {
-              if (resumenJerardith.activa) {
-                await api.desactivarJerardith(resumenJerardith.quincenaActual);
-              } else {
-                await api.activarJerardith(resumenJerardith.quincenaActual);
-              }
-              await cargarTodo(quincenaIdActual);
-            }}
-            className={`w-full mt-3 rounded-md py-2.5 font-semibold text-sm ${
-              resumenJerardith.activa
-                ? "border border-[var(--color-ledger-border)] text-[var(--color-texto)]"
-                : "bg-[var(--color-positivo)] text-white"
-            }`}
-          >
-            {resumenJerardith.activa ? "Desactivar para Jerardith" : "Activar quincena para Jerardith"}
-          </button>
-          {!resumenJerardith.activa && (
-            <p className="text-xs text-[var(--color-muted)] mt-2">
-              Ella puede ver sus rubros, pero no podrá registrar gastos hasta que actives.
-            </p>
-          )}
+          <p className="text-xs text-[var(--color-muted)] mt-3">
+            {resumenJerardith.activa
+              ? "Ya puede registrar en los rubros que le entregaste."
+              : "Se habilita sola: en cuanto confirmes mercado, cuidado o su bolsillo, ella puede registrar en ese rubro."}
+          </p>
         </div>
       )}
     </div>

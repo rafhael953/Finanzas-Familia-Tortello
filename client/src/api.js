@@ -29,6 +29,7 @@ export const api = {
   getEstadoQuincena: (id) => request(`/api/registros/estado/${id}`),
   getResumenMensual: (id) => request(`/api/registros/mensual/${id}`),
   getHistorial: () => request(`/api/registros/historial`),
+  getAnalisis: () => request(`/api/registros/analisis`),
 
   agregarMovimiento: (mov) =>
     request("/api/movimientos", { method: "POST", body: JSON.stringify(mov) }),
@@ -65,10 +66,6 @@ export const api = {
   getGastosJerardith: () => request("/api/jerardith/gastos"),
   postGastoJerardith: (gasto) =>
     request("/api/jerardith/gastos", { method: "POST", body: JSON.stringify(gasto) }),
-  activarJerardith: (quincenaId) =>
-    request("/api/jerardith/activar", { method: "POST", body: JSON.stringify({ quincenaId }) }),
-  desactivarJerardith: (quincenaId) =>
-    request("/api/jerardith/desactivar", { method: "POST", body: JSON.stringify({ quincenaId }) }),
 };
 
 export function formatoCOP(valor) {
@@ -121,6 +118,21 @@ export function partesQuincena(id) {
 
 export function idQuincena(anio, mes, q) {
   return `${anio}-${String(mes).padStart(2, "0")}-Q${q}`;
+}
+
+// Moverse entre quincenas por calendario, no por la lista de las que ya
+// tienen movimientos: si no, no se puede ir a una quincena vacia (que es
+// justo lo que se necesita para empezar a registrarla).
+export function quincenaAnterior(id) {
+  const { anio, mes, q } = partesQuincena(id);
+  if (q === 2) return idQuincena(anio, mes, 1);
+  return mes === 1 ? idQuincena(anio - 1, 12, 2) : idQuincena(anio, mes - 1, 2);
+}
+
+export function quincenaSiguiente(id) {
+  const { anio, mes, q } = partesQuincena(id);
+  if (q === 1) return idQuincena(anio, mes, 2);
+  return mes === 12 ? idQuincena(anio + 1, 1, 1) : idQuincena(anio, mes + 1, 1);
 }
 
 // Un color distintivo y mutado por categoria (no colores de semaforo — esos

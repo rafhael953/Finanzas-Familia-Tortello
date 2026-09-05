@@ -6,6 +6,8 @@ import PanelJerardith from "./pages/PanelJerardith";
 import Deudas from "./pages/Deudas";
 import Dashboard from "./pages/Dashboard";
 import Historial from "./pages/Historial";
+import Ahorro from "./pages/Ahorro";
+import Graficas from "./pages/Graficas";
 import Login from "./pages/Login";
 import { api, aplicarCategoriasPersonalizadas } from "./api";
 
@@ -33,6 +35,8 @@ export default function App() {
         <Route path="/rafael/deudas" element={<Deudas />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/historial" element={<Historial />} />
+        <Route path="/ahorro" element={<Ahorro />} />
+        <Route path="/graficas" element={<Graficas />} />
         <Route path="/jerardith" element={<PanelJerardith />} />
       </Routes>
     </BrowserRouter>

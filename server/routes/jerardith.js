@@ -16,8 +16,24 @@ function presupuestoRubro(db, rubro, q) {
   return db.gastosFijos[key][rubro] || 0;
 }
 
+// Un rubro queda habilitado para ella en el momento en que Rafael le
+// entrega plata para ese rubro. No hace falta un boton aparte de
+// "activar": confirmar el mercado ES entregarselo.
+function rubroActivo(db, id, categoria) {
+  return (db.movimientos || []).some(
+    (m) =>
+      m.quincenaId === id &&
+      m.tipo === "gasto" &&
+      m.categoria === categoria &&
+      m.confirmado !== false &&
+      m.registradoPor !== "jerardith"
+  );
+}
+
+// La quincena esta "activa" para ella si ya recibio algo en cualquiera de
+// sus rubros.
 function estaActiva(db, id) {
-  return !!(db.activacionesJerardith || {})[id];
+  return ["mercado", "cuidado", "jerardith"].some((cat) => rubroActivo(db, id, cat));
 }
 
 router.get("/gastos", async (req, res) => {
@@ -48,8 +64,10 @@ router.post("/gastos", async (req, res) => {
 
   try {
     const nuevo = await withDB(async (db) => {
-      if (!estaActiva(db, id)) {
-        const e = new Error("Rafael todavía no ha activado esta quincena para ti.");
+      if (!rubroActivo(db, id, mapa.categoria)) {
+        const e = new Error(
+          `Todavía no has recibido nada para ${gasto.rubro} en esta quincena.`
+        );
         e.status = 409;
         throw e;
       }
@@ -72,24 +90,6 @@ router.post("/gastos", async (req, res) => {
   } catch (err) {
     res.status(err.status || 500).json({ error: err.message });
   }
-});
-
-router.post("/activar", async (req, res) => {
-  const id = req.body.quincenaId || quincenaId();
-  await withDB(async (db) => {
-    db.activacionesJerardith = db.activacionesJerardith || {};
-    db.activacionesJerardith[id] = true;
-  });
-  res.json({ ok: true, quincenaId: id, activa: true });
-});
-
-router.post("/desactivar", async (req, res) => {
-  const id = req.body.quincenaId || quincenaId();
-  await withDB(async (db) => {
-    db.activacionesJerardith = db.activacionesJerardith || {};
-    db.activacionesJerardith[id] = false;
-  });
-  res.json({ ok: true, quincenaId: id, activa: false });
 });
 
 router.get("/resumen", async (req, res) => {
@@ -126,6 +126,8 @@ router.get("/resumen", async (req, res) => {
       disponible: recibido - gastado,
       // Referencia de cuanto se suele destinar a ese rubro por quincena.
       planeado: presupuestoRubro(db, rubro, q),
+      // Puede registrar en este rubro solo si ya recibio algo para el.
+      activo: rubroActivo(db, idActual, categoria),
     };
   });
 
