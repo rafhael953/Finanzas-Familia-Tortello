@@ -23,7 +23,7 @@
     "decameron": 2200000
   },
   "cuotasRecomendadas": {
-    "falabella": 900000,
+    "falabella": 700000,
     "rappi": 1100000,
     "auteco": 600000,
     "numama": 600000,
@@ -274,6 +274,10 @@
       {
         "desde": "2026-09",
         "valor": 900000
+      },
+      {
+        "desde": "2026-09",
+        "valor": 700000
       }
     ]
   }
