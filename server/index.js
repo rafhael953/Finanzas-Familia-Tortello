@@ -17,6 +17,27 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+// Contraseña compartida de la familia: sin esto, cualquiera con la URL
+// podia ver y editar las finanzas. El navegador pide usuario/clave una sola
+// vez y los recuerda. Usuario y clave se configuran por variable de entorno
+// (APP_USER / APP_PASS) — nunca quedan escritos en el codigo ni en git.
+const APP_USER = process.env.APP_USER || "tortello";
+const APP_PASS = process.env.APP_PASS || "cambiaesto";
+
+app.use((req, res, next) => {
+  if (req.path === "/api/health") return next();
+
+  const header = req.headers.authorization || "";
+  const [tipo, credenciales] = header.split(" ");
+  if (tipo === "Basic" && credenciales) {
+    const [usuario, clave] = Buffer.from(credenciales, "base64").toString().split(":");
+    if (usuario === APP_USER && clave === APP_PASS) return next();
+  }
+
+  res.set("WWW-Authenticate", 'Basic realm="Tortello Finanzas"');
+  res.status(401).send("Acceso restringido");
+});
+
 app.use("/api/registros", registrosRouter);
 app.use("/api/deudas", deudasRouter);
 app.use("/api/cuentas", cuentasRouter);
