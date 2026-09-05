@@ -250,6 +250,17 @@
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
       "confirmado": true
+    },
+    {
+      "id": "mov-1788630880178-177",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "gasto",
+      "categoria": "mercado",
+      "monto": 80000,
+      "descripcion": "TEST frutas",
+      "fecha": "2026-09-05",
+      "registradoPor": "jerardith",
+      "confirmado": true
     }
   ],
   "registros": [],
