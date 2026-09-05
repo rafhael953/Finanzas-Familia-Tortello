@@ -254,7 +254,7 @@
   "registros": [],
   "gastosJerardith": [],
   "activacionesJerardith": {
-    "2026-09-Q1": true
+    "2026-09-Q1": false
   },
   "categoriasPersonalizadas": {
     "gasto": {},
