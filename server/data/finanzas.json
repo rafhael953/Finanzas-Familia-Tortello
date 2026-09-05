@@ -16,7 +16,7 @@
     "binanceUSD": 95
   },
   "deudasIniciales": {
-    "falabella": 3900000,
+    "falabella": 3600000,
     "rappi": 5200000,
     "auteco": 5000000,
     "numama": 3400000,
@@ -265,8 +265,8 @@
     {
       "id": "compra-1788628811445-620",
       "tarjeta": "falabella",
-      "monto": 600000,
-      "cuotas": 6,
+      "monto": 300000,
+      "cuotas": 3,
       "cuotaMensual": 100000,
       "fecha": "2026-09-05",
       "descripcion": "TEST"
@@ -280,6 +280,10 @@
       {
         "desde": "0000-00",
         "valor": 700000
+      },
+      {
+        "desde": "2026-09",
+        "valor": 800000
       },
       {
         "desde": "2026-09",
