@@ -227,6 +227,15 @@ export function calcularAlertasDeudas(db, fechaRef = new Date()) {
 
   const alertas = [];
   for (const categoria of Object.keys(db.cuotasRecomendadas || {})) {
+    // Si ya se pago por completo, no hay cuota que reclamar -- sin este
+    // chequeo, una deuda saldada hace meses sigue apareciendo "atrasada"
+    // para siempre (se detecto probando el historial con un año de datos).
+    const saldoInicial = (db.deudasIniciales || {})[categoria] || 0;
+    const pagadoTotal = (db.movimientos || [])
+      .filter((m) => m.tipo === "deuda" && m.categoria === categoria && esConfirmado(m))
+      .reduce((a, m) => a + Number(m.monto || 0), 0);
+    if (saldoInicial - pagadoTotal <= 0) continue;
+
     // Si la deuda se registro este mismo mes (recien agregada al sistema),
     // no tiene sentido reclamarle una cuota de un mes anterior en el que
     // todavia no se le hacia seguimiento como deuda.
