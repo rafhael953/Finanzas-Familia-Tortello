@@ -7,7 +7,8 @@
     "tasaAuteco": 0.17,
     "rendNU": 0.093,
     "trm": 3100,
-    "bolsilloJerardith": 200000
+    "bolsilloJerardith": 200000,
+    "abonoExtraMensual": 0
   },
   "saldosIniciales": {
     "nu": 1823389,
@@ -254,7 +255,8 @@
   "registros": [],
   "gastosJerardith": [],
   "activacionesJerardith": {
-    "2026-09-Q1": false
+    "2026-09-Q1": false,
+    "2026-08-Q2": true
   },
   "categoriasPersonalizadas": {
     "gasto": {},
@@ -265,24 +267,5 @@
   "deudasFechaCreacion": {
     "decameron": "2026-09"
   },
-  "historialCuotas": {
-    "falabella": [
-      {
-        "desde": "0000-00",
-        "valor": 700000
-      },
-      {
-        "desde": "2026-09",
-        "valor": 800000
-      },
-      {
-        "desde": "2026-09",
-        "valor": 800000
-      },
-      {
-        "desde": "2026-09",
-        "valor": 700000
-      }
-    ]
-  }
+  "historialCuotas": {}
 }
