@@ -73,9 +73,13 @@ export default function PanelJerardith() {
       </div>
 
       <div className="ledger-card p-6 mb-6">
-        <h2 className="section-title-editorial mb-2">Tus rubros</h2>
+        <h2 className="section-title-editorial mb-1">Tus rubros</h2>
+        <p className="text-xs text-[var(--color-muted)] mb-2">
+          Cada gasto que registres se descuenta de lo que recibiste para ese rubro.
+        </p>
         {resumen.resumen.map((r) => {
           const porcentaje = Math.min(100, Math.round((r.gastado / (r.presupuesto || 1)) * 100));
+          const sinRecibir = r.presupuesto === 0;
           return (
             <div key={r.rubro} className="py-3 dashed-row">
               <div className="flex justify-between items-baseline mb-2">
@@ -98,7 +102,11 @@ export default function PanelJerardith() {
                 />
               </div>
               <span className="text-xs text-[var(--color-muted)] mt-1 block">
-                {formatoCOP(r.gastado)} de {formatoCOP(r.presupuesto)}
+                {sinRecibir
+                  ? r.planeado > 0
+                    ? `Rafael aún no te lo entrega (suele ser ${formatoCOP(r.planeado)})`
+                    : "Rafael aún no te lo entrega"
+                  : `Llevas gastado ${formatoCOP(r.gastado)} de ${formatoCOP(r.presupuesto)}`}
               </span>
             </div>
           );

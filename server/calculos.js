@@ -49,6 +49,12 @@ export function calcularEstadoQuincena(db, id) {
   const key = q === 1 ? "q1" : "q2";
   const movs = (db.movimientos || []).filter((m) => m.quincenaId === id);
 
+  // Lo que Jerardith registra es el DETALLE de en que se fue la plata que
+  // Rafael ya le entrego, no una segunda salida de dinero de la casa: el
+  // gasto real ocurrio cuando el le paso el mercado/cuidado/bolsillo. Por
+  // eso los totales de la casa se calculan solo con lo que registro el.
+  const movsCasa = movs.filter((m) => m.registradoPor !== "jerardith");
+
   const presupuestoGastos = db.gastosFijos[key];
   const presupuestoDeudas = db.cuotasRecomendadas;
   const salarioDefault = q === 1 ? db.config.ingresoQ1 : db.config.ingresoQ2;
@@ -56,24 +62,18 @@ export function calcularEstadoQuincena(db, id) {
   const gastosPresupuestados = Object.keys(presupuestoGastos).map((cat) => ({
     categoria: cat,
     presupuesto: presupuestoGastos[cat],
-    ...totales(movs, "gasto", cat),
+    ...totales(movsCasa, "gasto", cat),
   }));
 
   // Gastos sin presupuesto fijo: no son un monto fijo cada quincena (lo que
   // le des a Jerardith varia, la reserva medica tambien), asi que su
   // presupuesto siempre es 0 -- solo cuentan lo que realmente se registro.
-  // Lo que Jerardith registra como gastado de su propio bolsillo es solo
-  // visibilidad para ella (ver jerardith.js) -- no es una segunda salida de
-  // dinero de la familia, asi que no se vuelve a contar aqui.
   const categoriasGastoVariable = ["medicaBucaramanga", "jerardith"];
-  const gastosVariables = categoriasGastoVariable.map((cat) => {
-    const movsCategoria = cat === "jerardith" ? movs.filter((m) => m.registradoPor !== "jerardith") : movs;
-    return {
-      categoria: cat,
-      presupuesto: 0,
-      ...totales(movsCategoria, "gasto", cat),
-    };
-  });
+  const gastosVariables = categoriasGastoVariable.map((cat) => ({
+    categoria: cat,
+    presupuesto: 0,
+    ...totales(movsCasa, "gasto", cat),
+  }));
 
   // Categorias que la familia crea sobre la marcha (ver routes/categorias.js)
   // -- tambien sin presupuesto fijo, igual que las variables de arriba.
@@ -81,7 +81,7 @@ export function calcularEstadoQuincena(db, id) {
   const gastosPersonalizados = Object.keys(categoriasPersonalizadas.gasto || {}).map((cat) => ({
     categoria: cat,
     presupuesto: 0,
-    ...totales(movs, "gasto", cat),
+    ...totales(movsCasa, "gasto", cat),
   }));
 
   const gastos = [...gastosPresupuestados, ...gastosVariables, ...gastosPersonalizados];
@@ -92,7 +92,7 @@ export function calcularEstadoQuincena(db, id) {
   const movsHermana = (db.movimientos || []).filter((m) => m.quincenaId === idHermana);
 
   const deudas = Object.keys(presupuestoDeudas).map((cat) => {
-    const propios = totales(movs, "deuda", cat);
+    const propios = totales(movsCasa, "deuda", cat);
     const enHermana = totales(movsHermana, "deuda", cat).confirmado;
     return {
       categoria: cat,
@@ -106,20 +106,20 @@ export function calcularEstadoQuincena(db, id) {
   const inversiones = categoriasInversion.map((cat) => ({
     categoria: cat,
     presupuesto: 0,
-    ...totales(movs, "inversion", cat),
+    ...totales(movsCasa, "inversion", cat),
   }));
 
   // Ingresos: como cualquier otra categoria, arranca en $0 hasta que se
   // confirme (o se agregue como plan) un movimiento real. El salarioDefault
   // solo se usa como sugerencia precargada en la fila de confirmacion rapida.
-  const salario = totales(movs, "ingreso", "salario");
-  const prima = totales(movs, "ingreso", "prima");
-  const extra = totales(movs, "ingreso", "extra");
+  const salario = totales(movsCasa, "ingreso", "salario");
+  const prima = totales(movsCasa, "ingreso", "prima");
+  const extra = totales(movsCasa, "ingreso", "extra");
 
   const ingresosPersonalizados = Object.keys(categoriasPersonalizadas.ingreso || {}).map((cat) => ({
     categoria: cat,
     presupuesto: 0,
-    ...totales(movs, "ingreso", cat),
+    ...totales(movsCasa, "ingreso", cat),
   }));
 
   const ingresos = [

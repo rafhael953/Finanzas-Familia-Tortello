@@ -98,33 +98,35 @@ router.get("/resumen", async (req, res) => {
   const estado = calcularEstadoQuincena(db, idActual);
   const q = estado.quincena;
 
-  // El bolsillo de Jerardith ("amor") no es un monto fijo por quincena: solo
-  // cuenta lo que Rafael realmente le asigno (gasto/jerardith confirmado,
-  // registrado por el) como presupuesto, y lo que ella misma registro haber
-  // gastado de eso como "gastado". Si el aun no se lo ha entregado, es 0.
-  const movsJerardith = (db.movimientos || []).filter(
-    (m) => m.quincenaId === idActual && m.tipo === "gasto" && m.categoria === "jerardith" && m.confirmado !== false
+  // Los tres rubros funcionan igual: lo que Rafael registra es la plata que
+  // le ENTREGA para ese rubro, y lo que ella registra es en que la fue
+  // gastando. Lo disponible es la resta. Antes el mercado y el cuidado
+  // mezclaban las dos cosas y sumaban ambas como gasto, asi que apenas el
+  // le entregaba los 500.000 ella ya veia el rubro agotado, y cada compra
+  // suya lo dejaba en negativo.
+  const movsDeLaQuincena = (db.movimientos || []).filter(
+    (m) => m.quincenaId === idActual && m.tipo === "gasto" && m.confirmado !== false
   );
-  const asignadoPorRafael = movsJerardith
-    .filter((m) => m.registradoPor !== "jerardith")
-    .reduce((a, m) => a + m.monto, 0);
-  const gastadoPorJerardith = movsJerardith
-    .filter((m) => m.registradoPor === "jerardith")
-    .reduce((a, m) => a + m.monto, 0);
+  const sumar = (categoria, esDeElla) =>
+    movsDeLaQuincena
+      .filter(
+        (m) => m.categoria === categoria && (m.registradoPor === "jerardith") === esDeElla
+      )
+      .reduce((a, m) => a + Number(m.monto || 0), 0);
 
   const rubros = ["mercado", "cuidado", "esposa"];
   const resumen = rubros.map((rubro) => {
-    if (rubro === "esposa") {
-      return {
-        rubro,
-        presupuesto: asignadoPorRafael,
-        gastado: gastadoPorJerardith,
-        disponible: asignadoPorRafael - gastadoPorJerardith,
-      };
-    }
-    const presupuesto = presupuestoRubro(db, rubro, q);
-    const gastado = estado.gastos.find((g) => g.categoria === rubro)?.confirmado || 0;
-    return { rubro, presupuesto, gastado, disponible: presupuesto - gastado };
+    const categoria = MAPA_RUBRO[rubro].categoria;
+    const recibido = sumar(categoria, false);
+    const gastado = sumar(categoria, true);
+    return {
+      rubro,
+      presupuesto: recibido,
+      gastado,
+      disponible: recibido - gastado,
+      // Referencia de cuanto se suele destinar a ese rubro por quincena.
+      planeado: presupuestoRubro(db, rubro, q),
+    };
   });
 
   // Se devuelven tipo/categoria ademas del rubro para que el cliente pueda
