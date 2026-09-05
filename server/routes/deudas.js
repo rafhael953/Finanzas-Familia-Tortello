@@ -19,6 +19,31 @@ router.get("/compras", async (req, res) => {
   res.json(db.comprasTarjeta || []);
 });
 
+// Ajustar directamente la cuota mensual recomendada de una deuda -- es una
+// linea base, no un valor fijo para siempre: se puede subir o bajar cuando
+// haga falta, sin que tenga que ser por una compra nueva.
+router.put("/cuota", async (req, res) => {
+  const { categoria, valor } = req.body || {};
+  const valorNum = Number(valor);
+  if (!valorNum || valorNum <= 0) {
+    return res.status(400).json({ error: "Valor inválido" });
+  }
+
+  try {
+    await withDB(async (db) => {
+      if (!(categoria in (db.cuotasRecomendadas || {}))) {
+        const e = new Error("Esa deuda no existe");
+        e.status = 400;
+        throw e;
+      }
+      db.cuotasRecomendadas[categoria] = valorNum;
+    });
+    res.json({ ok: true, categoria, valor: valorNum });
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
 // Registrar una compra nueva con tarjeta: se suma al saldo pendiente de esa
 // tarjeta, y la cuota mensual recomendada sube lo necesario para pagarla en
 // el numero de cuotas elegido (ademas de lo que ya se venia pagando).

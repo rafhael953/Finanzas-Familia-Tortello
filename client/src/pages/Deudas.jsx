@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, formatoCOP, ETIQUETAS_CATEGORIA } from "../api";
 import BarraDeuda from "../components/BarraDeuda";
+import FilaValorEditable from "../components/FilaValorEditable";
 
 const TARJETAS = ["falabella", "rappi"];
 
@@ -187,6 +188,21 @@ export default function Deudas() {
             <h2 className="section-title-editorial mb-2">Estado actual</h2>
             {deudas.map((d) => (
               <BarraDeuda key={d.nombre} nombre={d.nombre} saldo={d.saldo} saldoInicial={d.saldoInicial} />
+            ))}
+          </div>
+
+          <div className="ledger-card p-6 mb-6">
+            <h2 className="section-title-editorial mb-1">Cuota mensual recomendada</h2>
+            <p className="text-xs text-[var(--color-muted)] mb-2">
+              Es una línea base, no un valor fijo — tócala para ajustarla.
+            </p>
+            {deudas.map((d) => (
+              <FilaValorEditable
+                key={d.nombre}
+                etiqueta={ETIQUETAS_CATEGORIA[d.nombre] || d.nombre}
+                valor={d.cuotaRecomendada}
+                onGuardar={(v) => api.editarCuotaDeuda(d.nombre, v).then(cargar)}
+              />
             ))}
           </div>
 
