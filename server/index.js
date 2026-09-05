@@ -17,11 +17,14 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Contraseña compartida de la familia: sin esto, cualquiera con la URL
-// podia ver y editar las finanzas. El navegador pide usuario/clave una sola
-// vez y los recuerda. Usuario y clave se configuran por variable de entorno
-// (APP_USER / APP_PASS) — nunca quedan escritos en el codigo ni en git.
-const APP_USER = process.env.APP_USER || "tortello";
+// Acceso restringido a la familia: sin esto, cualquiera con la URL podia ver
+// y editar las finanzas. El navegador pide usuario/clave una sola vez y los
+// recuerda. Usuarios y clave se configuran por variable de entorno
+// (APP_USERS separado por comas, APP_PASS) — nunca quedan escritos en el
+// codigo ni en git; solo viven en las Variables del servicio en Railway.
+const APP_USERS = (process.env.APP_USERS || "tortello")
+  .split(",")
+  .map((u) => u.trim().toLowerCase());
 const APP_PASS = process.env.APP_PASS || "cambiaesto";
 
 app.use((req, res, next) => {
@@ -31,7 +34,9 @@ app.use((req, res, next) => {
   const [tipo, credenciales] = header.split(" ");
   if (tipo === "Basic" && credenciales) {
     const [usuario, clave] = Buffer.from(credenciales, "base64").toString().split(":");
-    if (usuario === APP_USER && clave === APP_PASS) return next();
+    if (APP_USERS.includes((usuario || "").trim().toLowerCase()) && clave === APP_PASS) {
+      return next();
+    }
   }
 
   res.set("WWW-Authenticate", 'Basic realm="Tortello Finanzas"');
