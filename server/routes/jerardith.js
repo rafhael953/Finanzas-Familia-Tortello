@@ -12,7 +12,6 @@ const MAPA_RUBRO = {
 };
 
 function presupuestoRubro(db, rubro, q) {
-  if (rubro === "esposa") return db.config.bolsilloJerardith;
   const key = q === 1 ? "q1" : "q2";
   return db.gastosFijos[key][rubro] || 0;
 }
@@ -99,15 +98,32 @@ router.get("/resumen", async (req, res) => {
   const estado = calcularEstadoQuincena(db, idActual);
   const q = estado.quincena;
 
+  // El bolsillo de Jerardith ("amor") no es un monto fijo por quincena: solo
+  // cuenta lo que Rafael realmente le asigno (reserva/jerardith confirmada,
+  // registrada por el) como presupuesto, y lo que ella misma registro haber
+  // gastado de eso como "gastado". Si el aun no se lo ha entregado, es 0.
+  const movsJerardith = (db.movimientos || []).filter(
+    (m) => m.quincenaId === idActual && m.tipo === "reserva" && m.categoria === "jerardith" && m.confirmado !== false
+  );
+  const asignadoPorRafael = movsJerardith
+    .filter((m) => m.registradoPor !== "jerardith")
+    .reduce((a, m) => a + m.monto, 0);
+  const gastadoPorJerardith = movsJerardith
+    .filter((m) => m.registradoPor === "jerardith")
+    .reduce((a, m) => a + m.monto, 0);
+
   const rubros = ["mercado", "cuidado", "esposa"];
   const resumen = rubros.map((rubro) => {
-    const presupuesto = presupuestoRubro(db, rubro, q);
-    let gastado = 0;
     if (rubro === "esposa") {
-      gastado = estado.reservas.find((r) => r.categoria === "jerardith")?.confirmado || 0;
-    } else {
-      gastado = estado.gastos.find((g) => g.categoria === rubro)?.confirmado || 0;
+      return {
+        rubro,
+        presupuesto: asignadoPorRafael,
+        gastado: gastadoPorJerardith,
+        disponible: asignadoPorRafael - gastadoPorJerardith,
+      };
     }
+    const presupuesto = presupuestoRubro(db, rubro, q);
+    const gastado = estado.gastos.find((g) => g.categoria === rubro)?.confirmado || 0;
     return { rubro, presupuesto, gastado, disponible: presupuesto - gastado };
   });
 
