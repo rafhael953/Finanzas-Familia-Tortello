@@ -93,6 +93,12 @@ export default function Dashboard() {
 
   const puntosNU = evolucionNU.map((e) => ({ label: formatoQuincena(e.quincenaId).replace("Quincena ", "Q"), valor: e.saldo }));
 
+  // Tanto Rafael como Jerardith pueden llegar aqui -- el enlace de volver
+  // debe llevar a cada quien a su propio panel.
+  const perfil = localStorage.getItem("perfil") === "jerardith" ? "jerardith" : "rafael";
+  const rutaVolver = perfil === "jerardith" ? "/jerardith" : "/rafael";
+  const etiquetaVolver = perfil === "jerardith" ? "← panel de Jerardith" : "← panel de Rafael";
+
   return (
     <div className="min-h-screen px-5 py-6 flex flex-col max-w-lg mx-auto">
       <header className="flex justify-between items-baseline mb-1">
@@ -102,8 +108,8 @@ export default function Dashboard() {
         </div>
       </header>
       <div className="flex justify-between">
-        <Link to="/rafael" className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
-          ← panel de Rafael
+        <Link to={rutaVolver} className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
+          {etiquetaVolver}
         </Link>
         <Link to="/" className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
           cambiar perfil

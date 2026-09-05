@@ -42,7 +42,10 @@ export default function PanelJerardith() {
           <h1 className="font-serif text-[26px] font-semibold tracking-tight">Panel Jerardith</h1>
         </div>
       </header>
-      <div className="flex justify-end">
+      <div className="flex justify-between">
+        <Link to="/dashboard" className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
+          ver todo en un lugar
+        </Link>
         <Link to="/" className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
           cambiar perfil
         </Link>
