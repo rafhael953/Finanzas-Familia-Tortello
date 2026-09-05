@@ -249,17 +249,6 @@
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
       "confirmado": true
-    },
-    {
-      "id": "mov-1788566861282-72",
-      "quincenaId": "2099-05-Q1",
-      "tipo": "gasto",
-      "categoria": "ocio",
-      "monto": 1234,
-      "descripcion": "",
-      "fecha": "2026-09-05",
-      "registradoPor": "rafael",
-      "confirmado": true
     }
   ],
   "registros": [],
