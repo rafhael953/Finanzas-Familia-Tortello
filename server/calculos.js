@@ -209,9 +209,16 @@ export function calcularAlertasDeudas(db, fechaRef = new Date()) {
     mesAnt = 12;
     anioAnt -= 1;
   }
+  const prefijoActual = `${anio}-${String(mes).padStart(2, "0")}`;
 
   const alertas = [];
   for (const categoria of Object.keys(db.cuotasRecomendadas || {})) {
+    // Si la deuda se registro este mismo mes (recien agregada al sistema),
+    // no tiene sentido reclamarle una cuota de un mes anterior en el que
+    // todavia no se le hacia seguimiento como deuda.
+    const fechaCreacion = (db.deudasFechaCreacion || {})[categoria];
+    if (fechaCreacion && fechaCreacion >= prefijoActual) continue;
+
     const cuota = db.cuotasRecomendadas[categoria];
     const pagadoMesAnterior = pagadoDeudaEnMes(db, categoria, anioAnt, mesAnt);
     if (pagadoMesAnterior < cuota) {

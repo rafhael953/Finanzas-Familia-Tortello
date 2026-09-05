@@ -5,12 +5,17 @@
   --color-fondo: #f7f3ec;
   --color-texto: #2b2620;
   --color-acento: #2b2620;
+  --color-acento-vivo: #a8481e;
   --color-positivo: #375623;
   --color-negativo: #c00000;
   --color-ledger: #fffdf8;
   --color-ledger-border: #e7dcc8;
   --color-ledger-rule: #ede4d3;
   --color-muted: #8a7f6e;
+  --color-oscuro: #241f1a;
+  --color-crema: #f7f3ec;
+  --color-positivo-alto: #a9d18e;
+  --color-negativo-alto: #ff9b8a;
   --font-serif: "Newsreader", serif;
 }
 
@@ -35,7 +40,8 @@ body {
 .section-title-editorial {
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 500;
   color: #5c5347;
 }
 
@@ -44,6 +50,23 @@ body {
   border: 1px solid var(--color-ledger-border);
   border-radius: 10px;
   box-shadow: 0 1px 2px rgba(43, 38, 32, 0.04), 0 4px 12px -4px rgba(43, 38, 32, 0.06);
+}
+
+/* Tarjeta "titular": el numero mas importante de cada pantalla (el balance,
+   el patrimonio). Se invierte a oscuro a proposito para que destaque de
+   inmediato entre tarjetas identicas -- es el ancla visual de la pagina. */
+.ledger-card--hero {
+  background: var(--color-oscuro);
+  border: 1px solid var(--color-oscuro);
+  border-radius: 10px;
+  color: var(--color-crema);
+  box-shadow: 0 4px 20px -6px rgba(36, 31, 26, 0.35);
+}
+.ledger-card--hero .kicker {
+  color: rgba(247, 243, 236, 0.55);
+}
+.ledger-card--hero .dashed-row {
+  border-bottom-color: rgba(247, 243, 236, 0.14);
 }
 
 .dashed-row {

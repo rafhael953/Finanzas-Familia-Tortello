@@ -261,5 +261,8 @@
     "inversion": {},
     "ingreso": {}
   },
-  "comprasTarjeta": []
+  "comprasTarjeta": [],
+  "deudasFechaCreacion": {
+    "decameron": "2026-09"
+  }
 }

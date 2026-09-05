@@ -87,7 +87,7 @@ export default function PanelRafael() {
       <header className="flex justify-between items-baseline mb-1">
         <div>
           <div className="kicker">Tortello · Libro de finanzas</div>
-          <h1 className="font-serif text-[26px] font-semibold tracking-tight">Panel Rafael</h1>
+          <h1 className="font-serif text-[30px] font-semibold tracking-tight">Panel Rafael</h1>
         </div>
       </header>
       <div className="flex justify-between">
@@ -98,10 +98,10 @@ export default function PanelRafael() {
           cambiar perfil
         </Link>
       </div>
-      <div className="h-px bg-[var(--color-ledger-rule)] my-5" />
+      <div className="h-px bg-[var(--color-ledger-rule)] my-6" />
 
       {alertas.length > 0 && (
-        <div className="mb-5 bg-[#FBEFD9] border border-[#E0BB6B] rounded-md p-4">
+        <div className="mb-6 bg-[#FBEFD9] border border-[#E0BB6B] rounded-md p-4">
           <p className="text-[11px] font-bold uppercase tracking-wide text-[#8A5A00] mb-2">
             ⚠ Cuotas atrasadas
           </p>
@@ -123,14 +123,14 @@ export default function PanelRafael() {
         </div>
       </div>
 
-      {/* Tarjeta de quincena / ledger */}
-      <div className="ledger-card p-5 mb-5">
+      {/* Tarjeta de quincena / ledger -- es el "titular" de la pagina */}
+      <div className="ledger-card ledger-card--hero p-6 mb-6">
         <div className="dashed-row pb-3 mb-3">
           <div className="flex justify-between items-center">
             <button
               disabled={!hayAnterior}
               onClick={() => cambiarQuincena(lista[idxActual - 1])}
-              className="text-[var(--color-muted)] disabled:opacity-20 text-lg leading-none px-1"
+              className="text-white/50 disabled:opacity-20 text-lg leading-none px-1"
               aria-label="Quincena anterior"
             >
               ‹
@@ -140,12 +140,12 @@ export default function PanelRafael() {
               className="flex flex-col items-center gap-0.5"
             >
               <span className="font-serif italic text-[17px] text-center">{formatoQuincena(quincenaIdActual)}</span>
-              <span className="text-[10px] text-[var(--color-muted)] underline">▾ cambiar</span>
+              <span className="text-[10px] text-[var(--color-acento-vivo)] underline">▾ cambiar</span>
             </button>
             <button
               disabled={!haySiguiente}
               onClick={() => cambiarQuincena(lista[idxActual + 1])}
-              className="text-[var(--color-muted)] disabled:opacity-20 text-lg leading-none px-1"
+              className="text-white/50 disabled:opacity-20 text-lg leading-none px-1"
               aria-label="Quincena siguiente"
             >
               ›
@@ -161,25 +161,25 @@ export default function PanelRafael() {
         </div>
 
         {balanceNegativo && (
-          <div className="mb-3 text-xs text-[var(--color-negativo)] font-medium">
+          <div className="mb-3 text-xs text-[var(--color-negativo-alto)] font-medium">
             ⚠ Balance real negativo esta quincena
           </div>
         )}
 
         <div className="flex justify-between items-baseline dashed-row py-2 text-[13.5px]">
-          <span className="text-[#5c5347]">Ingresos confirmados</span>
+          <span className="text-white/60">Ingresos confirmados</span>
           <span className="font-serif-num font-semibold">{formatoCOP(estado.ingresosConfirmado)}</span>
         </div>
         <div className="flex justify-between items-baseline dashed-row py-2 text-[13.5px]">
-          <span className="text-[#5c5347]">Egresos confirmados</span>
+          <span className="text-white/60">Egresos confirmados</span>
           <span className="font-serif-num font-semibold">{formatoCOP(estado.egresoConfirmado)}</span>
         </div>
 
-        <div className="flex justify-between items-center mt-3 pt-3 border-t-2 border-[var(--color-texto)]">
-          <span className="text-[11px] uppercase tracking-wide font-bold">Balance al día</span>
+        <div className="flex justify-between items-center mt-3 pt-3 border-t-2 border-white/20">
+          <span className="text-[11px] uppercase tracking-wide font-bold text-white/70">Balance al día</span>
           <span
-            className={`font-serif-num font-bold text-2xl ${
-              balanceNegativo ? "text-[var(--color-negativo)]" : "text-[var(--color-positivo)]"
+            className={`font-serif-num font-bold text-[32px] ${
+              balanceNegativo ? "text-[var(--color-negativo-alto)]" : "text-[var(--color-positivo-alto)]"
             }`}
           >
             {formatoCOP(estado.balanceConfirmado)}
@@ -187,27 +187,27 @@ export default function PanelRafael() {
         </div>
 
         {hayPendientes && (
-          <div className="mt-2 flex justify-between items-baseline text-xs text-[#B58A00]">
+          <div className="mt-2 flex justify-between items-baseline text-xs text-[#E8C468]">
             <span>Si se cumple lo pendiente → balance proyectado</span>
             <span className="font-serif-num font-semibold">{formatoCOP(estado.balanceProyectado)}</span>
           </div>
         )}
 
         {estado.sobrante > 0 && (
-          <div className="mt-3 text-xs text-[var(--color-muted)]">
+          <div className="mt-3 text-xs text-white/50">
             → {formatoCOP(estado.aNU)} al NU · {formatoCOP(estado.aDeuda)} a abono extra de deuda (con lo confirmado hasta ahora)
           </div>
         )}
 
         <Link
           to="/historial"
-          className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)] mt-3 block text-center"
+          className="text-xs text-white/50 underline hover:text-white mt-3 block text-center"
         >
           ver historial completo desde el inicio →
         </Link>
       </div>
 
-      <Link to="/dashboard" className="ledger-card p-5 mb-5 block hover:shadow-md transition-shadow">
+      <Link to="/dashboard" className="ledger-card p-6 mb-6 block hover:shadow-md transition-shadow">
         <div className="flex justify-between items-baseline mb-3">
           <h2 className="section-title-editorial">Distribución (confirmado)</h2>
           <span className="text-xs text-[var(--color-muted)] underline">ver gráficas completas →</span>
@@ -223,7 +223,7 @@ export default function PanelRafael() {
 
       {/* Agregar movimiento */}
       {mostrarForm ? (
-        <div className="mb-5">
+        <div className="mb-6">
           <FormMovimiento
             quincenaId={quincenaIdActual}
             onGuardado={guardarMovimiento}
@@ -233,14 +233,14 @@ export default function PanelRafael() {
       ) : (
         <button
           onClick={() => setMostrarForm(true)}
-          className="bg-[var(--color-acento)] text-white rounded-md py-4 text-center font-semibold text-[15px] mb-5 shadow-sm hover:shadow-md active:scale-[0.98] transition-all"
+          className="bg-[var(--color-acento-vivo)] text-white rounded-md py-4 text-center font-semibold text-[15px] mb-6 shadow-sm hover:shadow-md hover:brightness-110 active:scale-[0.98] transition-all"
         >
           + Agregar movimiento
         </button>
       )}
 
       {/* Lista editable de movimientos: confirmar/editar/borrar item a item */}
-      <div className="ledger-card p-5 mb-5">
+      <div className="ledger-card p-6 mb-6">
         <button
           onClick={() => setMostrarLista((v) => !v)}
           className="section-title-editorial mb-1 w-full text-left"
@@ -256,7 +256,7 @@ export default function PanelRafael() {
       </div>
 
       {/* Categorias — cada una con confirmacion rapida si aun esta en $0 */}
-      <div className="ledger-card p-5 mb-5">
+      <div className="ledger-card p-6 mb-6">
         <h2 className="section-title-editorial mb-1">Ingresos</h2>
         <p className="text-xs text-[var(--color-muted)] mb-2">Confirma cada uno apenas te llegue.</p>
         {estado.ingresos
@@ -275,7 +275,7 @@ export default function PanelRafael() {
           ))}
       </div>
 
-      <div className="ledger-card p-5 mb-5">
+      <div className="ledger-card p-6 mb-6">
         <h2 className="section-title-editorial mb-1">Gastos de la quincena</h2>
         <p className="text-xs text-[var(--color-muted)] mb-2">Confirma cada uno a medida que lo pagas.</p>
         {estado.gastos
@@ -294,7 +294,7 @@ export default function PanelRafael() {
           ))}
       </div>
 
-      <div className="ledger-card p-5 mb-5">
+      <div className="ledger-card p-6 mb-6">
         <h2 className="section-title-editorial mb-1">Estado de las deudas</h2>
         <p className="text-xs text-[var(--color-muted)] mb-2">Confirma cada cuota cuando la pagues.</p>
         {estado.deudas.map((d) => (
@@ -312,7 +312,7 @@ export default function PanelRafael() {
         ))}
       </div>
 
-      <div className="ledger-card p-5 mb-5">
+      <div className="ledger-card p-6 mb-6">
         <h2 className="section-title-editorial mb-1">Inversiones</h2>
         <p className="text-xs text-[var(--color-muted)] mb-2">Opcional — solo si invertiste algo esta quincena.</p>
         {estado.inversiones.map((r) => (
@@ -331,13 +331,13 @@ export default function PanelRafael() {
 
       <Link
         to="/rafael/deudas"
-        className="border border-[var(--color-ledger-border)] rounded-md py-4 text-center font-semibold text-[15px] mb-5 bg-[var(--color-ledger)] hover:bg-white hover:border-[var(--color-muted)] hover:shadow-sm transition-all"
+        className="border border-[var(--color-ledger-border)] rounded-md py-4 text-center font-semibold text-[15px] mb-6 bg-[var(--color-ledger)] hover:bg-white hover:border-[var(--color-muted)] hover:shadow-sm transition-all"
       >
         Ver deudas y plan de pagos
       </Link>
 
       {resumenJerardith && (
-        <div className="ledger-card p-5">
+        <div className="ledger-card p-6">
           <div className="flex justify-between items-center mb-2">
             <h2 className="section-title-editorial">Resumen de Jerardith (esta quincena)</h2>
             <span
