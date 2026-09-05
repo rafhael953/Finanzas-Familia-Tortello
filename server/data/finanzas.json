@@ -261,6 +261,17 @@
       "fecha": "2026-09-05",
       "registradoPor": "rafael",
       "confirmado": true
+    },
+    {
+      "id": "mov-1788628975730-657",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "gasto",
+      "categoria": "jerardith",
+      "monto": 50000,
+      "descripcion": "TEST compra",
+      "fecha": "2026-09-05",
+      "registradoPor": "jerardith",
+      "confirmado": true
     }
   ],
   "registros": [],
