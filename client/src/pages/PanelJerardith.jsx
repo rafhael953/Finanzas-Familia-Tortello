@@ -43,7 +43,7 @@ export default function PanelJerardith() {
         </div>
       </header>
       <div className="flex justify-end">
-        <Link to="/" className="text-xs text-[var(--color-muted)] underline">
+        <Link to="/" className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
           cambiar perfil
         </Link>
       </div>
@@ -118,7 +118,7 @@ export default function PanelJerardith() {
       ) : (
         <button
           onClick={() => setMostrarForm(true)}
-          className="bg-[var(--color-acento)] text-white rounded-md py-4 text-center font-semibold text-[15px] mb-5"
+          className="bg-[var(--color-acento)] text-white rounded-md py-4 text-center font-semibold text-[15px] mb-5 shadow-sm hover:shadow-md active:scale-[0.98] transition-all"
         >
           Registrar gasto
         </button>

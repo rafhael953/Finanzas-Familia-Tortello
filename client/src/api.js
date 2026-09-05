@@ -102,6 +102,32 @@ export function idQuincena(anio, mes, q) {
   return `${anio}-${String(mes).padStart(2, "0")}-Q${q}`;
 }
 
+// Un color distintivo y mutado por categoria (no colores de semaforo — esos
+// se reservan para positivo/negativo). Ayuda a reconocer cada rubro de un
+// vistazo, como en apps como Copilot Money, pero en tonos tierra acordes
+// a la paleta del libro.
+export const CATEGORIA_COLOR = {
+  arriendo: "#8B5E3C",
+  servicios: "#5B7B8C",
+  mercado: "#7D8B5A",
+  cuidado: "#B77B8B",
+  salud: "#4E8380",
+  combustible: "#C6A15B",
+  ocio: "#7A5C7E",
+  efectivo: "#8A7F6E",
+  decameron: "#C17A56",
+  falabella: "#A8453C",
+  rappi: "#C9A227",
+  auteco: "#4F6D7A",
+  numama: "#6B8E6B",
+  xtb: "#5C8A99",
+  medicaBucaramanga: "#9C6B4E",
+  jerardith: "#B5638C",
+  salario: "#3F6B33",
+  prima: "#5B8A4A",
+  extra: "#7BA36A",
+};
+
 export const ETIQUETAS_TIPO = {
   ingreso: "Ingreso",
   gasto: "Gasto",

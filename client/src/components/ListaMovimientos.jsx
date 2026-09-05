@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { api, formatoCOP, ETIQUETAS_CATEGORIA, ETIQUETAS_TIPO } from "../api";
+import { api, formatoCOP, ETIQUETAS_CATEGORIA, ETIQUETAS_TIPO, CATEGORIA_COLOR } from "../api";
 
 export default function ListaMovimientos({ movimientos, onCambio }) {
   const [editando, setEditando] = useState(null);
@@ -70,6 +70,10 @@ export default function ListaMovimientos({ movimientos, onCambio }) {
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
+                  <span
+                    className="inline-block w-2 h-2 rounded-full flex-shrink-0"
+                    style={{ background: CATEGORIA_COLOR[m.categoria] || "#8A7F6E" }}
+                  />
                   <span className="text-[13px] font-medium truncate">
                     {ETIQUETAS_CATEGORIA[m.categoria] || m.categoria}
                   </span>

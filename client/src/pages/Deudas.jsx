@@ -38,7 +38,7 @@ export default function Deudas() {
         </div>
       </header>
       <div className="flex justify-end">
-        <Link to="/rafael" className="text-xs text-[var(--color-muted)] underline">
+        <Link to="/rafael" className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
           volver
         </Link>
       </div>
@@ -57,7 +57,7 @@ export default function Deudas() {
 
           <button
             onClick={cargarPlan}
-            className="border border-[var(--color-ledger-border)] rounded-md py-3 text-center font-semibold text-sm mb-5"
+            className="border border-[var(--color-ledger-border)] rounded-md py-3 text-center font-semibold text-sm mb-5 bg-[var(--color-ledger)] hover:bg-white hover:border-[var(--color-muted)] hover:shadow-sm transition-all"
           >
             {mostrarPlan ? "Ocultar plan de pagos" : "Ver plan de pagos"}
           </button>

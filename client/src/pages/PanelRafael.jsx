@@ -88,10 +88,10 @@ export default function PanelRafael() {
         </div>
       </header>
       <div className="flex justify-between">
-        <Link to="/dashboard" className="text-xs text-[var(--color-muted)] underline">
+        <Link to="/dashboard" className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
           ver todo en un lugar
         </Link>
-        <Link to="/" className="text-xs text-[var(--color-muted)] underline">
+        <Link to="/" className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
           cambiar perfil
         </Link>
       </div>
@@ -220,7 +220,7 @@ export default function PanelRafael() {
       ) : (
         <button
           onClick={() => setMostrarForm(true)}
-          className="bg-[var(--color-acento)] text-white rounded-md py-4 text-center font-semibold text-[15px] mb-5"
+          className="bg-[var(--color-acento)] text-white rounded-md py-4 text-center font-semibold text-[15px] mb-5 shadow-sm hover:shadow-md active:scale-[0.98] transition-all"
         >
           + Agregar movimiento
         </button>
@@ -316,7 +316,7 @@ export default function PanelRafael() {
 
       <Link
         to="/rafael/deudas"
-        className="border border-[var(--color-ledger-border)] rounded-md py-4 text-center font-semibold text-[15px] mb-5"
+        className="border border-[var(--color-ledger-border)] rounded-md py-4 text-center font-semibold text-[15px] mb-5 bg-[var(--color-ledger)] hover:bg-white hover:border-[var(--color-muted)] hover:shadow-sm transition-all"
       >
         Ver deudas y plan de pagos
       </Link>

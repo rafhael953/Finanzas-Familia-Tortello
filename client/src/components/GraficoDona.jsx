@@ -17,7 +17,7 @@ export default function GraficoDona({ segmentos }) {
       const inicio = (acumulado / total) * 360;
       acumulado += s.valor;
       const fin = (acumulado / total) * 360;
-      return `${COLORES[i % COLORES.length]} ${inicio}deg ${fin}deg`;
+      return `${s.color || COLORES[i % COLORES.length]} ${inicio}deg ${fin}deg`;
     })
     .join(", ");
 
@@ -38,7 +38,7 @@ export default function GraficoDona({ segmentos }) {
           <div key={s.nombre} className="flex items-center gap-2 text-[12px]">
             <span
               className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-              style={{ background: COLORES[i % COLORES.length] }}
+              style={{ background: s.color || COLORES[i % COLORES.length] }}
             />
             <span className="text-[#5c5347]">{s.nombre}</span>
             <span className="font-serif-num font-semibold ml-auto">

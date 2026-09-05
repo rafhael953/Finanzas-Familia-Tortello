@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, formatoCOP, formatoQuincena, ETIQUETAS_CATEGORIA } from "../api";
+import { api, formatoCOP, formatoQuincena, ETIQUETAS_CATEGORIA, CATEGORIA_COLOR } from "../api";
 import GraficoLinea from "../components/GraficoLinea";
 import GraficoDona from "../components/GraficoDona";
 import BarraDeuda from "../components/BarraDeuda";
@@ -42,10 +42,10 @@ export default function Dashboard() {
         </div>
       </header>
       <div className="flex justify-between">
-        <Link to="/rafael" className="text-xs text-[var(--color-muted)] underline">
+        <Link to="/rafael" className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
           ← panel de Rafael
         </Link>
-        <Link to="/" className="text-xs text-[var(--color-muted)] underline">
+        <Link to="/" className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
           cambiar perfil
         </Link>
       </div>
@@ -112,7 +112,13 @@ export default function Dashboard() {
             {Math.round(((deudaInicialTotal - deudaTotal) / deudaInicialTotal) * 100)}% pagado en total
           </span>
         </div>
-        <GraficoDona segmentos={deudas.map((d) => ({ nombre: ETIQUETAS_CATEGORIA[d.nombre] || d.nombre, valor: d.saldo }))} />
+        <GraficoDona
+          segmentos={deudas.map((d) => ({
+            nombre: ETIQUETAS_CATEGORIA[d.nombre] || d.nombre,
+            valor: d.saldo,
+            color: CATEGORIA_COLOR[d.nombre],
+          }))}
+        />
         <div className="mt-4">
           {deudas.map((d) => (
             <BarraDeuda key={d.nombre} nombre={d.nombre} saldo={d.saldo} saldoInicial={d.saldoInicial} />
@@ -122,7 +128,7 @@ export default function Dashboard() {
 
       <Link
         to="/rafael/deudas"
-        className="border border-[var(--color-ledger-border)] rounded-md py-4 text-center font-semibold text-[15px]"
+        className="border border-[var(--color-ledger-border)] rounded-md py-4 text-center font-semibold text-[15px] bg-[var(--color-ledger)] hover:bg-white hover:border-[var(--color-muted)] hover:shadow-sm transition-all"
       >
         Ver plan de pagos proyectado
       </Link>
