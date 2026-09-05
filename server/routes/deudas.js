@@ -19,6 +19,26 @@ router.get("/compras", async (req, res) => {
   res.json(db.comprasTarjeta || []);
 });
 
+function mesActualPrefijo() {
+  const ahora = new Date();
+  return `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, "0")}`;
+}
+
+// Deja constancia de que la cuota de una deuda cambio, para que las alertas
+// de mora puedan saber cual era el valor vigente en un mes pasado en vez de
+// juzgarlo con el valor de hoy (ej. si subes la cuota este mes, no se le
+// puede exigir esa cuota mas alta al mes pasado).
+function registrarCambioCuota(db, categoria, valorAnterior, valorNuevo) {
+  db.historialCuotas = db.historialCuotas || {};
+  const historial = (db.historialCuotas[categoria] = db.historialCuotas[categoria] || []);
+  if (historial.length === 0) {
+    // Primer cambio que se registra para esta deuda: deja constancia de
+    // cual era el valor "de siempre" antes de este cambio.
+    historial.push({ desde: "0000-00", valor: valorAnterior });
+  }
+  historial.push({ desde: mesActualPrefijo(), valor: valorNuevo });
+}
+
 // Ajustar directamente la cuota mensual recomendada de una deuda -- es una
 // linea base, no un valor fijo para siempre: se puede subir o bajar cuando
 // haga falta, sin que tenga que ser por una compra nueva.
@@ -36,6 +56,7 @@ router.put("/cuota", async (req, res) => {
         e.status = 400;
         throw e;
       }
+      registrarCambioCuota(db, categoria, db.cuotasRecomendadas[categoria], valorNum);
       db.cuotasRecomendadas[categoria] = valorNum;
     });
     res.json({ ok: true, categoria, valor: valorNum });
@@ -65,6 +86,7 @@ router.post("/compra", async (req, res) => {
 
   const compra = await withDB(async (db) => {
     db.deudasIniciales[tarjeta] += montoNum;
+    registrarCambioCuota(db, tarjeta, db.cuotasRecomendadas[tarjeta], db.cuotasRecomendadas[tarjeta] + cuotaMensual);
     db.cuotasRecomendadas[tarjeta] += cuotaMensual;
 
     db.comprasTarjeta = db.comprasTarjeta || [];

@@ -196,6 +196,20 @@ function pagadoDeudaEnMes(db, categoria, anio, mes) {
     .reduce((a, m) => a + Number(m.monto || 0), 0);
 }
 
+// Cual era la cuota recomendada de una deuda durante un mes en particular.
+// Si la cuota cambio despues (una compra nueva, un ajuste manual), un mes
+// pasado no se le puede juzgar con el valor de hoy -- se usa el que
+// realmente aplicaba entonces (ver historialCuotas en routes/deudas.js).
+function cuotaVigenteEnMes(db, categoria, prefijoMes) {
+  const historial = (db.historialCuotas || {})[categoria];
+  if (!historial || historial.length === 0) return db.cuotasRecomendadas[categoria];
+  let valor = db.cuotasRecomendadas[categoria];
+  for (const entrada of historial) {
+    if (entrada.desde <= prefijoMes) valor = entrada.valor;
+  }
+  return valor;
+}
+
 // Alertas de cuotas atrasadas: una deuda se paga UNA vez al mes (no dos).
 // Si el mes anterior se cerro sin completar la cuota, se avisa aqui con
 // fecha limite el 15 del mes en curso, para no pagarla dos veces ni
@@ -219,7 +233,8 @@ export function calcularAlertasDeudas(db, fechaRef = new Date()) {
     const fechaCreacion = (db.deudasFechaCreacion || {})[categoria];
     if (fechaCreacion && fechaCreacion >= prefijoActual) continue;
 
-    const cuota = db.cuotasRecomendadas[categoria];
+    const prefijoMesAnt = `${anioAnt}-${String(mesAnt).padStart(2, "0")}`;
+    const cuota = cuotaVigenteEnMes(db, categoria, prefijoMesAnt);
     const pagadoMesAnterior = pagadoDeudaEnMes(db, categoria, anioAnt, mesAnt);
     if (pagadoMesAnterior < cuota) {
       const faltante = cuota - pagadoMesAnterior;

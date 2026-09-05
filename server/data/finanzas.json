@@ -265,20 +265,5 @@
   "deudasFechaCreacion": {
     "decameron": "2026-09"
   },
-  "historialCuotas": {
-    "falabella": [
-      {
-        "desde": "0000-00",
-        "valor": 700000
-      },
-      {
-        "desde": "2026-09",
-        "valor": 900000
-      },
-      {
-        "desde": "2026-09",
-        "valor": 700000
-      }
-    ]
-  }
+  "historialCuotas": {}
 }
