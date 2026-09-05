@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-fondo: #f7f3ec;
+  --color-texto: #2b2620;
+  --color-acento: #2b2620;
+  --color-positivo: #375623;
+  --color-negativo: #c00000;
+  --color-ledger: #fffdf8;
+  --color-ledger-border: #e7dcc8;
+  --color-ledger-rule: #ede4d3;
+  --color-muted: #8a7f6e;
+  --font-serif: "Newsreader", serif;
+}
+
+body {
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+}
+
+.font-serif-num {
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+}
+
+.kicker {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+.section-title-editorial {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 16px;
+  color: #5c5347;
+}
+
+.ledger-card {
+  background: var(--color-ledger);
+  border: 1px solid var(--color-ledger-border);
+  border-radius: 8px;
+}
+
+.dashed-row {
+  border-bottom: 1px dashed var(--color-ledger-rule);
+}

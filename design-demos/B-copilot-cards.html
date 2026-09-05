@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Direccion B — Copilot Cards</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#F4F3F0; color:#1A1A1A;
+    font-family:'Inter',sans-serif;
+    width:390px; min-height:1000px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap { padding:24px 18px 40px; }
+  .row { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
+  h1 { font-size:20px; font-weight:800; letter-spacing:-.01em; }
+  .switch { font-size:12px; color:#9A9A9A; }
+
+  .hero { background:#fff; border-radius:24px; padding:22px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.04), 0 8px 24px -12px rgba(0,0,0,.08); }
+  .hero-label { font-size:12px; color:#9A9A9A; font-weight:600; }
+  .hero-value { font-size:38px; font-weight:800; letter-spacing:-.02em; margin:4px 0 14px; color:#D6432E; }
+  .hero-sub { display:flex; gap:16px; }
+  .chip { display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:#5A5A5A; }
+  .dot { width:8px; height:8px; border-radius:99px; }
+
+  .quincena-card { background:#fff; border-radius:24px; padding:20px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.04), 0 8px 24px -12px rgba(0,0,0,.08); }
+  .qtop { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .qtop .id { font-weight:800; font-size:17px; }
+  .badge { background:#EAF6EC; color:#2E8B4F; font-size:11px; font-weight:700; padding:5px 10px; border-radius:99px; }
+  .badge.warn { background:#FDEDEA; color:#D6432E; }
+
+  .cat-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+  .cat { border-radius:16px; padding:14px; }
+  .cat-name { font-size:12px; font-weight:700; opacity:.85; margin-bottom:8px; }
+  .cat-amt { font-size:17px; font-weight:800; }
+  .cat-bar { height:5px; border-radius:99px; background:rgba(0,0,0,.08); margin-top:10px; overflow:hidden; }
+  .cat-bar i { display:block; height:100%; border-radius:99px; }
+
+  .c-mercado { background:#FDEDEA; } .c-mercado .cat-bar i { background:#D6432E; }
+  .c-cuidado { background:#EAF3FD; } .c-cuidado .cat-bar i { background:#2D6CDF; }
+  .c-arriendo { background:#F3EAFB; } .c-arriendo .cat-bar i { background:#8A4FDF; }
+  .c-ocio { background:#FFF6E0; } .c-ocio .cat-bar i { background:#E0A200; }
+
+  .section-title { font-size:13px; font-weight:800; margin:22px 0 10px; }
+  .debt-list { background:#fff; border-radius:24px; padding:8px 18px; box-shadow:0 1px 3px rgba(0,0,0,.04), 0 8px 24px -12px rgba(0,0,0,.08); }
+  .debt-item { display:flex; align-items:center; gap:12px; padding:14px 0; border-bottom:1px solid #F0F0EE; }
+  .debt-item:last-child { border-bottom:none; }
+  .avatar { width:36px; height:36px; border-radius:99px; display:flex; align-items:center; justify-content:center; font-weight:800; color:#fff; font-size:13px; flex-shrink:0; }
+  .debt-info { flex:1; }
+  .debt-info .name { font-weight:700; font-size:13.5px; }
+  .debt-info .track { height:4px; background:#F0F0EE; border-radius:99px; margin-top:6px; overflow:hidden; }
+  .debt-info .track i { display:block; height:100%; background:#2E8B4F; border-radius:99px; }
+  .debt-val { text-align:right; font-weight:800; font-size:13.5px; }
+
+  .cta { margin-top:20px; background:#1A1A1A; color:#fff; border-radius:18px; padding:17px; text-align:center; font-weight:700; font-size:14.5px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="row">
+    <h1>Panel Rafael</h1>
+    <div class="switch">cambiar perfil</div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-label">Deuda total</div>
+    <div class="hero-value">$16.900.000</div>
+    <div class="hero-sub">
+      <div class="chip"><span class="dot" style="background:#2E8B4F"></span>NU $1.823.389</div>
+      <div class="chip"><span class="dot" style="background:#D6432E"></span>Balance −$856.500</div>
+    </div>
+  </div>
+
+  <div class="quincena-card">
+    <div class="qtop">
+      <div class="id">2026-09-Q1</div>
+      <div class="badge warn">Abierta</div>
+    </div>
+    <div class="cat-grid">
+      <div class="cat c-mercado"><div class="cat-name">Mercado</div><div class="cat-amt">$520K</div><div class="cat-bar"><i style="width:100%"></i></div></div>
+      <div class="cat c-cuidado"><div class="cat-name">Cuidado</div><div class="cat-amt">$500K</div><div class="cat-bar"><i style="width:100%"></i></div></div>
+      <div class="cat c-arriendo"><div class="cat-name">Arriendo</div><div class="cat-amt">$500K</div><div class="cat-bar"><i style="width:100%"></i></div></div>
+      <div class="cat c-ocio"><div class="cat-name">Ocio</div><div class="cat-amt">$250K</div><div class="cat-bar"><i style="width:100%"></i></div></div>
+    </div>
+  </div>
+
+  <div class="section-title">Deudas</div>
+  <div class="debt-list">
+    <div class="debt-item">
+      <div class="avatar" style="background:#D6432E">F</div>
+      <div class="debt-info"><div class="name">Falabella</div><div class="track"><i style="width:21%"></i></div></div>
+      <div class="debt-val">$2.6M</div>
+    </div>
+    <div class="debt-item">
+      <div class="avatar" style="background:#E0A200">R</div>
+      <div class="debt-info"><div class="name">Rappi</div><div class="track"><i style="width:21%"></i></div></div>
+      <div class="debt-val">$4.1M</div>
+    </div>
+    <div class="debt-item">
+      <div class="avatar" style="background:#2D6CDF">A</div>
+      <div class="debt-info"><div class="name">Auteco</div><div class="track"><i style="width:12%"></i></div></div>
+      <div class="debt-val">$4.4M</div>
+    </div>
+    <div class="debt-item">
+      <div class="avatar" style="background:#8A4FDF">N</div>
+      <div class="debt-info"><div class="name">NU mamá</div><div class="track"><i style="width:18%"></i></div></div>
+      <div class="debt-val">$2.8M</div>
+    </div>
+  </div>
+
+  <div class="cta">+ Agregar movimiento</div>
+</div>
+</body>
+</html>

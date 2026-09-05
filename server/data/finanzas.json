@@ -1,0 +1,256 @@
+{
+  "config": {
+    "ingresoQ1": 4714000,
+    "ingresoQ2": 4441500,
+    "prima": 3575000,
+    "tasaTC": 0.2966,
+    "tasaAuteco": 0.17,
+    "rendNU": 0.093,
+    "trm": 3100,
+    "bolsilloJerardith": 200000
+  },
+  "saldosIniciales": {
+    "nu": 1823389,
+    "bancolombia": 5000000,
+    "xtbUSD": 94.36,
+    "binanceUSD": 95
+  },
+  "deudasIniciales": {
+    "falabella": 3300000,
+    "rappi": 5200000,
+    "auteco": 5000000,
+    "numama": 3400000
+  },
+  "cuotasRecomendadas": {
+    "falabella": 700000,
+    "rappi": 1100000,
+    "auteco": 600000,
+    "numama": 600000
+  },
+  "gastosFijos": {
+    "q1": {
+      "arriendo": 500000,
+      "servicios": 200000,
+      "mercado": 500000,
+      "cuidado": 500000,
+      "salud": 200000,
+      "combustible": 0,
+      "ocio": 250500,
+      "efectivo": 200000,
+      "decameron": 220000
+    },
+    "q2": {
+      "arriendo": 0,
+      "servicios": 100000,
+      "mercado": 500000,
+      "cuidado": 500000,
+      "salud": 0,
+      "combustible": 100000,
+      "ocio": 464000,
+      "efectivo": 200000,
+      "decameron": 0
+    }
+  },
+  "reservasMes": {
+    "q1": {
+      "xtb": 0,
+      "medicaBucaramanga": 0
+    },
+    "q2": {
+      "xtb": 400000,
+      "medicaBucaramanga": 300000
+    }
+  },
+  "decameronMesesRestantes": 9,
+  "movimientos": [
+    {
+      "id": "mov-1788561323306-840",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "ingreso",
+      "categoria": "salario",
+      "monto": 4441500,
+      "descripcion": "",
+      "fecha": "2026-09-04",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788561347160-822",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "gasto",
+      "categoria": "mercado",
+      "monto": 500000,
+      "descripcion": "",
+      "fecha": "2026-09-04",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788561347669-998",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "gasto",
+      "categoria": "cuidado",
+      "monto": 500000,
+      "descripcion": "",
+      "fecha": "2026-09-04",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788561352791-576",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "gasto",
+      "categoria": "efectivo",
+      "monto": 200000,
+      "descripcion": "",
+      "fecha": "2026-09-04",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788561819432-509",
+      "quincenaId": "2026-09-Q1",
+      "tipo": "ingreso",
+      "categoria": "salario",
+      "monto": 4714000,
+      "descripcion": "Salario quincena",
+      "fecha": "2026-09-04",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788561819478-884",
+      "quincenaId": "2026-09-Q1",
+      "tipo": "gasto",
+      "categoria": "arriendo",
+      "monto": 500000,
+      "descripcion": "Arriendo",
+      "fecha": "2026-09-04",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788561819519-298",
+      "quincenaId": "2026-09-Q1",
+      "tipo": "gasto",
+      "categoria": "servicios",
+      "monto": 200000,
+      "descripcion": "Servicios",
+      "fecha": "2026-09-04",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788561819557-881",
+      "quincenaId": "2026-09-Q1",
+      "tipo": "gasto",
+      "categoria": "mercado",
+      "monto": 500000,
+      "descripcion": "Mercado",
+      "fecha": "2026-09-04",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788561819603-860",
+      "quincenaId": "2026-09-Q1",
+      "tipo": "gasto",
+      "categoria": "cuidado",
+      "monto": 500000,
+      "descripcion": "Cuidado",
+      "fecha": "2026-09-04",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788561819651-232",
+      "quincenaId": "2026-09-Q1",
+      "tipo": "gasto",
+      "categoria": "salud",
+      "monto": 200000,
+      "descripcion": "Salud",
+      "fecha": "2026-09-04",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788561819708-399",
+      "quincenaId": "2026-09-Q1",
+      "tipo": "gasto",
+      "categoria": "ocio",
+      "monto": 250500,
+      "descripcion": "Ocio",
+      "fecha": "2026-09-04",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788561819748-728",
+      "quincenaId": "2026-09-Q1",
+      "tipo": "gasto",
+      "categoria": "efectivo",
+      "monto": 200000,
+      "descripcion": "Efectivo",
+      "fecha": "2026-09-04",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788561819789-332",
+      "quincenaId": "2026-09-Q1",
+      "tipo": "gasto",
+      "categoria": "decameron",
+      "monto": 220000,
+      "descripcion": "Decamer�n",
+      "fecha": "2026-09-04",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788561819829-182",
+      "quincenaId": "2026-09-Q1",
+      "tipo": "deuda",
+      "categoria": "falabella",
+      "monto": 700000,
+      "descripcion": "Cuota Falabella",
+      "fecha": "2026-09-04",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788561819870-365",
+      "quincenaId": "2026-09-Q1",
+      "tipo": "deuda",
+      "categoria": "rappi",
+      "monto": 1100000,
+      "descripcion": "Cuota Rappi",
+      "fecha": "2026-09-04",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788561819911-497",
+      "quincenaId": "2026-09-Q1",
+      "tipo": "deuda",
+      "categoria": "auteco",
+      "monto": 600000,
+      "descripcion": "Cuota Auteco",
+      "fecha": "2026-09-04",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788561819950-952",
+      "quincenaId": "2026-09-Q1",
+      "tipo": "deuda",
+      "categoria": "numama",
+      "monto": 600000,
+      "descripcion": "Cuota NU mam�",
+      "fecha": "2026-09-04",
+      "registradoPor": "rafael",
+      "confirmado": true
+    }
+  ],
+  "registros": [],
+  "gastosJerardith": []
+}

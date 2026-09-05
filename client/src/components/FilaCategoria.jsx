@@ -1,0 +1,105 @@
+import { useState } from "react";
+import { api, formatoCOP, ETIQUETAS_CATEGORIA } from "../api";
+
+export default function FilaCategoria({ categoria, tipo, confirmado, pendiente, presupuesto, pagadoEnOtraQuincena, quincenaId, onCambio }) {
+  const total = confirmado + pendiente;
+  const [monto, setMonto] = useState(presupuesto > 0 ? String(presupuesto) : "");
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState("");
+
+  // Deuda ya pagada en la otra quincena del mismo mes: no se paga dos veces.
+  if (total === 0 && pagadoEnOtraQuincena > 0) {
+    return (
+      <div className="dashed-row py-2.5 flex items-center justify-between gap-2">
+        <span className="text-[13.5px] text-[#5c5347]">{ETIQUETAS_CATEGORIA[categoria] || categoria}</span>
+        <span className="text-[11px] font-semibold text-[var(--color-positivo)]">
+          ✓ Ya pagada este mes ({formatoCOP(pagadoEnOtraQuincena)})
+        </span>
+      </div>
+    );
+  }
+
+  // Nada registrado aun para esta categoria: fila de confirmacion rapida.
+  if (total === 0 && quincenaId) {
+    async function confirmarRapido() {
+      if (!monto || Number(monto) <= 0) {
+        setError("Monto inválido");
+        return;
+      }
+      setGuardando(true);
+      setError("");
+      try {
+        await api.agregarMovimiento({
+          tipo,
+          categoria,
+          monto: Number(monto),
+          quincenaId,
+          confirmado: true,
+          descripcion: "",
+        });
+        await onCambio();
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setGuardando(false);
+      }
+    }
+
+    return (
+      <div className="dashed-row py-2.5 flex items-center justify-between gap-2">
+        <span className="text-[13.5px] text-[#5c5347] flex-1 min-w-0">
+          {ETIQUETAS_CATEGORIA[categoria] || categoria}
+        </span>
+        <input
+          type="number"
+          inputMode="numeric"
+          value={monto}
+          onChange={(e) => setMonto(e.target.value)}
+          placeholder="0"
+          className="font-serif-num w-28 text-right border border-[var(--color-ledger-border)] rounded-md px-2 py-1.5 text-[13px] bg-[var(--color-fondo)]/40 flex-shrink-0"
+        />
+        <button
+          onClick={confirmarRapido}
+          disabled={guardando || !monto}
+          className="text-[11px] font-semibold bg-[var(--color-positivo)] text-white rounded-full px-3 py-2 disabled:opacity-40 flex-shrink-0"
+        >
+          {guardando ? "..." : "✓ Confirmar"}
+        </button>
+        {error && <p className="text-[var(--color-negativo)] text-xs w-full">{error}</p>}
+      </div>
+    );
+  }
+
+  const base = presupuesto > 0 ? presupuesto : total || 1;
+  const pctConfirmado = Math.min(100, Math.round((confirmado / base) * 100));
+  const pctPendiente = Math.min(100 - pctConfirmado, Math.round((pendiente / base) * 100));
+  const excedido = presupuesto > 0 && total > presupuesto;
+
+  return (
+    <div className="py-2">
+      <div className="flex justify-between items-baseline dashed-row pb-2">
+        <span className="text-[13.5px] text-[#5c5347]">{ETIQUETAS_CATEGORIA[categoria] || categoria}</span>
+        <span
+          className={`font-serif-num font-semibold text-[15px] ${
+            excedido ? "text-[var(--color-negativo)]" : "text-[var(--color-texto)]"
+          }`}
+        >
+          {formatoCOP(total)}
+          {presupuesto > 0 && <span className="text-xs text-[var(--color-muted)] font-sans"> / {formatoCOP(presupuesto)}</span>}
+        </span>
+      </div>
+      <div className="h-[3px] bg-[var(--color-ledger-rule)] mt-2 relative flex">
+        <div
+          className="h-full"
+          style={{ width: `${pctConfirmado}%`, background: excedido ? "var(--color-negativo)" : "var(--color-positivo)" }}
+        />
+        {pendiente > 0 && (
+          <div className="h-full" style={{ width: `${pctPendiente}%`, background: "#B58A00" }} />
+        )}
+      </div>
+      {pendiente > 0 && (
+        <span className="text-xs text-[#B58A00] mt-1 block">+ {formatoCOP(pendiente)} pendiente de confirmar</span>
+      )}
+    </div>
+  );
+}

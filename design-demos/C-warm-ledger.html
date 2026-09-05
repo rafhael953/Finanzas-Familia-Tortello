@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Direccion C — Warm Ledger</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#F7F3EC; color:#2B2620;
+    font-family:'Inter',sans-serif;
+    width:390px; min-height:1000px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap { padding:26px 20px 40px; }
+  .row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
+  .kicker { font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#8A7F6E; font-weight:600; }
+  h1 { font-family:'Newsreader'; font-weight:600; font-size:26px; letter-spacing:-.01em; }
+  .switch { font-size:12px; color:#8A7F6E; text-decoration:underline; }
+  .rule { height:1px; background:#DCD3C4; margin:18px 0 22px; }
+
+  .hero-value { font-family:'Newsreader'; font-weight:700; font-size:52px; letter-spacing:-.02em; color:#C0392B; line-height:1; }
+  .hero-label { font-size:12px; color:#8A7F6E; margin-top:6px; }
+  .hero-row { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:26px; }
+  .hero-mini { text-align:right; }
+  .hero-mini .v { font-family:'Newsreader'; font-weight:700; font-size:22px; color:#375623; }
+  .hero-mini .l { font-size:11px; color:#8A7F6E; }
+
+  .ledger-card { background:#FFFDF8; border:1px solid #E7DCC8; border-radius:8px; padding:22px; margin-bottom:20px; }
+  .ledger-top { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #EDE4D3; padding-bottom:14px; margin-bottom:14px; }
+  .ledger-top .q { font-family:'Newsreader'; font-style:italic; font-size:19px; }
+  .status { font-size:11px; font-weight:600; color:#B58A00; }
+
+  .line-item { display:flex; justify-content:space-between; align-items:baseline; padding:9px 0; border-bottom:1px dashed #EDE4D3; font-size:13.5px; }
+  .line-item:last-of-type { border-bottom:none; }
+  .line-item .label { color:#5C5347; }
+  .line-item .amt { font-family:'Newsreader'; font-weight:600; font-variant-numeric:tabular-nums; }
+  .line-item .amt.over { color:#C0392B; }
+
+  .balance-total { display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:14px; border-top:2px solid #2B2620; }
+  .balance-total .l { font-size:12px; text-transform:uppercase; letter-spacing:.06em; font-weight:700; }
+  .balance-total .v { font-family:'Newsreader'; font-weight:700; font-size:22px; color:#C0392B; }
+
+  .section-title { font-family:'Newsreader'; font-style:italic; font-size:16px; margin:24px 0 12px; color:#5C5347; }
+
+  .debt-row { padding:14px 0; border-bottom:1px solid #E7DCC8; }
+  .debt-row:last-child { border-bottom:none; }
+  .debt-head { display:flex; justify-content:space-between; margin-bottom:8px; }
+  .debt-head .name { font-weight:600; font-size:13.5px; }
+  .debt-head .val { font-family:'Newsreader'; font-weight:600; font-size:14.5px; }
+  .debt-track { height:3px; background:#EDE4D3; position:relative; }
+  .debt-fill { position:absolute; left:0; top:0; height:100%; background:#375623; }
+
+  .cta { margin-top:26px; background:#2B2620; color:#F7F3EC; border-radius:4px; padding:17px; text-align:center; font-weight:600; font-size:14px; letter-spacing:.01em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="row">
+    <div>
+      <div class="kicker">Tortello · Libro de finanzas</div>
+      <h1>Panel Rafael</h1>
+    </div>
+  </div>
+  <div class="row"><div></div><div class="switch">cambiar perfil</div></div>
+  <div class="rule"></div>
+
+  <div class="hero-row">
+    <div>
+      <div class="hero-value">$16,9M</div>
+      <div class="hero-label">Deuda total restante</div>
+    </div>
+    <div class="hero-mini">
+      <div class="v">$1,82M</div>
+      <div class="l">Saldo NU</div>
+    </div>
+  </div>
+
+  <div class="ledger-card">
+    <div class="ledger-top">
+      <div class="q">Quincena 2026-09-Q1</div>
+      <div class="status">● Abierta</div>
+    </div>
+    <div class="line-item"><span class="label">Ingresos</span><span class="amt">$4.714.000</span></div>
+    <div class="line-item"><span class="label">Mercado</span><span class="amt over">$520.000</span></div>
+    <div class="line-item"><span class="label">Cuidado</span><span class="amt">$500.000</span></div>
+    <div class="line-item"><span class="label">Arriendo</span><span class="amt">$500.000</span></div>
+    <div class="line-item"><span class="label">Deudas pagadas</span><span class="amt">$3.000.000</span></div>
+    <div class="balance-total">
+      <span class="l">Balance</span>
+      <span class="v">−$856.500</span>
+    </div>
+  </div>
+
+  <div class="section-title">Estado de las deudas</div>
+  <div class="debt-row">
+    <div class="debt-head"><span class="name">Falabella</span><span class="val">$2.600.000</span></div>
+    <div class="debt-track"><div class="debt-fill" style="width:21%"></div></div>
+  </div>
+  <div class="debt-row">
+    <div class="debt-head"><span class="name">Rappi</span><span class="val">$4.100.000</span></div>
+    <div class="debt-track"><div class="debt-fill" style="width:21%"></div></div>
+  </div>
+  <div class="debt-row">
+    <div class="debt-head"><span class="name">Auteco (moto)</span><span class="val">$4.400.000</span></div>
+    <div class="debt-track"><div class="debt-fill" style="width:12%"></div></div>
+  </div>
+  <div class="debt-row">
+    <div class="debt-head"><span class="name">NU mamá</span><span class="val">$2.800.000</span></div>
+    <div class="debt-track"><div class="debt-fill" style="width:18%"></div></div>
+  </div>
+
+  <div class="cta">+ Agregar movimiento</div>
+</div>
+</body>
+</html>

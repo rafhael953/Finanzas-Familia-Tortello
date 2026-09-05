@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Direccion A — Cinematic Pulse</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#000; color:#F5F5F5;
+    font-family:'Inter',sans-serif;
+    width:390px; min-height:900px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap { padding:28px 20px 40px; }
+  .eyebrow { font-family:'JetBrains Mono'; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#7C7CFF; margin-bottom:4px; }
+  h1 { font-size:22px; font-weight:800; letter-spacing:-.01em; }
+  .switch { font-size:12px; color:#666; text-decoration:underline; }
+  .row { display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; }
+
+  .hero-number { margin: 18px 0 30px; }
+  .hero-label { font-family:'JetBrains Mono'; font-size:11px; color:#8A8A93; letter-spacing:.08em; text-transform:uppercase; }
+  .hero-value { font-size:56px; font-weight:900; letter-spacing:-.03em; line-height:1; margin-top:6px;
+    background:linear-gradient(90deg,#FF6161,#FF9D6B);
+    -webkit-background-clip:text; background-clip:text; color:transparent; }
+
+  .pulse-card { background:#0A0A0D; border:1px solid #1C1C22; border-radius:20px; padding:22px; margin-bottom:16px; }
+  .pulse-top { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px; }
+  .pulse-top .q { font-weight:800; font-size:18px; }
+  .pulse-top .state { font-family:'JetBrains Mono'; font-size:11px; color:#7C7CFF; }
+
+  .waveform { display:flex; align-items:flex-end; gap:3px; height:64px; margin:18px 0; }
+  .bar { flex:1; border-radius:3px 3px 0 0; background:linear-gradient(180deg,#7C7CFF,#5B5BD6); opacity:.85; }
+
+  .balance-line { display:flex; justify-content:space-between; padding-top:14px; border-top:1px solid #1C1C22; font-family:'JetBrains Mono'; font-size:13px; }
+  .balance-line .neg { color:#FF6161; font-weight:700; }
+
+  .section-title { font-family:'JetBrains Mono'; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#8A8A93; margin:26px 0 12px; }
+
+  .debt-row { display:flex; align-items:center; gap:12px; padding:14px 0; border-bottom:1px solid #17171B; }
+  .debt-name { flex:0 0 90px; font-size:13px; font-weight:600; }
+  .debt-track { flex:1; height:6px; background:#1C1C22; border-radius:99px; overflow:hidden; }
+  .debt-fill { height:100%; background:linear-gradient(90deg,#00E5FF,#7C7CFF); border-radius:99px; }
+  .debt-pct { font-family:'JetBrains Mono'; font-size:11px; color:#8A8A93; width:34px; text-align:right; }
+
+  .cta { margin-top:26px; background:linear-gradient(90deg,#5B5BD6,#7C7CFF); border-radius:16px; padding:18px; text-align:center; font-weight:800; font-size:15px; letter-spacing:-.01em; box-shadow:0 8px 30px -8px rgba(124,124,255,.5); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="row">
+    <div>
+      <div class="eyebrow">Tortello · Finanzas</div>
+      <h1>Panel Rafael</h1>
+    </div>
+    <div class="switch">cambiar perfil</div>
+  </div>
+
+  <div class="hero-label">Deuda total restante</div>
+  <div class="hero-value">$16.9M</div>
+
+  <div class="pulse-card">
+    <div class="pulse-top">
+      <div class="q">2026-09-Q1</div>
+      <div class="state">● EN VIVO</div>
+    </div>
+    <div class="waveform">
+      <div class="bar" style="height:30%"></div><div class="bar" style="height:55%"></div>
+      <div class="bar" style="height:40%"></div><div class="bar" style="height:80%"></div>
+      <div class="bar" style="height:65%"></div><div class="bar" style="height:90%"></div>
+      <div class="bar" style="height:45%"></div><div class="bar" style="height:70%"></div>
+      <div class="bar" style="height:35%;background:linear-gradient(180deg,#FF6161,#FF9D6B)"></div>
+      <div class="bar" style="height:58%"></div><div class="bar" style="height:75%"></div>
+      <div class="bar" style="height:50%"></div><div class="bar" style="height:85%"></div>
+      <div class="bar" style="height:40%"></div><div class="bar" style="height:60%"></div>
+      <div class="bar" style="height:30%;background:linear-gradient(180deg,#FF6161,#FF9D6B)"></div>
+      <div class="bar" style="height:48%"></div><div class="bar" style="height:66%"></div>
+      <div class="bar" style="height:38%"></div><div class="bar" style="height:52%"></div>
+    </div>
+    <div class="balance-line">
+      <span>Balance quincena</span>
+      <span class="neg">−$856.500</span>
+    </div>
+  </div>
+
+  <div class="section-title">Pulso de deudas</div>
+  <div class="debt-row"><div class="debt-name">Falabella</div><div class="debt-track"><div class="debt-fill" style="width:21%"></div></div><div class="debt-pct">21%</div></div>
+  <div class="debt-row"><div class="debt-name">Rappi</div><div class="debt-track"><div class="debt-fill" style="width:21%"></div></div><div class="debt-pct">21%</div></div>
+  <div class="debt-row"><div class="debt-name">Auteco</div><div class="debt-track"><div class="debt-fill" style="width:12%"></div></div><div class="debt-pct">12%</div></div>
+  <div class="debt-row"><div class="debt-name">NU mamá</div><div class="debt-track"><div class="debt-fill" style="width:18%"></div></div><div class="debt-pct">18%</div></div>
+
+  <div class="cta">+ Agregar movimiento</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,6 @@
+node_modules/
+dist/
+*.log
+server/data/finanzas.json.tmp
+server/data/finanzas.json.bak
+.env
