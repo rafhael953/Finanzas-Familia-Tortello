@@ -211,7 +211,7 @@ export default function Deudas() {
           ) : (
             <button
               onClick={() => setMostrarForm(true)}
-              className="bg-[var(--color-acento)] text-white rounded-md py-4 text-center font-semibold text-[15px] mb-5 shadow-sm hover:shadow-md active:scale-[0.98] transition-all"
+              className="bg-[var(--color-acento)] text-white rounded-md py-4 text-center font-semibold text-[15px] mb-6 shadow-sm hover:shadow-md active:scale-[0.98] transition-all"
             >
               + Registrar compra con tarjeta
             </button>
@@ -239,13 +239,13 @@ export default function Deudas() {
 
           <button
             onClick={cargarPlan}
-            className="border border-[var(--color-ledger-border)] rounded-md py-3 text-center font-semibold text-sm mb-5 bg-[var(--color-ledger)] hover:bg-white hover:border-[var(--color-muted)] hover:shadow-sm transition-all"
+            className="border border-[var(--color-ledger-border)] rounded-md py-3 text-center font-semibold text-sm mb-6 bg-[var(--color-ledger)] hover:bg-white hover:border-[var(--color-muted)] hover:shadow-sm transition-all"
           >
             {mostrarPlan ? "Ocultar plan de pagos" : "Ver plan de pagos"}
           </button>
 
           {mostrarPlan && proyeccion && (
-            <div className="ledger-card p-5 overflow-x-auto">
+            <div className="ledger-card p-6 overflow-x-auto">
               <h2 className="section-title-editorial mb-2">Plan de pagos</h2>
               <p className="text-xs text-[var(--color-muted)] mb-4">
                 Sobrante mensual estimado para abono extra: {formatoCOP(proyeccion.sobranteMensualBase)}
