@@ -249,17 +249,6 @@
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
       "confirmado": true
-    },
-    {
-      "id": "mov-1788628794385-16",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "inversion",
-      "categoria": "nu",
-      "monto": 300000,
-      "descripcion": "TEST aporte NU",
-      "fecha": "2026-09-05",
-      "registradoPor": "rafael",
-      "confirmado": true
     }
   ],
   "registros": [],
