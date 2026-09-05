@@ -1,52 +1,47 @@
-const COLORES = ["#375623", "#C0392B", "#8A7F6E", "#B58A00"];
+import { formatoCOP } from "../api";
 
+const COLORES = ["#7D8B5A", "#C98BA0", "#A0937E", "#5B7B8C", "#C6A15B", "#8B5E3C"];
+
+// Distribucion como barra segmentada + lista con pastillas de porcentaje.
+// Se prefirio esto a una dona porque en el celular la lista se lee de un
+// vistazo y la barra ya da la proporcion sin tener que interpretar angulos.
 export default function GraficoDona({ segmentos }) {
-  const total = segmentos.reduce((a, s) => a + s.valor, 0);
+  const visibles = (segmentos || []).filter((s) => s.valor > 0);
+  const total = visibles.reduce((a, s) => a + s.valor, 0);
+
   if (total <= 0) {
     return (
-      <div className="flex items-center justify-center h-[140px] text-xs text-[var(--color-muted)]">
-        Sin egresos registrados aún
+      <div className="py-6 text-center text-xs text-[var(--color-muted)]">
+        Aún no hay nada confirmado esta quincena
       </div>
     );
   }
 
-  let acumulado = 0;
-  const stops = segmentos
-    .filter((s) => s.valor > 0)
-    .map((s, i) => {
-      const inicio = (acumulado / total) * 360;
-      acumulado += s.valor;
-      const fin = (acumulado / total) * 360;
-      return `${s.color || COLORES[i % COLORES.length]} ${inicio}deg ${fin}deg`;
-    })
-    .join(", ");
+  const conColor = visibles.map((s, i) => ({
+    ...s,
+    color: s.color || COLORES[i % COLORES.length],
+    pct: Math.round((s.valor / total) * 100),
+  }));
 
   return (
-    <div className="flex items-center gap-5">
-      <div
-        className="rounded-full flex-shrink-0"
-        style={{
-          width: 108,
-          height: 108,
-          background: `conic-gradient(${stops})`,
-          WebkitMask: "radial-gradient(farthest-side, transparent calc(100% - 22px), #000 calc(100% - 22px))",
-          mask: "radial-gradient(farthest-side, transparent calc(100% - 22px), #000 calc(100% - 22px))",
-        }}
-      />
-      <div className="flex flex-col gap-1.5">
-        {segmentos.filter((s) => s.valor > 0).map((s, i) => (
-          <div key={s.nombre} className="flex items-center gap-2 text-[12px]">
-            <span
-              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-              style={{ background: s.color || COLORES[i % COLORES.length] }}
-            />
-            <span className="text-[#5c5347]">{s.nombre}</span>
-            <span className="font-serif-num font-semibold ml-auto">
-              {Math.round((s.valor / total) * 100)}%
-            </span>
-          </div>
+    <div>
+      <div className="flex h-[11px] rounded-full overflow-hidden gap-[2px] mb-3">
+        {conColor.map((s) => (
+          <div key={s.nombre} style={{ flex: s.valor, background: s.color }} />
         ))}
       </div>
+
+      {conColor.map((s) => (
+        <div key={s.nombre} className="flex items-center gap-3 py-2">
+          <div className="pastilla" style={{ background: s.color }}>
+            {s.pct}%
+          </div>
+          <div className="min-w-0">
+            <div className="text-[13.5px] font-semibold truncate">{s.nombre}</div>
+          </div>
+          <div className="ml-auto font-serif-num font-bold text-[14px]">{formatoCOP(s.valor)}</div>
+        </div>
+      ))}
     </div>
   );
 }

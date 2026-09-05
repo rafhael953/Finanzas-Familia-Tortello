@@ -21,7 +21,7 @@ export default function FilaCategoria({ categoria, tipo, confirmado, pendiente, 
   if (total === 0 && pagadoEnOtraQuincena > 0) {
     return (
       <div className="dashed-row py-2.5 flex items-center justify-between gap-2">
-        <span className="text-[13.5px] text-[#5c5347] flex items-center gap-2">
+        <span className="text-[13.5px] text-[var(--color-texto)] flex items-center gap-2">
           <Punto categoria={categoria} />
           {ETIQUETAS_CATEGORIA[categoria] || categoria}
         </span>
@@ -60,7 +60,7 @@ export default function FilaCategoria({ categoria, tipo, confirmado, pendiente, 
 
     return (
       <div className="dashed-row py-2.5 flex items-center justify-between gap-2">
-        <span className="text-[13.5px] text-[#5c5347] flex-1 min-w-0 flex items-center gap-2">
+        <span className="text-[13.5px] text-[var(--color-texto)] flex-1 min-w-0 flex items-center gap-2">
           <Punto categoria={categoria} />
           {ETIQUETAS_CATEGORIA[categoria] || categoria}
         </span>
@@ -92,7 +92,7 @@ export default function FilaCategoria({ categoria, tipo, confirmado, pendiente, 
   return (
     <div className="py-2">
       <div className="flex justify-between items-baseline dashed-row pb-2">
-        <span className="text-[13.5px] text-[#5c5347] flex items-center gap-2">
+        <span className="text-[13.5px] text-[var(--color-texto)] flex items-center gap-2">
           <Punto categoria={categoria} />
           {ETIQUETAS_CATEGORIA[categoria] || categoria}
         </span>
@@ -111,11 +111,11 @@ export default function FilaCategoria({ categoria, tipo, confirmado, pendiente, 
           style={{ width: `${pctConfirmado}%`, background: excedido ? "var(--color-negativo)" : color }}
         />
         {pendiente > 0 && (
-          <div className="h-full transition-all duration-300" style={{ width: `${pctPendiente}%`, background: "#B58A00" }} />
+          <div className="h-full transition-all duration-300" style={{ width: `${pctPendiente}%`, background: "#B0842A" }} />
         )}
       </div>
       {pendiente > 0 && (
-        <span className="text-xs text-[#B58A00] mt-1 block">+ {formatoCOP(pendiente)} pendiente de confirmar</span>
+        <span className="text-xs text-[#B0842A] mt-1 block">+ {formatoCOP(pendiente)} pendiente de confirmar</span>
       )}
     </div>
   );

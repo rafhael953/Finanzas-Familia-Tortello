@@ -133,7 +133,7 @@ export default function ListaMovimientos({ movimientos, onCambio }) {
                   onClick={() => alternarConfirmado(m)}
                   disabled={ocupado === m.id}
                   className={`text-[11px] font-semibold px-2 py-1 rounded-full ${
-                    confirmado ? "bg-[var(--color-positivo)]/10 text-[var(--color-positivo)]" : "bg-[#B58A00]/10 text-[#B58A00]"
+                    confirmado ? "bg-[var(--color-positivo)]/10 text-[var(--color-positivo)]" : "bg-[#B0842A]/10 text-[#B0842A]"
                   }`}
                   title={confirmado ? "Ya sucedió — clic para marcar como plan" : "Es un plan — clic para confirmar"}
                 >

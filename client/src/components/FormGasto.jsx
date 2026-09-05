@@ -38,7 +38,7 @@ export default function FormGasto({ rubroInicial, onGuardar, onCancelar }) {
         <select
           value={rubro}
           onChange={(e) => setRubro(e.target.value)}
-          className="border border-[var(--color-ledger-border)] rounded-md px-4 py-3 text-base bg-[var(--color-fondo)]/40"
+          className="border border-[var(--color-ledger-border)] rounded-[14px] px-4 py-3 text-base bg-[var(--color-fondo)]/40"
         >
           {RUBROS.map((r) => (
             <option key={r.valor} value={r.valor}>
@@ -56,7 +56,7 @@ export default function FormGasto({ rubroInicial, onGuardar, onCancelar }) {
           value={monto}
           onChange={(e) => setMonto(e.target.value)}
           placeholder="45000"
-          className="border border-[var(--color-ledger-border)] rounded-md px-4 py-3 text-base bg-[var(--color-fondo)]/40"
+          className="border border-[var(--color-ledger-border)] rounded-[14px] px-4 py-3 text-base bg-[var(--color-fondo)]/40"
         />
       </div>
 
@@ -67,7 +67,7 @@ export default function FormGasto({ rubroInicial, onGuardar, onCancelar }) {
           value={descripcion}
           onChange={(e) => setDescripcion(e.target.value)}
           placeholder="Frutas y verduras"
-          className="border border-[var(--color-ledger-border)] rounded-md px-4 py-3 text-base bg-[var(--color-fondo)]/40"
+          className="border border-[var(--color-ledger-border)] rounded-[14px] px-4 py-3 text-base bg-[var(--color-fondo)]/40"
         />
       </div>
 
@@ -77,7 +77,7 @@ export default function FormGasto({ rubroInicial, onGuardar, onCancelar }) {
           type="date"
           value={fecha}
           onChange={(e) => setFecha(e.target.value)}
-          className="border border-[var(--color-ledger-border)] rounded-md px-4 py-3 text-base bg-[var(--color-fondo)]/40"
+          className="border border-[var(--color-ledger-border)] rounded-[14px] px-4 py-3 text-base bg-[var(--color-fondo)]/40"
         />
       </div>
 
@@ -87,7 +87,7 @@ export default function FormGasto({ rubroInicial, onGuardar, onCancelar }) {
         <button
           type="submit"
           disabled={guardando}
-          className="flex-1 bg-[var(--color-acento)] text-white rounded-md py-3 font-semibold text-base disabled:opacity-50"
+          className="flex-1 bg-[var(--color-acento)] text-white rounded-[16px] py-3 font-semibold text-base disabled:opacity-50"
         >
           {guardando ? "Guardando..." : "Guardar gasto"}
         </button>
@@ -95,7 +95,7 @@ export default function FormGasto({ rubroInicial, onGuardar, onCancelar }) {
           <button
             type="button"
             onClick={onCancelar}
-            className="flex-1 bg-transparent border border-[var(--color-ledger-border)] rounded-md py-3 font-semibold text-base text-[var(--color-texto)]"
+            className="flex-1 bg-transparent border border-[var(--color-ledger-border)] rounded-[16px] py-3 font-semibold text-base text-[var(--color-texto)]"
           >
             Cancelar
           </button>

@@ -122,7 +122,7 @@ export default function FormMovimiento({ quincenaId, onGuardado, onCancelar }) {
         <select
           value={categoria}
           onChange={(e) => cambiarCategoria(e.target.value)}
-          className="border border-[var(--color-ledger-border)] rounded-md px-4 py-3 text-base bg-[var(--color-fondo)]/40"
+          className="border border-[var(--color-ledger-border)] rounded-[14px] px-4 py-3 text-base bg-[var(--color-fondo)]/40"
         >
           {categoriasDe(tipo).map((cat) => (
             <option key={cat} value={cat}>
@@ -161,7 +161,7 @@ export default function FormMovimiento({ quincenaId, onGuardado, onCancelar }) {
           value={monto}
           onChange={(e) => setMonto(e.target.value)}
           placeholder="100000"
-          className="border border-[var(--color-ledger-border)] rounded-md px-4 py-3 text-base bg-[var(--color-fondo)]/40"
+          className="border border-[var(--color-ledger-border)] rounded-[14px] px-4 py-3 text-base bg-[var(--color-fondo)]/40"
         />
       </div>
 
@@ -171,7 +171,7 @@ export default function FormMovimiento({ quincenaId, onGuardado, onCancelar }) {
           type="text"
           value={descripcion}
           onChange={(e) => setDescripcion(e.target.value)}
-          className="border border-[var(--color-ledger-border)] rounded-md px-4 py-3 text-base bg-[var(--color-fondo)]/40"
+          className="border border-[var(--color-ledger-border)] rounded-[14px] px-4 py-3 text-base bg-[var(--color-fondo)]/40"
         />
       </div>
 
@@ -181,7 +181,7 @@ export default function FormMovimiento({ quincenaId, onGuardado, onCancelar }) {
           type="date"
           value={fecha}
           onChange={(e) => setFecha(e.target.value)}
-          className="border border-[var(--color-ledger-border)] rounded-md px-4 py-3 text-base bg-[var(--color-fondo)]/40"
+          className="border border-[var(--color-ledger-border)] rounded-[14px] px-4 py-3 text-base bg-[var(--color-fondo)]/40"
         />
       </div>
 
@@ -201,7 +201,7 @@ export default function FormMovimiento({ quincenaId, onGuardado, onCancelar }) {
             type="button"
             onClick={() => setConfirmado(false)}
             className={`rounded-lg py-2 text-xs font-medium ${
-              !confirmado ? "bg-[#B58A00] text-white" : "bg-black/5"
+              !confirmado ? "bg-[#B0842A] text-white" : "bg-black/5"
             }`}
           >
             ● Plan / estimado
@@ -215,7 +215,7 @@ export default function FormMovimiento({ quincenaId, onGuardado, onCancelar }) {
         <button
           type="submit"
           disabled={guardando}
-          className="flex-1 bg-[var(--color-acento)] text-white rounded-md py-3 font-semibold text-base disabled:opacity-50"
+          className="flex-1 bg-[var(--color-acento)] text-white rounded-[16px] py-3 font-semibold text-base disabled:opacity-50"
         >
           {guardando ? "Guardando..." : "Agregar"}
         </button>
@@ -223,7 +223,7 @@ export default function FormMovimiento({ quincenaId, onGuardado, onCancelar }) {
           <button
             type="button"
             onClick={onCancelar}
-            className="flex-1 bg-transparent border border-[var(--color-ledger-border)] rounded-md py-3 font-semibold text-base text-[var(--color-texto)]"
+            className="flex-1 bg-transparent border border-[var(--color-ledger-border)] rounded-[16px] py-3 font-semibold text-base text-[var(--color-texto)]"
           >
             Cancelar
           </button>

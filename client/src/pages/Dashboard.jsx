@@ -162,7 +162,7 @@ export default function Dashboard() {
 
       <Link
         to="/rafael/deudas"
-        className="border border-[var(--color-ledger-border)] rounded-md py-4 text-center font-semibold text-[15px] bg-[var(--color-ledger)] hover:bg-white hover:border-[var(--color-muted)] hover:shadow-sm transition-all"
+        className="border border-[var(--color-ledger-border)] rounded-[18px] py-4 text-center font-semibold text-[15px] bg-[var(--color-ledger)] hover:bg-white hover:border-[var(--color-muted)] hover:shadow-sm transition-all"
       >
         Ver plan de pagos proyectado
       </Link>

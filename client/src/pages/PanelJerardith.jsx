@@ -114,7 +114,7 @@ export default function PanelJerardith() {
       </div>
 
       {!resumen.activa ? (
-        <div className="ledger-card p-4 mb-6 text-center text-sm text-[#5c5347]">
+        <div className="ledger-card p-4 mb-6 text-center text-sm text-[var(--color-texto)]">
           Rafael todavía no ha activado esta quincena. Cuando lo haga, vas a poder registrar tus gastos aquí.
         </div>
       ) : mostrarForm ? (
@@ -124,7 +124,7 @@ export default function PanelJerardith() {
       ) : (
         <button
           onClick={() => setMostrarForm(true)}
-          className="bg-[var(--color-acento-vivo)] text-white rounded-md py-4 text-center font-semibold text-[15px] mb-6 shadow-sm hover:shadow-md hover:brightness-110 active:scale-[0.98] transition-all"
+          className="bg-[var(--color-acento-vivo)] text-white rounded-[18px] py-4 text-center font-semibold text-[15px] mb-6 shadow-sm hover:shadow-md hover:brightness-110 active:scale-[0.98] transition-all"
         >
           Registrar gasto
         </button>

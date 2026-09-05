@@ -25,13 +25,13 @@ export default function Inicio() {
       <div className="w-full max-w-sm flex flex-col gap-4">
         <button
           onClick={() => elegir("rafael")}
-          className="bg-[var(--color-acento)] text-white rounded-md py-6 text-lg font-semibold tracking-tight active:scale-95 transition-transform shadow-sm hover:shadow-md transition-shadow"
+          className="bg-[var(--color-acento)] text-white rounded-[22px] py-7 text-lg font-bold tracking-tight active:scale-95 shadow-sm hover:shadow-md transition-all"
         >
           Rafael
         </button>
         <button
           onClick={() => elegir("jerardith")}
-          className="ledger-card text-[var(--color-acento)] rounded-md py-6 text-lg font-semibold tracking-tight active:scale-95 transition-transform shadow-sm hover:shadow-md transition-shadow"
+          className="bg-[var(--color-suave-rojo)] text-[var(--color-suave-rojo-texto)] rounded-[22px] py-7 text-lg font-bold tracking-tight active:scale-95 shadow-sm hover:shadow-md transition-all"
         >
           Jerardith
         </button>

@@ -8,7 +8,6 @@ import {
   ETIQUETAS_CATEGORIA,
   CATEGORIA_COLOR,
 } from "../api";
-import TarjetaSaldo from "../components/TarjetaSaldo";
 import FilaCategoria from "../components/FilaCategoria";
 import FormMovimiento from "../components/FormMovimiento";
 import ListaMovimientos from "../components/ListaMovimientos";
@@ -126,25 +125,38 @@ export default function PanelRafael() {
       <div className="h-px bg-[var(--color-ledger-rule)] my-6" />
 
       {alertas.length > 0 && (
-        <div className="mb-6 bg-[#FBEFD9] border border-[#E0BB6B] rounded-md p-4">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-[#8A5A00] mb-2">
-            ⚠ Cuotas atrasadas
-          </p>
-          {alertas.map((a) => (
-            <p key={a.categoria} className="text-[13px] text-[#5c4400] py-1">
-              <span className="font-semibold capitalize">{a.categoria}</span>: {a.mensaje}
+        <div className="tile-suave bg-[var(--color-suave-ambar)] mb-4 flex gap-3 items-start">
+          <div className="w-[34px] h-[34px] rounded-xl bg-[#e0a93e] text-white font-bold text-[15px] flex items-center justify-center flex-shrink-0">
+            !
+          </div>
+          <div className="min-w-0">
+            <p className="text-[12.5px] font-bold text-[var(--color-suave-ambar-texto)]">
+              {alertas.length} {alertas.length === 1 ? "cuota atrasada" : "cuotas atrasadas"}
             </p>
-          ))}
+            <p className="text-[11.5px] text-[#9a7434] mt-0.5">
+              {alertas.map((a) => ETIQUETAS_CATEGORIA[a.categoria] || a.categoria).join(", ")} —
+              págalas antes del 15.
+            </p>
+          </div>
         </div>
       )}
 
-      <div className="flex justify-between items-end mb-7">
-        <TarjetaSaldo titulo="Deuda total restante" valor={deudaTotal} tono="negativo" />
-        <div className="text-right">
-          <span className="font-serif-num text-[22px] font-bold text-[var(--color-positivo)] block">
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="tile-suave bg-[var(--color-suave-rojo)]">
+          <div className="text-[11px] font-semibold text-[var(--color-suave-rojo-texto)] opacity-80">
+            Deuda total
+          </div>
+          <div className="font-serif-num text-[19px] font-bold text-[var(--color-suave-rojo-texto)] mt-1">
+            {formatoCOP(deudaTotal)}
+          </div>
+        </div>
+        <div className="tile-suave bg-[var(--color-suave-verde)]">
+          <div className="text-[11px] font-semibold text-[var(--color-suave-verde-texto)] opacity-80">
+            Ahorro NU
+          </div>
+          <div className="font-serif-num text-[19px] font-bold text-[var(--color-suave-verde-texto)] mt-1">
             {formatoCOP(cuentas.nu)}
-          </span>
-          <span className="kicker">Saldo NU</span>
+          </div>
         </div>
       </div>
 
@@ -164,8 +176,10 @@ export default function PanelRafael() {
               onClick={() => setMostrarSelector((v) => !v)}
               className="flex flex-col items-center gap-0.5"
             >
-              <span className="font-serif italic text-[17px] text-center">{formatoQuincena(quincenaIdActual)}</span>
-              <span className="text-[10px] text-[var(--color-acento-vivo)] underline">▾ cambiar</span>
+              <span className="text-[15px] font-bold tracking-tight text-center">
+                {formatoQuincena(quincenaIdActual)}
+              </span>
+              <span className="text-[10px] text-white/60 underline">▾ cambiar</span>
             </button>
             <button
               disabled={!haySiguiente}
@@ -257,7 +271,7 @@ export default function PanelRafael() {
       ) : (
         <button
           onClick={() => setMostrarForm(true)}
-          className="bg-[var(--color-acento-vivo)] text-white rounded-md py-4 text-center font-semibold text-[15px] mb-6 shadow-sm hover:shadow-md hover:brightness-110 active:scale-[0.98] transition-all"
+          className="bg-[var(--color-acento-vivo)] text-white rounded-[18px] py-4 text-center font-semibold text-[15px] mb-6 shadow-sm hover:shadow-md hover:brightness-110 active:scale-[0.98] transition-all"
         >
           + Agregar movimiento
         </button>
@@ -357,7 +371,7 @@ export default function PanelRafael() {
 
       <Link
         to="/rafael/deudas"
-        className="border border-[var(--color-ledger-border)] rounded-md py-4 text-center font-semibold text-[15px] mb-6 bg-[var(--color-ledger)] hover:bg-white hover:border-[var(--color-muted)] hover:shadow-sm transition-all"
+        className="border border-[var(--color-ledger-border)] rounded-[18px] py-4 text-center font-semibold text-[15px] mb-6 bg-[var(--color-ledger)] hover:bg-white hover:border-[var(--color-muted)] hover:shadow-sm transition-all"
       >
         Ver deudas y plan de pagos
       </Link>
@@ -368,7 +382,7 @@ export default function PanelRafael() {
             <h2 className="section-title-editorial">Resumen de Jerardith (esta quincena)</h2>
             <span
               className={`text-[11px] font-semibold ${
-                resumenJerardith.activa ? "text-[var(--color-positivo)]" : "text-[#B58A00]"
+                resumenJerardith.activa ? "text-[var(--color-positivo)]" : "text-[#B0842A]"
               }`}
             >
               {resumenJerardith.activa ? "✓ Activa" : "● Inactiva"}
@@ -376,7 +390,7 @@ export default function PanelRafael() {
           </div>
           {resumenJerardith.resumen.map((r) => (
             <div key={r.rubro} className="flex justify-between items-baseline dashed-row py-2 text-[13.5px]">
-              <span className="capitalize text-[#5c5347]">{r.rubro}</span>
+              <span className="capitalize text-[var(--color-texto)]">{r.rubro}</span>
               <span className="font-serif-num font-semibold">
                 {formatoCOP(r.gastado)}
                 <span className="text-xs text-[var(--color-muted)] font-sans"> / {formatoCOP(r.presupuesto)}</span>
@@ -394,7 +408,7 @@ export default function PanelRafael() {
             }}
             className={`w-full mt-3 rounded-md py-2.5 font-semibold text-sm ${
               resumenJerardith.activa
-                ? "border border-[var(--color-ledger-border)] text-[#5c5347]"
+                ? "border border-[var(--color-ledger-border)] text-[var(--color-texto)]"
                 : "bg-[var(--color-positivo)] text-white"
             }`}
           >

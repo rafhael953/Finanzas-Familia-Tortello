@@ -22,7 +22,7 @@ export default function FilaValorEditable({ etiqueta, valor, sufijoUSD, extra, o
 
   return (
     <div className="flex justify-between items-baseline dashed-row py-2 text-[13.5px]">
-      <span className="text-[#5c5347]">{etiqueta}</span>
+      <span className="text-[var(--color-texto)]">{etiqueta}</span>
       {editando ? (
         <span className="flex items-center gap-2">
           <input

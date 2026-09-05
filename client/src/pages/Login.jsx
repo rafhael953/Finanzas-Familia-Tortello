@@ -39,7 +39,7 @@ export default function Login({ onIngreso }) {
             value={usuario}
             onChange={(e) => setUsuario(e.target.value)}
             placeholder="Rafael T"
-            className="border border-[var(--color-ledger-border)] rounded-md px-4 py-3 text-base bg-[var(--color-fondo)]/40"
+            className="border border-[var(--color-ledger-border)] rounded-[14px] px-4 py-3 text-base bg-[var(--color-fondo)]/40"
           />
         </div>
         <div className="flex flex-col gap-1">
@@ -49,7 +49,7 @@ export default function Login({ onIngreso }) {
             value={clave}
             onChange={(e) => setClave(e.target.value)}
             placeholder="••••••••"
-            className="border border-[var(--color-ledger-border)] rounded-md px-4 py-3 text-base bg-[var(--color-fondo)]/40"
+            className="border border-[var(--color-ledger-border)] rounded-[14px] px-4 py-3 text-base bg-[var(--color-fondo)]/40"
           />
         </div>
 
@@ -58,7 +58,7 @@ export default function Login({ onIngreso }) {
         <button
           type="submit"
           disabled={cargando || !usuario || !clave}
-          className="bg-[var(--color-acento)] text-white rounded-md py-3.5 font-semibold text-base disabled:opacity-50 mt-2"
+          className="bg-[var(--color-acento)] text-white rounded-[16px] py-3.5 font-semibold text-base disabled:opacity-50 mt-2"
         >
           {cargando ? "Entrando..." : "Entrar"}
         </button>

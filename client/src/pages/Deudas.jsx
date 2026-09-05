@@ -62,7 +62,7 @@ function FormCompraTarjeta({ onGuardado, onCancelar }) {
           value={monto}
           onChange={(e) => setMonto(e.target.value)}
           placeholder="600000"
-          className="border border-[var(--color-ledger-border)] rounded-md px-4 py-3 text-base bg-[var(--color-fondo)]/40"
+          className="border border-[var(--color-ledger-border)] rounded-[14px] px-4 py-3 text-base bg-[var(--color-fondo)]/40"
         />
       </div>
 
@@ -74,7 +74,7 @@ function FormCompraTarjeta({ onGuardado, onCancelar }) {
           value={cuotas}
           onChange={(e) => setCuotas(e.target.value)}
           placeholder="6"
-          className="border border-[var(--color-ledger-border)] rounded-md px-4 py-3 text-base bg-[var(--color-fondo)]/40"
+          className="border border-[var(--color-ledger-border)] rounded-[14px] px-4 py-3 text-base bg-[var(--color-fondo)]/40"
         />
         {cuotaMensual > 0 && (
           <p className="text-xs text-[var(--color-muted)] mt-1">
@@ -89,7 +89,7 @@ function FormCompraTarjeta({ onGuardado, onCancelar }) {
           type="text"
           value={descripcion}
           onChange={(e) => setDescripcion(e.target.value)}
-          className="border border-[var(--color-ledger-border)] rounded-md px-4 py-3 text-base bg-[var(--color-fondo)]/40"
+          className="border border-[var(--color-ledger-border)] rounded-[14px] px-4 py-3 text-base bg-[var(--color-fondo)]/40"
         />
       </div>
 
@@ -99,7 +99,7 @@ function FormCompraTarjeta({ onGuardado, onCancelar }) {
           type="date"
           value={fecha}
           onChange={(e) => setFecha(e.target.value)}
-          className="border border-[var(--color-ledger-border)] rounded-md px-4 py-3 text-base bg-[var(--color-fondo)]/40"
+          className="border border-[var(--color-ledger-border)] rounded-[14px] px-4 py-3 text-base bg-[var(--color-fondo)]/40"
         />
       </div>
 
@@ -109,14 +109,14 @@ function FormCompraTarjeta({ onGuardado, onCancelar }) {
         <button
           type="submit"
           disabled={guardando}
-          className="flex-1 bg-[var(--color-acento)] text-white rounded-md py-3 font-semibold text-base disabled:opacity-50"
+          className="flex-1 bg-[var(--color-acento)] text-white rounded-[16px] py-3 font-semibold text-base disabled:opacity-50"
         >
           {guardando ? "Guardando..." : "Registrar compra"}
         </button>
         <button
           type="button"
           onClick={onCancelar}
-          className="flex-1 bg-transparent border border-[var(--color-ledger-border)] rounded-md py-3 font-semibold text-base text-[var(--color-texto)]"
+          className="flex-1 bg-transparent border border-[var(--color-ledger-border)] rounded-[16px] py-3 font-semibold text-base text-[var(--color-texto)]"
         >
           Cancelar
         </button>
@@ -349,7 +349,7 @@ export default function Deudas() {
           ) : (
             <button
               onClick={() => setMostrarForm(true)}
-              className="bg-[var(--color-acento)] text-white rounded-md py-4 text-center font-semibold text-[15px] mb-6 shadow-sm hover:shadow-md active:scale-[0.98] transition-all"
+              className="bg-[var(--color-acento)] text-white rounded-[18px] py-4 text-center font-semibold text-[15px] mb-6 shadow-sm hover:shadow-md active:scale-[0.98] transition-all"
             >
               + Registrar compra con tarjeta
             </button>
@@ -369,7 +369,7 @@ export default function Deudas() {
 
           <button
             onClick={cargarPlan}
-            className="border border-[var(--color-ledger-border)] rounded-md py-3 text-center font-semibold text-sm mb-6 bg-[var(--color-ledger)] hover:bg-white hover:border-[var(--color-muted)] hover:shadow-sm transition-all"
+            className="border border-[var(--color-ledger-border)] rounded-[16px] py-3 text-center font-semibold text-sm mb-6 bg-[var(--color-ledger)] hover:bg-white hover:border-[var(--color-muted)] hover:shadow-sm transition-all"
           >
             {mostrarPlan ? "Ocultar plan de pagos" : "Ver plan de pagos"}
           </button>
@@ -409,7 +409,7 @@ export default function Deudas() {
                           {todoPagado && <span className="text-[var(--color-positivo)]"> ✓</span>}
                         </td>
                         {nombres.map((n) => (
-                          <td key={n} className="py-2 pr-2 font-serif-num text-[#5c5347]">
+                          <td key={n} className="py-2 pr-2 font-serif-num text-[var(--color-texto)]">
                             {formatoCOP(fila.saldos[n] || 0)}
                           </td>
                         ))}
