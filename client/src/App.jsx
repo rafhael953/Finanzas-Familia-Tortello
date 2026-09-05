@@ -5,6 +5,7 @@ import PanelRafael from "./pages/PanelRafael";
 import PanelJerardith from "./pages/PanelJerardith";
 import Deudas from "./pages/Deudas";
 import Dashboard from "./pages/Dashboard";
+import Historial from "./pages/Historial";
 import Login from "./pages/Login";
 import { api } from "./api";
 
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/rafael" element={<PanelRafael />} />
         <Route path="/rafael/deudas" element={<Deudas />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/historial" element={<Historial />} />
         <Route path="/jerardith" element={<PanelJerardith />} />
       </Routes>
     </BrowserRouter>

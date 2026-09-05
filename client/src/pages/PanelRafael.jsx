@@ -198,10 +198,20 @@ export default function PanelRafael() {
             → {formatoCOP(estado.aNU)} al NU · {formatoCOP(estado.aDeuda)} a abono extra de deuda (con lo confirmado hasta ahora)
           </div>
         )}
+
+        <Link
+          to="/historial"
+          className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)] mt-3 block text-center"
+        >
+          ver historial completo desde el inicio →
+        </Link>
       </div>
 
-      <div className="ledger-card p-5 mb-5">
-        <h2 className="section-title-editorial mb-3">Distribución (confirmado)</h2>
+      <Link to="/dashboard" className="ledger-card p-5 mb-5 block hover:shadow-md transition-shadow">
+        <div className="flex justify-between items-baseline mb-3">
+          <h2 className="section-title-editorial">Distribución (confirmado)</h2>
+          <span className="text-xs text-[var(--color-muted)] underline">ver gráficas completas →</span>
+        </div>
         <GraficoDona
           segmentos={[
             { nombre: "Gastos", valor: estado.gastosConfirmado },
@@ -209,7 +219,7 @@ export default function PanelRafael() {
             { nombre: "Inversiones", valor: estado.inversionesConfirmado },
           ]}
         />
-      </div>
+      </Link>
 
       {/* Agregar movimiento */}
       {mostrarForm ? (

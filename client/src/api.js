@@ -28,6 +28,7 @@ export const api = {
   getListaQuincenas: () => request("/api/registros/lista"),
   getEstadoQuincena: (id) => request(`/api/registros/estado/${id}`),
   getResumenMensual: (id) => request(`/api/registros/mensual/${id}`),
+  getHistorial: () => request(`/api/registros/historial`),
 
   agregarMovimiento: (mov) =>
     request("/api/movimientos", { method: "POST", body: JSON.stringify(mov) }),
