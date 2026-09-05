@@ -1,6 +1,9 @@
 {
   "name": "tortello-finanzas",
   "private": true,
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "build": "npm install --prefix client && npm run build --prefix client && npm install --prefix server",
     "start": "npm start --prefix server"
