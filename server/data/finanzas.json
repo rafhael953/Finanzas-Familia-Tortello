@@ -252,17 +252,6 @@
       "confirmado": true
     },
     {
-      "id": "mov-1788628975130-592",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "gasto",
-      "categoria": "jerardith",
-      "monto": 1000000,
-      "descripcion": "TEST asignacion",
-      "fecha": "2026-09-05",
-      "registradoPor": "rafael",
-      "confirmado": true
-    },
-    {
       "id": "mov-1788628975730-657",
       "quincenaId": "2026-08-Q2",
       "tipo": "gasto",
