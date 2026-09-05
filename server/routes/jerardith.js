@@ -127,6 +127,9 @@ router.get("/resumen", async (req, res) => {
     return { rubro, presupuesto, gastado, disponible: presupuesto - gastado };
   });
 
+  // Se devuelven tipo/categoria ademas del rubro para que el cliente pueda
+  // reusar la misma lista editable que usa Rafael (editar monto y fecha,
+  // o borrar) sin tener que traducir de vuelta.
   const prefijoMes = idActual.slice(0, 7);
   const historialMes = (db.movimientos || [])
     .filter((m) => m.registradoPor === "jerardith" && m.quincenaId.startsWith(prefijoMes))
@@ -134,16 +137,28 @@ router.get("/resumen", async (req, res) => {
       id: m.id,
       fecha: m.fecha,
       quincena: m.quincenaId,
+      quincenaId: m.quincenaId,
+      tipo: m.tipo,
+      categoria: m.categoria,
+      confirmado: m.confirmado,
+      registradoPor: m.registradoPor,
       rubro: m.categoria === "jerardith" ? "esposa" : m.categoria,
       monto: m.monto,
       descripcion: m.descripcion,
     }))
     .sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
 
+  const disponibleTotal = resumen.reduce((a, r) => a + r.disponible, 0);
+  const asignadoTotal = resumen.reduce((a, r) => a + r.presupuesto, 0);
+  const gastadoTotal = resumen.reduce((a, r) => a + r.gastado, 0);
+
   res.json({
     quincenaActual: idActual,
     activa: estaActiva(db, idActual),
     balanceGeneral: estado.balanceConfirmado,
+    disponibleTotal,
+    asignadoTotal,
+    gastadoTotal,
     resumen,
     historialMes,
   });

@@ -9,7 +9,7 @@ import cuentasRouter from "./routes/cuentas.js";
 import jerardithRouter from "./routes/jerardith.js";
 import movimientosRouter from "./routes/movimientos.js";
 import categoriasRouter from "./routes/categorias.js";
-import { readDB } from "./db.js";
+import { readDB, withDB } from "./db.js";
 import {
   leerSesion,
   exigirSesion,
@@ -64,6 +64,26 @@ app.get("/api/config", async (req, res) => {
     gastosFijos: db.gastosFijos,
     cuotasRecomendadas: db.cuotasRecomendadas,
   });
+});
+
+// Valores de configuracion que se ajustan a mano desde la app (la TRM
+// cambia todos los dias, el abono extra depende de cuanto se quiera
+// meterle de mas a las deudas ese mes).
+const CONFIG_EDITABLE = ["trm", "abonoExtraMensual", "rendNU"];
+
+app.put("/api/config", async (req, res) => {
+  const { campo, valor } = req.body || {};
+  if (!CONFIG_EDITABLE.includes(campo)) {
+    return res.status(400).json({ error: "Ese valor no se puede editar" });
+  }
+  const num = Number(valor);
+  if (!Number.isFinite(num) || num < 0) {
+    return res.status(400).json({ error: "Valor inválido" });
+  }
+  await withDB(async (db) => {
+    db.config[campo] = num;
+  });
+  res.json({ ok: true, campo, valor: num });
 });
 
 // En produccion, el cliente se compila en client/dist y este mismo servidor

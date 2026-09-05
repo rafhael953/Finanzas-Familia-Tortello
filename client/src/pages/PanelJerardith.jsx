@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, formatoCOP } from "../api";
+import { api, formatoCOP, formatoQuincena } from "../api";
 import FormGasto from "../components/FormGasto";
+import ListaMovimientos from "../components/ListaMovimientos";
 
 const ETIQUETAS = { mercado: "Mercado", cuidado: "Cuidado", esposa: "Esposa" };
 
@@ -12,8 +13,7 @@ export default function PanelJerardith() {
   const [cargando, setCargando] = useState(true);
 
   function cargar() {
-    setCargando(true);
-    Promise.all([api.getResumenJerardith(), api.getDeudas()]).then(([r, d]) => {
+    return Promise.all([api.getResumenJerardith(), api.getDeudas()]).then(([r, d]) => {
       setResumen(r);
       setDeudaTotal(d.reduce((a, x) => a + x.saldo, 0));
       setCargando(false);
@@ -25,14 +25,12 @@ export default function PanelJerardith() {
   }, []);
 
   async function guardarGasto(gasto) {
-    await api.postGastoJerardith(gasto);
+    await api.postGastoJerardith({ ...gasto, quincena: resumen.quincenaActual });
     setMostrarForm(false);
     cargar();
   }
 
   if (cargando) return <div className="p-6 text-center font-serif-num text-lg">Cargando...</div>;
-
-  const totalGastadoMes = resumen.historialMes.reduce((a, g) => a + Number(g.monto), 0);
 
   return (
     <div className="min-h-screen px-5 py-6 flex flex-col max-w-lg mx-auto">
@@ -52,28 +50,22 @@ export default function PanelJerardith() {
       </div>
       <div className="h-px bg-[var(--color-ledger-rule)] my-6" />
 
+      {/* Lo que a ella le importa primero: cuanto le queda disponible */}
       <div className="ledger-card ledger-card--hero p-6 mb-6">
-        <h2 className="section-title-editorial mb-3 text-white/85">Estado general de la familia</h2>
-        <div className="flex justify-between">
-          <div>
-            <span className="font-serif-num text-2xl font-bold text-[var(--color-negativo-alto)] block">
-              {formatoCOP(deudaTotal)}
-            </span>
-            <span className="kicker">Deuda total</span>
-          </div>
-          <div className="text-right">
-            <span
-              className={`font-serif-num text-2xl font-bold block ${
-                resumen.balanceGeneral < 0 ? "text-[var(--color-negativo-alto)]" : "text-[var(--color-positivo-alto)]"
-              }`}
-            >
-              {formatoCOP(resumen.balanceGeneral)}
-            </span>
-            <span className="kicker">Balance quincena</span>
-          </div>
+        <span className="kicker">Te queda disponible</span>
+        <span
+          className={`font-serif-num text-[36px] font-bold block leading-tight ${
+            resumen.disponibleTotal < 0 ? "text-[var(--color-negativo-alto)]" : "text-[var(--color-positivo-alto)]"
+          }`}
+        >
+          {formatoCOP(resumen.disponibleTotal)}
+        </span>
+        <div className="flex justify-between mt-3 pt-3 border-t border-dashed border-white/15 text-xs">
+          <span className="text-white/55">Recibiste: {formatoCOP(resumen.asignadoTotal)}</span>
+          <span className="text-white/55">Gastado: {formatoCOP(resumen.gastadoTotal)}</span>
         </div>
         <p className="text-xs text-white/50 mt-3">
-          Quincena {resumen.quincenaActual} ·{" "}
+          {formatoQuincena(resumen.quincenaActual)} ·{" "}
           <span className={resumen.activa ? "text-[var(--color-positivo-alto)]" : "text-[#E8C468]"}>
             {resumen.activa ? "✓ Activa" : "● Rafael aún no la activa"}
           </span>
@@ -99,7 +91,10 @@ export default function PanelJerardith() {
               <div className="h-[3px] bg-[var(--color-ledger-rule)] relative rounded-full overflow-hidden">
                 <div
                   className="absolute left-0 top-0 h-full"
-                  style={{ width: `${porcentaje}%`, background: r.disponible < 0 ? "var(--color-negativo)" : "var(--color-acento-vivo)" }}
+                  style={{
+                    width: `${porcentaje}%`,
+                    background: r.disponible < 0 ? "var(--color-negativo)" : "var(--color-acento-vivo)",
+                  }}
                 />
               </div>
               <span className="text-xs text-[var(--color-muted)] mt-1 block">
@@ -127,24 +122,40 @@ export default function PanelJerardith() {
         </button>
       )}
 
-      <div className="ledger-card p-6">
+      <div className="ledger-card p-6 mb-6">
         <div className="flex justify-between items-baseline dashed-row pb-2 mb-1">
-          <h2 className="section-title-editorial">Historial del mes</h2>
-          <span className="font-serif-num font-semibold text-[15px]">{formatoCOP(totalGastadoMes)}</span>
+          <h2 className="section-title-editorial">Tus gastos del mes</h2>
+          <span className="font-serif-num font-semibold text-[15px]">
+            {formatoCOP(resumen.historialMes.reduce((a, g) => a + Number(g.monto), 0))}
+          </span>
         </div>
-        {resumen.historialMes.length === 0 ? (
-          <p className="text-sm text-[var(--color-muted)] pt-2">Sin registros todavía.</p>
-        ) : (
-          resumen.historialMes.map((g) => (
-            <div key={g.id} className="flex justify-between items-baseline dashed-row py-2 text-[13.5px]">
-              <div>
-                <p className="font-medium capitalize">{ETIQUETAS[g.rubro] || g.rubro}</p>
-                <p className="text-xs text-[var(--color-muted)]">{g.descripcion || "Sin descripción"} · {g.fecha}</p>
-              </div>
-              <span className="font-serif-num font-semibold">{formatoCOP(g.monto)}</span>
-            </div>
-          ))
-        )}
+        <p className="text-xs text-[var(--color-muted)] mb-2">
+          Toca el monto o la fecha para corregir algo que registraste.
+        </p>
+        <ListaMovimientos movimientos={resumen.historialMes} onCambio={cargar} />
+      </div>
+
+      {/* La situacion de la casa, para que tenga el panorama completo */}
+      <div className="ledger-card p-6">
+        <h2 className="section-title-editorial mb-3">Estado general de la familia</h2>
+        <div className="flex justify-between">
+          <div>
+            <span className="font-serif-num text-xl font-bold text-[var(--color-negativo)] block">
+              {formatoCOP(deudaTotal)}
+            </span>
+            <span className="kicker">Deuda total</span>
+          </div>
+          <div className="text-right">
+            <span
+              className={`font-serif-num text-xl font-bold block ${
+                resumen.balanceGeneral < 0 ? "text-[var(--color-negativo)]" : "text-[var(--color-positivo)]"
+              }`}
+            >
+              {formatoCOP(resumen.balanceGeneral)}
+            </span>
+            <span className="kicker">Balance quincena</span>
+          </div>
+        </div>
       </div>
     </div>
   );

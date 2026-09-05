@@ -125,6 +125,128 @@ function FormCompraTarjeta({ onGuardado, onCancelar }) {
   );
 }
 
+// Una compra ya registrada, que se puede corregir o borrar. Al guardar o
+// borrar, el servidor revierte el efecto anterior sobre el saldo y la
+// cuota mensual de esa tarjeta, asi que los numeros siguen cuadrando.
+function FilaCompra({ compra, onCambio }) {
+  const [editando, setEditando] = useState(false);
+  const [monto, setMonto] = useState(String(compra.monto));
+  const [cuotas, setCuotas] = useState(String(compra.cuotas));
+  const [ocupado, setOcupado] = useState(false);
+  const [error, setError] = useState("");
+
+  async function guardar() {
+    if (!monto || Number(monto) <= 0) return setError("Monto inválido");
+    if (!cuotas || Number(cuotas) <= 0) return setError("Cuotas inválidas");
+    setOcupado(true);
+    setError("");
+    try {
+      await api.editarCompraTarjeta(compra.id, {
+        monto: Number(monto),
+        cuotas: Number(cuotas),
+      });
+      setEditando(false);
+      await onCambio();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  async function borrar() {
+    setOcupado(true);
+    setError("");
+    try {
+      await api.borrarCompraTarjeta(compra.id);
+      await onCambio();
+    } catch (err) {
+      setError(err.message);
+      setOcupado(false);
+    }
+  }
+
+  if (editando) {
+    return (
+      <div className="dashed-row py-3">
+        <p className="text-[13.5px] font-medium mb-2">{ETIQUETAS_CATEGORIA[compra.tarjeta]}</p>
+        <div className="flex gap-2 mb-2">
+          <label className="flex-1 text-[11px] text-[var(--color-muted)]">
+            Monto
+            <input
+              type="number"
+              value={monto}
+              onChange={(e) => setMonto(e.target.value)}
+              className="font-serif-num w-full text-right border border-[var(--color-ledger-border)] rounded-md px-2 py-1.5 text-[13px] bg-[var(--color-fondo)]/40"
+              autoFocus
+            />
+          </label>
+          <label className="w-24 text-[11px] text-[var(--color-muted)]">
+            Cuotas
+            <input
+              type="number"
+              value={cuotas}
+              onChange={(e) => setCuotas(e.target.value)}
+              className="font-serif-num w-full text-right border border-[var(--color-ledger-border)] rounded-md px-2 py-1.5 text-[13px] bg-[var(--color-fondo)]/40"
+            />
+          </label>
+        </div>
+        {monto && cuotas && Number(cuotas) > 0 && (
+          <p className="text-[11px] text-[var(--color-muted)] mb-2">
+            Nueva cuota: {formatoCOP(Math.round(Number(monto) / Number(cuotas)))}/mes
+          </p>
+        )}
+        {error && <p className="text-[var(--color-negativo)] text-xs mb-2">{error}</p>}
+        <div className="flex gap-2">
+          <button
+            onClick={guardar}
+            disabled={ocupado}
+            className="text-[11px] font-semibold bg-[var(--color-positivo)] text-white rounded-md px-3 py-1.5 disabled:opacity-40"
+          >
+            Guardar
+          </button>
+          <button
+            onClick={() => setEditando(false)}
+            className="text-[11px] font-semibold border border-[var(--color-ledger-border)] rounded-md px-3 py-1.5"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={borrar}
+            disabled={ocupado}
+            className="text-[11px] font-semibold text-[var(--color-negativo)] ml-auto disabled:opacity-40"
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setEditando(true)}
+      className="dashed-row py-2.5 flex justify-between items-baseline w-full text-left"
+    >
+      <span>
+        <span className="text-[13.5px] font-medium">
+          {ETIQUETAS_CATEGORIA[compra.tarjeta]}
+          <span className="text-[10px] text-[var(--color-muted)] uppercase ml-1.5">
+            {compra.cuotas} cuotas
+          </span>
+        </span>
+        <span className="text-[11px] text-[var(--color-muted)] block">
+          {compra.fecha} {compra.descripcion ? `· ${compra.descripcion}` : ""} · +
+          {formatoCOP(compra.cuotaMensual)}/mes
+        </span>
+      </span>
+      <span className="font-serif-num font-semibold text-[14px] underline decoration-dotted">
+        {formatoCOP(compra.monto)}
+      </span>
+    </button>
+  );
+}
+
 export default function Deudas() {
   const [deudas, setDeudas] = useState([]);
   const [compras, setCompras] = useState([]);
@@ -141,6 +263,16 @@ export default function Deudas() {
     });
   }
 
+  // Cualquier cambio en saldos o cuotas invalida la proyeccion: se vuelve a
+  // pedir para que el plan no quede mostrando numeros viejos.
+  async function recargarTodo() {
+    await cargar();
+    if (proyeccion) {
+      const p = await api.getDeudasProyeccion();
+      setProyeccion(p);
+    }
+  }
+
   useEffect(() => {
     cargar();
   }, []);
@@ -154,6 +286,12 @@ export default function Deudas() {
       setProyeccion(p);
       setMostrarPlan(true);
     });
+  }
+
+  async function guardarAbonoExtra(valor) {
+    await api.editarConfig("abonoExtraMensual", valor);
+    const p = await api.getDeudasProyeccion();
+    setProyeccion(p);
   }
 
   async function registrarCompra(compra) {
@@ -201,7 +339,7 @@ export default function Deudas() {
                 key={d.nombre}
                 etiqueta={ETIQUETAS_CATEGORIA[d.nombre] || d.nombre}
                 valor={d.cuotaRecomendada}
-                onGuardar={(v) => api.editarCuotaDeuda(d.nombre, v).then(cargar)}
+                onGuardar={(v) => api.editarCuotaDeuda(d.nombre, v).then(recargarTodo)}
               />
             ))}
           </div>
@@ -219,20 +357,12 @@ export default function Deudas() {
 
           {compras.length > 0 && (
             <div className="ledger-card p-6 mb-6">
-              <h2 className="section-title-editorial mb-2">Compras a cuotas registradas</h2>
+              <h2 className="section-title-editorial mb-1">Compras a cuotas registradas</h2>
+              <p className="text-xs text-[var(--color-muted)] mb-2">
+                Toca una para corregir el monto o las cuotas, o para borrarla.
+              </p>
               {[...compras].reverse().map((c) => (
-                <div key={c.id} className="dashed-row py-2.5 flex justify-between items-baseline">
-                  <div>
-                    <p className="text-[13.5px] font-medium">
-                      {ETIQUETAS_CATEGORIA[c.tarjeta]}
-                      <span className="text-[10px] text-[var(--color-muted)] uppercase ml-1.5">{c.cuotas} cuotas</span>
-                    </p>
-                    <p className="text-[11px] text-[var(--color-muted)]">
-                      {c.fecha} {c.descripcion ? `· ${c.descripcion}` : ""} · +{formatoCOP(c.cuotaMensual)}/mes
-                    </p>
-                  </div>
-                  <span className="font-serif-num font-semibold text-[14px]">{formatoCOP(c.monto)}</span>
-                </div>
+                <FilaCompra key={c.id} compra={c} onCambio={recargarTodo} />
               ))}
             </div>
           )}
@@ -246,9 +376,19 @@ export default function Deudas() {
 
           {mostrarPlan && proyeccion && (
             <div className="ledger-card p-6 overflow-x-auto">
-              <h2 className="section-title-editorial mb-2">Plan de pagos</h2>
-              <p className="text-xs text-[var(--color-muted)] mb-4">
-                Sobrante mensual estimado para abono extra: {formatoCOP(proyeccion.sobranteMensualBase)}
+              <h2 className="section-title-editorial mb-1">Plan de pagos</h2>
+              <p className="text-xs text-[var(--color-muted)] mb-2">
+                Proyección con las cuotas de arriba. Si además vas a abonar de más cada mes,
+                ponlo aquí — si lo dejas en $0 verás el escenario realista sin abonos extra.
+              </p>
+              <FilaValorEditable
+                etiqueta="Abono extra mensual"
+                valor={proyeccion.abonoExtraMensual}
+                onGuardar={guardarAbonoExtra}
+              />
+              <p className="text-[11px] text-[var(--color-muted)] mt-2 mb-4">
+                Referencia: si cada quincena cerrara exactamente como está presupuestado,
+                sobrarían {formatoCOP(proyeccion.sobranteMensualBase)} al mes.
               </p>
               <table className="text-[13px] w-full min-w-[480px]">
                 <thead>

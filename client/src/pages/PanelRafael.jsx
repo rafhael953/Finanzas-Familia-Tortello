@@ -39,11 +39,10 @@ export default function PanelRafael() {
   useEffect(() => {
     (async () => {
       const [actual, listaQ] = await Promise.all([api.getQuincenaActual(), api.getListaQuincenas()]);
-      // Preferimos la ultima quincena que el usuario estaba viendo (guardada
-      // en este dispositivo) en vez de saltar siempre a la fecha del sistema
-      // — que puede no coincidir con el dia real si el reloj esta desfasado.
-      const guardada = localStorage.getItem("ultimaQuincena");
-      const idInicial = guardada || actual.id;
+      // Siempre abre en la quincena del sueldo con el que se esta viviendo
+      // hoy (ver quincenaId en el servidor), para no registrar por error en
+      // un periodo que no corresponde.
+      const idInicial = actual.id;
       setQuincenaIdActual(idInicial);
       setLista(listaQ.includes(idInicial) ? listaQ : [...listaQ, idInicial].sort());
       await cargarTodo(idInicial);
@@ -195,7 +194,9 @@ export default function PanelRafael() {
 
         {estado.sobrante > 0 && (
           <div className="mt-3 text-xs text-white/50">
-            → {formatoCOP(estado.aNU)} al NU · {formatoCOP(estado.aDeuda)} a abono extra de deuda (con lo confirmado hasta ahora)
+            Sugerencia con lo confirmado: {formatoCOP(estado.aNU)} al NU ·{" "}
+            {formatoCOP(estado.aDeuda)} a abono extra de deuda. Confírmalo abajo en Inversiones
+            cuando de verdad muevas la plata.
           </div>
         )}
 
@@ -313,8 +314,10 @@ export default function PanelRafael() {
       </div>
 
       <div className="ledger-card p-6 mb-6">
-        <h2 className="section-title-editorial mb-1">Inversiones</h2>
-        <p className="text-xs text-[var(--color-muted)] mb-2">Opcional — solo si invertiste algo esta quincena.</p>
+        <h2 className="section-title-editorial mb-1">Inversiones y ahorro</h2>
+        <p className="text-xs text-[var(--color-muted)] mb-2">
+          Confirma aquí lo que realmente moviste. El saldo de NU sube solo con lo que confirmes.
+        </p>
         {estado.inversiones.map((r) => (
           <FilaCategoria
             key={r.categoria}
@@ -322,7 +325,7 @@ export default function PanelRafael() {
             tipo="inversion"
             confirmado={r.confirmado}
             pendiente={r.pendiente}
-            presupuesto={0}
+            presupuesto={r.categoria === "nu" ? estado.aNU : 0}
             quincenaId={quincenaIdActual}
             onCambio={() => cargarTodo(quincenaIdActual)}
           />

@@ -18,7 +18,7 @@ const CATEGORIAS_BASE = new Set([
   "arriendo", "servicios", "mercado", "cuidado", "salud", "combustible", "ocio", "efectivo",
   "medicabucaramanga", "jerardith",
   "falabella", "rappi", "auteco", "numama", "decameron",
-  "xtb",
+  "nu", "xtb", "binance",
   "salario", "prima", "extra",
 ]);
 

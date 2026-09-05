@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, formatoCOP, formatoQuincena, ETIQUETAS_CATEGORIA, CATEGORIA_COLOR } from "../api";
+import { api, formatoCOP, ETIQUETAS_CATEGORIA, CATEGORIA_COLOR } from "../api";
 import GraficoLinea from "../components/GraficoLinea";
 import GraficoDona from "../components/GraficoDona";
 import BarraDeuda from "../components/BarraDeuda";
 import FilaSaldo from "../components/FilaValorEditable";
+
+const MESES_CORTOS = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+function etiquetaMes(prefijo) {
+  const [anio, mes] = prefijo.split("-");
+  return `${MESES_CORTOS[Number(mes)]} ${anio.slice(2)}`;
+}
 
 export default function Dashboard() {
   const [cuentas, setCuentas] = useState(null);
@@ -16,13 +23,21 @@ export default function Dashboard() {
     return api.getCuentas().then(setCuentas);
   }
 
-  useEffect(() => {
-    Promise.all([api.getCuentas(), api.getEvolucionNU(), api.getDeudas()]).then(([c, e, d]) => {
+  function cargarTodo() {
+    return Promise.all([
+      api.getCuentas(),
+      api.getEvolucionNUMensual(),
+      api.getDeudas(),
+    ]).then(([c, e, d]) => {
       setCuentas(c);
       setEvolucionNU(e);
       setDeudas(d);
       setCargando(false);
     });
+  }
+
+  useEffect(() => {
+    cargarTodo();
   }, []);
 
   if (cargando || !cuentas) {
@@ -33,10 +48,10 @@ export default function Dashboard() {
   const deudaInicialTotal = deudas.reduce((a, d) => a + d.saldoInicial, 0);
   const xtbCOP = cuentas.xtbUSD * cuentas.trm;
   const binanceCOP = cuentas.binanceUSD * cuentas.trm;
-  const patrimonioLiquido = cuentas.nu + cuentas.bancolombia + xtbCOP + binanceCOP;
+  const patrimonioLiquido = cuentas.nu + xtbCOP + binanceCOP;
   const patrimonioNeto = patrimonioLiquido - deudaTotal;
 
-  const puntosNU = evolucionNU.map((e) => ({ label: formatoQuincena(e.quincenaId).replace("Quincena ", "Q"), valor: e.saldo }));
+  const puntosNU = evolucionNU.map((e) => ({ label: etiquetaMes(e.mes), valor: e.saldo }));
 
   // Tanto Rafael como Jerardith pueden llegar aqui -- el enlace de volver
   // debe llevar a cada quien a su propio panel.
@@ -84,28 +99,28 @@ export default function Dashboard() {
           <h2 className="section-title-editorial">Saldo NU</h2>
           <span className="text-xs text-[var(--color-muted)]">rinde {(cuentas.rendNU * 100).toFixed(1)}% E.A.</span>
         </div>
+        <p className="text-xs text-[var(--color-muted)] mb-2">Acumulado mes a mes</p>
         <GraficoLinea puntos={puntosNU} />
       </div>
 
       {/* Cuentas */}
       <div className="ledger-card p-6 mb-6">
-        <h2 className="section-title-editorial mb-3">Cuentas e inversiones</h2>
-        <div className="flex justify-between items-baseline dashed-row py-2 text-[13.5px]">
-          <span className="text-[#5c5347]">NU (ahorro)</span>
-          <span className="font-serif-num font-semibold">{formatoCOP(cuentas.nu)}</span>
-        </div>
+        <h2 className="section-title-editorial mb-1">Cuentas e inversiones</h2>
+        <p className="text-xs text-[var(--color-muted)] mb-2">
+          Crecen con lo que confirmes como inversión. Toca un saldo si el número real no coincide.
+        </p>
         <FilaSaldo
-          etiqueta="Bancolombia (puente)"
-          valor={cuentas.bancolombia}
-          onGuardar={(v) => api.editarSaldoCuenta("bancolombia", v).then(cargarCuentas)}
+          etiqueta="NU (ahorro)"
+          valor={cuentas.nu}
+          onGuardar={(v) => api.editarSaldoCuenta("nu", v).then(cargarCuentas)}
         />
-        <div className="flex justify-between items-baseline dashed-row py-2 text-[13.5px]">
-          <span className="text-[#5c5347]">XTB (inversión)</span>
-          <span className="font-serif-num font-semibold">
-            {cuentas.xtbUSD.toFixed(2)} USD
-            <span className="text-xs text-[var(--color-muted)] font-sans"> · {formatoCOP(xtbCOP)}</span>
-          </span>
-        </div>
+        <FilaSaldo
+          etiqueta="XTB (inversión)"
+          valor={cuentas.xtbUSD}
+          sufijoUSD
+          extra={formatoCOP(xtbCOP)}
+          onGuardar={(v) => api.editarSaldoCuenta("xtbUSD", v).then(cargarCuentas)}
+        />
         <FilaSaldo
           etiqueta="Binance (cripto)"
           valor={cuentas.binanceUSD}
@@ -113,9 +128,11 @@ export default function Dashboard() {
           extra={formatoCOP(binanceCOP)}
           onGuardar={(v) => api.editarSaldoCuenta("binanceUSD", v).then(cargarCuentas)}
         />
-        <p className="text-[10px] text-[var(--color-muted)] mt-2">
-          TRM referencia: {formatoCOP(cuentas.trm)} · toca un saldo para actualizarlo a mano
-        </p>
+        <FilaSaldo
+          etiqueta="TRM (dólar de referencia)"
+          valor={cuentas.trm}
+          onGuardar={(v) => api.editarConfig("trm", v).then(cargarCuentas)}
+        />
       </div>
 
       {/* Deudas */}
@@ -123,7 +140,10 @@ export default function Dashboard() {
         <div className="flex justify-between items-baseline mb-3">
           <h2 className="section-title-editorial">Deudas</h2>
           <span className="text-xs text-[var(--color-muted)]">
-            {Math.round(((deudaInicialTotal - deudaTotal) / deudaInicialTotal) * 100)}% pagado en total
+            {deudaInicialTotal > 0
+              ? Math.round(((deudaInicialTotal - deudaTotal) / deudaInicialTotal) * 100)
+              : 0}
+            % pagado en total
           </span>
         </div>
         <GraficoDona

@@ -1,8 +1,20 @@
+// La quincena "activa" no es la del calendario sino la del sueldo con el
+// que se esta viviendo hoy: el pago de la Q2 de un mes llega a fin de mes,
+// asi que del 1 al 15 se esta gastando esa Q2 del mes anterior. Del 16 en
+// adelante ya entro el pago de la Q1 del mes en curso.
 export function quincenaId(fecha = new Date()) {
-  const y = fecha.getFullYear();
-  const m = String(fecha.getMonth() + 1).padStart(2, "0");
-  const q = fecha.getDate() <= 15 ? 1 : 2;
-  return `${y}-${m}-Q${q}`;
+  let anio = fecha.getFullYear();
+  let mes = fecha.getMonth() + 1;
+
+  if (fecha.getDate() <= 15) {
+    mes -= 1;
+    if (mes === 0) {
+      mes = 12;
+      anio -= 1;
+    }
+    return idQuincena(anio, mes, 2);
+  }
+  return idQuincena(anio, mes, 1);
 }
 
 export function partesQuincena(id) {
@@ -90,7 +102,7 @@ export function calcularEstadoQuincena(db, id) {
     };
   });
 
-  const categoriasInversion = ["xtb", ...Object.keys(categoriasPersonalizadas.inversion || {})];
+  const categoriasInversion = ["nu", "xtb", "binance", ...Object.keys(categoriasPersonalizadas.inversion || {})];
   const inversiones = categoriasInversion.map((cat) => ({
     categoria: cat,
     presupuesto: 0,
@@ -264,16 +276,42 @@ export function listaQuincenasConDatos(db) {
   return [...ids].sort();
 }
 
-// Evolucion del sobrante que se va acumulando al NU, quincena a quincena,
-// calculado en vivo (sin necesitar ningun paso de "cierre").
+// Evolucion de lo que realmente se ha aportado al NU, quincena a quincena.
+// Antes esto acumulaba el sobrante *sugerido* (aNU), asi que el saldo subia
+// solo aunque el dinero nunca se hubiera movido. Ahora cuenta unicamente
+// los aportes confirmados de verdad (tipo inversion, categoria nu).
 export function calcularEvolucionNU(db) {
   const ids = listaQuincenasConDatos(db);
   let acumulado = 0;
   return ids.map((id) => {
-    const estado = calcularEstadoQuincena(db, id);
-    acumulado += estado.aNU;
-    return { quincenaId: id, aNU: estado.aNU, acumulado };
+    const aporte = (db.movimientos || [])
+      .filter(
+        (m) =>
+          m.quincenaId === id && m.tipo === "inversion" && m.categoria === "nu" && esConfirmado(m)
+      )
+      .reduce((a, m) => a + Number(m.monto || 0), 0);
+    acumulado += aporte;
+    return { quincenaId: id, aNU: aporte, acumulado };
   });
+}
+
+// Acumulado del NU agrupado por mes calendario, para ver la tendencia sin
+// el ruido de dos puntos por mes.
+export function calcularEvolucionNUMensual(db) {
+  const porQuincena = calcularEvolucionNU(db);
+  const meses = [];
+  const indice = {};
+  for (const p of porQuincena) {
+    const mes = p.quincenaId.slice(0, 7);
+    if (!(mes in indice)) {
+      indice[mes] = meses.length;
+      meses.push({ mes, aporte: 0, acumulado: 0 });
+    }
+    const fila = meses[indice[mes]];
+    fila.aporte += p.aNU;
+    fila.acumulado = p.acumulado;
+  }
+  return meses;
 }
 
 // Resumen del mismo mes calendario (ambas quincenas), por categoria de gasto.

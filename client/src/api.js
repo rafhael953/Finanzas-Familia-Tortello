@@ -44,9 +44,16 @@ export const api = {
     request("/api/deudas/compra", { method: "POST", body: JSON.stringify(compra) }),
   editarCuotaDeuda: (categoria, valor) =>
     request("/api/deudas/cuota", { method: "PUT", body: JSON.stringify({ categoria, valor }) }),
+  editarCompraTarjeta: (id, compra) =>
+    request(`/api/deudas/compra/${id}`, { method: "PUT", body: JSON.stringify(compra) }),
+  borrarCompraTarjeta: (id) => request(`/api/deudas/compra/${id}`, { method: "DELETE" }),
+
+  editarConfig: (campo, valor) =>
+    request("/api/config", { method: "PUT", body: JSON.stringify({ campo, valor }) }),
 
   getCuentas: () => request("/api/cuentas"),
   getEvolucionNU: () => request("/api/cuentas/evolucion-nu"),
+  getEvolucionNUMensual: () => request("/api/cuentas/evolucion-nu-mensual"),
   editarSaldoCuenta: (campo, valor) =>
     request("/api/cuentas/saldo", { method: "PUT", body: JSON.stringify({ campo, valor }) }),
 
@@ -86,7 +93,9 @@ export const ETIQUETAS_CATEGORIA = {
   rappi: "Rappi",
   auteco: "Auteco (moto)",
   numama: "NU mamá",
+  nu: "Ahorro NU",
   xtb: "Inversión XTB",
+  binance: "Binance (cripto)",
   medicaBucaramanga: "Reserva médica",
   jerardith: "Bolsillo Jerardith",
   salario: "Salario",
@@ -132,7 +141,9 @@ export const CATEGORIA_COLOR = {
   rappi: "#C9A227",
   auteco: "#4F6D7A",
   numama: "#6B8E6B",
+  nu: "#6B8E6B",
   xtb: "#5C8A99",
+  binance: "#C6A15B",
   medicaBucaramanga: "#9C6B4E",
   jerardith: "#B5638C",
   salario: "#3F6B33",

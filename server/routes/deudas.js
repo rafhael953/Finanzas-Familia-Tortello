@@ -29,6 +29,7 @@ function mesActualPrefijo() {
 // juzgarlo con el valor de hoy (ej. si subes la cuota este mes, no se le
 // puede exigir esa cuota mas alta al mes pasado).
 function registrarCambioCuota(db, categoria, valorAnterior, valorNuevo) {
+  if (valorAnterior === valorNuevo) return;
   db.historialCuotas = db.historialCuotas || {};
   const historial = (db.historialCuotas[categoria] = db.historialCuotas[categoria] || []);
   if (historial.length === 0) {
@@ -36,7 +37,12 @@ function registrarCambioCuota(db, categoria, valorAnterior, valorNuevo) {
     // cual era el valor "de siempre" antes de este cambio.
     historial.push({ desde: "0000-00", valor: valorAnterior });
   }
-  historial.push({ desde: mesActualPrefijo(), valor: valorNuevo });
+  // Si ya se cambio la cuota este mismo mes, se reemplaza esa entrada en
+  // vez de apilar otra: solo importa con que valor termina el mes.
+  const mes = mesActualPrefijo();
+  const existente = historial.find((h) => h.desde === mes);
+  if (existente) existente.valor = valorNuevo;
+  else historial.push({ desde: mes, valor: valorNuevo });
 }
 
 // Ajustar directamente la cuota mensual recomendada de una deuda -- es una
@@ -106,6 +112,73 @@ router.post("/compra", async (req, res) => {
   res.json(compra);
 });
 
+// Corregir una compra ya registrada (se equivoco en el monto o le
+// cambiaron las cuotas): se revierte el efecto anterior y se aplica el
+// nuevo, para que el saldo y la cuota mensual queden consistentes.
+router.put("/compra/:id", async (req, res) => {
+  const { monto, cuotas, fecha, descripcion } = req.body || {};
+  const montoNum = Number(monto);
+  const cuotasNum = Number(cuotas);
+  if (!montoNum || montoNum <= 0) {
+    return res.status(400).json({ error: "Monto inválido" });
+  }
+  if (!cuotasNum || cuotasNum <= 0 || !Number.isInteger(cuotasNum)) {
+    return res.status(400).json({ error: "Número de cuotas inválido" });
+  }
+
+  try {
+    const actualizada = await withDB(async (db) => {
+      const compra = (db.comprasTarjeta || []).find((c) => c.id === req.params.id);
+      if (!compra) {
+        const e = new Error("No encontrada");
+        e.status = 404;
+        throw e;
+      }
+      const nuevaCuota = Math.round(montoNum / cuotasNum);
+
+      db.deudasIniciales[compra.tarjeta] += montoNum - compra.monto;
+      const cuotaAntes = db.cuotasRecomendadas[compra.tarjeta];
+      const cuotaDespues = cuotaAntes - compra.cuotaMensual + nuevaCuota;
+      registrarCambioCuota(db, compra.tarjeta, cuotaAntes, cuotaDespues);
+      db.cuotasRecomendadas[compra.tarjeta] = cuotaDespues;
+
+      compra.monto = montoNum;
+      compra.cuotas = cuotasNum;
+      compra.cuotaMensual = nuevaCuota;
+      if (fecha !== undefined) compra.fecha = fecha;
+      if (descripcion !== undefined) compra.descripcion = descripcion;
+      return compra;
+    });
+    res.json(actualizada);
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+// Borrar una compra registrada por error: deshace por completo lo que
+// habia sumado al saldo y a la cuota mensual de esa tarjeta.
+router.delete("/compra/:id", async (req, res) => {
+  try {
+    await withDB(async (db) => {
+      const idx = (db.comprasTarjeta || []).findIndex((c) => c.id === req.params.id);
+      if (idx < 0) {
+        const e = new Error("No encontrada");
+        e.status = 404;
+        throw e;
+      }
+      const [compra] = db.comprasTarjeta.splice(idx, 1);
+      db.deudasIniciales[compra.tarjeta] -= compra.monto;
+      const cuotaAntes = db.cuotasRecomendadas[compra.tarjeta];
+      const cuotaDespues = Math.max(0, cuotaAntes - compra.cuotaMensual);
+      registrarCambioCuota(db, compra.tarjeta, cuotaAntes, cuotaDespues);
+      db.cuotasRecomendadas[compra.tarjeta] = cuotaDespues;
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
 const ORDEN_ABONO_EXTRA = ["rappi", "falabella", "auteco"];
 
 function tasaMensual(tasaEA) {
@@ -156,6 +229,15 @@ router.get("/proyeccion", async (req, res) => {
   let saldos = {};
   for (const k of Object.keys(saldosActuales)) saldos[k] = Math.max(0, saldosActuales[k]);
 
+  // El abono extra es un valor que se define a mano, NO uno que se asume.
+  // Antes se calculaba como la mitad del sobrante teorico del presupuesto,
+  // lo que daba una proyeccion irreal (las deudas desaparecian en meses)
+  // porque supone que cada quincena cierra exactamente segun lo planeado.
+  // Por defecto es 0: la proyeccion muestra solo lo que dan las cuotas.
+  const abonoExtraMensual = Math.max(0, Number(db.config.abonoExtraMensual) || 0);
+
+  // Referencia informativa: cuanto sobraria al mes si todo saliera segun
+  // el presupuesto. Sirve para sugerir un abono extra, no para asumirlo.
   const gastosQ1 = Object.values(db.gastosFijos.q1).reduce((a, b) => a + b, 0);
   const gastosQ2 = Object.values(db.gastosFijos.q2).reduce((a, b) => a + b, 0);
   const cuotasTotal = Object.values(db.cuotasRecomendadas).reduce((a, b) => a + b, 0);
@@ -177,7 +259,7 @@ router.get("/proyeccion", async (req, res) => {
       saldos[nombre] = saldos[nombre] + interes - cuota;
     }
 
-    let abonoExtraDisponible = sobranteMensualBase * 0.5;
+    let abonoExtraDisponible = abonoExtraMensual;
     for (const nombre of ORDEN_ABONO_EXTRA) {
       if (abonoExtraDisponible <= 0) break;
       if (saldos[nombre] <= 0) continue;
@@ -194,7 +276,11 @@ router.get("/proyeccion", async (req, res) => {
     if (Object.values(saldos).every((s) => s <= 0)) break;
   }
 
-  res.json({ sobranteMensualBase: Math.round(sobranteMensualBase), proyeccion });
+  res.json({
+    sobranteMensualBase: Math.round(sobranteMensualBase),
+    abonoExtraMensual,
+    proyeccion,
+  });
 });
 
 export default router;
