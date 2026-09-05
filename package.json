@@ -1,0 +1,8 @@
+{
+  "name": "tortello-finanzas",
+  "private": true,
+  "scripts": {
+    "build": "npm install --prefix client && npm run build --prefix client && npm install --prefix server",
+    "start": "npm start --prefix server"
+  }
+}

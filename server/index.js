@@ -1,5 +1,8 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
+import { existsSync } from "fs";
 import registrosRouter from "./routes/registros.js";
 import deudasRouter from "./routes/deudas.js";
 import cuentasRouter from "./routes/cuentas.js";
@@ -7,6 +10,7 @@ import jerardithRouter from "./routes/jerardith.js";
 import movimientosRouter from "./routes/movimientos.js";
 import { readDB } from "./db.js";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -30,6 +34,16 @@ app.get("/api/config", async (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
+// En produccion, el cliente se compila en client/dist y este mismo servidor
+// lo sirve, para que todo quede en una sola direccion (un solo servicio).
+const CLIENT_DIST = path.join(__dirname, "..", "client", "dist");
+if (existsSync(CLIENT_DIST)) {
+  app.use(express.static(CLIENT_DIST));
+  app.get(/^(?!\/api).*/, (req, res) => {
+    res.sendFile(path.join(CLIENT_DIST, "index.html"));
+  });
+}
+
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Servidor Tortello Finanzas escuchando en puerto ${PORT}`);
 });

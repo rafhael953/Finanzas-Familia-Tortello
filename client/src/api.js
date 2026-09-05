@@ -1,4 +1,7 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+// En desarrollo el cliente y el servidor corren en puertos distintos.
+// En produccion el servidor sirve el cliente compilado desde su propia
+// direccion, asi que las llamadas van al mismo origen (BASE_URL vacio).
+const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:3001" : "");
 
 async function request(path, options = {}) {
   const res = await fetch(`${BASE_URL}${path}`, {
