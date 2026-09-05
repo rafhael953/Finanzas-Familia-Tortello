@@ -1,8 +1,12 @@
 import { Router } from "express";
-import { readDB } from "../db.js";
+import { readDB, withDB } from "../db.js";
 import { calcularEvolucionNU } from "../calculos.js";
 
 const router = Router();
+
+// Cuentas cuyo saldo se actualiza a mano porque viven fuera de esta app
+// (el banco, el exchange) -- no se pueden derivar de los movimientos.
+const CAMPOS_EDITABLES = ["bancolombia", "binanceUSD"];
 
 router.get("/", async (req, res) => {
   const db = await readDB();
@@ -25,6 +29,22 @@ router.get("/", async (req, res) => {
     rendNU: db.config.rendNU,
     trm: db.config.trm,
   });
+});
+
+// Actualizar el saldo real de una cuenta manual (Bancolombia, Binance) --
+// ej. cuando se revisa la app del banco/exchange y el numero cambio.
+router.put("/saldo", async (req, res) => {
+  const { campo, valor } = req.body;
+  if (!CAMPOS_EDITABLES.includes(campo)) {
+    return res.status(400).json({ error: "Campo inválido" });
+  }
+  if (typeof valor !== "number" || Number.isNaN(valor) || valor < 0) {
+    return res.status(400).json({ error: "Valor inválido" });
+  }
+  await withDB(async (db) => {
+    db.saldosIniciales[campo] = valor;
+  });
+  res.json({ ok: true, campo, valor });
 });
 
 router.get("/evolucion-nu", async (req, res) => {

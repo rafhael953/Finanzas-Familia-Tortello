@@ -5,11 +5,71 @@ import GraficoLinea from "../components/GraficoLinea";
 import GraficoDona from "../components/GraficoDona";
 import BarraDeuda from "../components/BarraDeuda";
 
+// Fila de saldo que se puede editar a mano -- para cuentas que viven fuera
+// de esta app (el banco, el exchange) y cuyo numero no se puede calcular
+// solo con los movimientos registrados aqui.
+function FilaSaldo({ etiqueta, valor, sufijoUSD, extra, onGuardar }) {
+  const [editando, setEditando] = useState(false);
+  const [valorEdit, setValorEdit] = useState(String(valor));
+  const [guardando, setGuardando] = useState(false);
+
+  async function guardar() {
+    if (valorEdit === "" || Number(valorEdit) < 0) return;
+    setGuardando(true);
+    try {
+      await onGuardar(Number(valorEdit));
+      setEditando(false);
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  return (
+    <div className="flex justify-between items-baseline dashed-row py-2 text-[13.5px]">
+      <span className="text-[#5c5347]">{etiqueta}</span>
+      {editando ? (
+        <span className="flex items-center gap-2">
+          <input
+            type="number"
+            inputMode="decimal"
+            value={valorEdit}
+            onChange={(e) => setValorEdit(e.target.value)}
+            className="font-serif-num w-28 text-right border border-[var(--color-ledger-border)] rounded-md px-2 py-1 text-[13px] bg-[var(--color-fondo)]/40"
+            autoFocus
+          />
+          <button
+            onClick={guardar}
+            disabled={guardando}
+            className="text-[11px] font-semibold text-[var(--color-positivo)]"
+          >
+            Guardar
+          </button>
+        </span>
+      ) : (
+        <button
+          onClick={() => {
+            setValorEdit(String(valor));
+            setEditando(true);
+          }}
+          className="font-serif-num font-semibold underline decoration-dotted"
+        >
+          {sufijoUSD ? `${valor.toFixed(2)} USD` : formatoCOP(valor)}
+          {extra && <span className="text-xs text-[var(--color-muted)] font-sans"> · {extra}</span>}
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const [cuentas, setCuentas] = useState(null);
   const [evolucionNU, setEvolucionNU] = useState([]);
   const [deudas, setDeudas] = useState([]);
   const [cargando, setCargando] = useState(true);
+
+  function cargarCuentas() {
+    return api.getCuentas().then(setCuentas);
+  }
 
   useEffect(() => {
     Promise.all([api.getCuentas(), api.getEvolucionNU(), api.getDeudas()]).then(([c, e, d]) => {
@@ -83,10 +143,11 @@ export default function Dashboard() {
           <span className="text-[#5c5347]">NU (ahorro)</span>
           <span className="font-serif-num font-semibold">{formatoCOP(cuentas.nu)}</span>
         </div>
-        <div className="flex justify-between items-baseline dashed-row py-2 text-[13.5px]">
-          <span className="text-[#5c5347]">Bancolombia (puente)</span>
-          <span className="font-serif-num font-semibold">{formatoCOP(cuentas.bancolombia)}</span>
-        </div>
+        <FilaSaldo
+          etiqueta="Bancolombia (puente)"
+          valor={cuentas.bancolombia}
+          onGuardar={(v) => api.editarSaldoCuenta("bancolombia", v).then(cargarCuentas)}
+        />
         <div className="flex justify-between items-baseline dashed-row py-2 text-[13.5px]">
           <span className="text-[#5c5347]">XTB (inversión)</span>
           <span className="font-serif-num font-semibold">
@@ -94,14 +155,16 @@ export default function Dashboard() {
             <span className="text-xs text-[var(--color-muted)] font-sans"> · {formatoCOP(xtbCOP)}</span>
           </span>
         </div>
-        <div className="flex justify-between items-baseline py-2 text-[13.5px]">
-          <span className="text-[#5c5347]">Binance (cripto)</span>
-          <span className="font-serif-num font-semibold">
-            {cuentas.binanceUSD.toFixed(2)} USD
-            <span className="text-xs text-[var(--color-muted)] font-sans"> · {formatoCOP(binanceCOP)}</span>
-          </span>
-        </div>
-        <p className="text-[10px] text-[var(--color-muted)] mt-2">TRM referencia: {formatoCOP(cuentas.trm)}</p>
+        <FilaSaldo
+          etiqueta="Binance (cripto)"
+          valor={cuentas.binanceUSD}
+          sufijoUSD
+          extra={formatoCOP(binanceCOP)}
+          onGuardar={(v) => api.editarSaldoCuenta("binanceUSD", v).then(cargarCuentas)}
+        />
+        <p className="text-[10px] text-[var(--color-muted)] mt-2">
+          TRM referencia: {formatoCOP(cuentas.trm)} · toca un saldo para actualizarlo a mano
+        </p>
       </div>
 
       {/* Deudas */}

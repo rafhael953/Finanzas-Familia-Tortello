@@ -41,6 +41,8 @@ export const api = {
 
   getCuentas: () => request("/api/cuentas"),
   getEvolucionNU: () => request("/api/cuentas/evolucion-nu"),
+  editarSaldoCuenta: (campo, valor) =>
+    request("/api/cuentas/saldo", { method: "PUT", body: JSON.stringify({ campo, valor }) }),
 
   getResumenJerardith: () => request("/api/jerardith/resumen"),
   getGastosJerardith: () => request("/api/jerardith/gastos"),
