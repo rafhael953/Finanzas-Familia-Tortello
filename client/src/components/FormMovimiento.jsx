@@ -1,12 +1,16 @@
-import { useState } from "react";
-import { ETIQUETAS_CATEGORIA } from "../api";
+import { useEffect, useState } from "react";
+import { api, ETIQUETAS_CATEGORIA, aplicarCategoriasPersonalizadas } from "../api";
 
-const CATEGORIAS_POR_TIPO = {
+const CATEGORIAS_BASE = {
   gasto: ["arriendo", "servicios", "mercado", "cuidado", "salud", "combustible", "ocio", "efectivo", "medicaBucaramanga", "jerardith"],
   deuda: ["falabella", "rappi", "auteco", "numama", "decameron"],
   inversion: ["xtb"],
   ingreso: ["salario", "prima", "extra"],
 };
+
+// Tipos donde se puede crear una categoria nueva sobre la marcha. Las
+// deudas no entran: necesitan saldo y cuota, no solo un nombre.
+const TIPOS_PERSONALIZABLES = ["gasto", "inversion", "ingreso"];
 
 const ETIQUETAS_TIPO = {
   gasto: "Gasto",
@@ -15,9 +19,14 @@ const ETIQUETAS_TIPO = {
   ingreso: "Ingreso",
 };
 
+const NUEVA = "__nueva__";
+
 export default function FormMovimiento({ quincenaId, onGuardado, onCancelar }) {
+  const [categoriasPersonalizadas, setCategoriasPersonalizadas] = useState({ gasto: {}, inversion: {}, ingreso: {} });
   const [tipo, setTipo] = useState("gasto");
-  const [categoria, setCategoria] = useState(CATEGORIAS_POR_TIPO.gasto[0]);
+  const [categoria, setCategoria] = useState(CATEGORIAS_BASE.gasto[0]);
+  const [nuevaCategoria, setNuevaCategoria] = useState("");
+  const [creandoCategoria, setCreandoCategoria] = useState(false);
   const [monto, setMonto] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [fecha, setFecha] = useState(new Date().toISOString().slice(0, 10));
@@ -25,14 +34,55 @@ export default function FormMovimiento({ quincenaId, onGuardado, onCancelar }) {
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    api.getCategoriasPersonalizadas().then((datos) => {
+      setCategoriasPersonalizadas(datos);
+      aplicarCategoriasPersonalizadas(datos);
+    }).catch(() => {});
+  }, []);
+
+  function categoriasDe(t) {
+    return [...CATEGORIAS_BASE[t], ...Object.keys(categoriasPersonalizadas[t] || {})];
+  }
+
   function cambiarTipo(nuevoTipo) {
     setTipo(nuevoTipo);
-    setCategoria(CATEGORIAS_POR_TIPO[nuevoTipo][0]);
+    setCategoria(CATEGORIAS_BASE[nuevoTipo][0]);
+  }
+
+  function cambiarCategoria(valor) {
+    if (valor === NUEVA) {
+      setCategoria(NUEVA);
+      setNuevaCategoria("");
+    } else {
+      setCategoria(valor);
+    }
+  }
+
+  async function crearCategoria() {
+    if (!nuevaCategoria.trim()) return;
+    setCreandoCategoria(true);
+    setError("");
+    try {
+      const nueva = await api.crearCategoria(tipo, nuevaCategoria.trim());
+      const actualizadas = await api.getCategoriasPersonalizadas();
+      setCategoriasPersonalizadas(actualizadas);
+      aplicarCategoriasPersonalizadas(actualizadas);
+      setCategoria(nueva.categoria);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCreandoCategoria(false);
+    }
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+    if (categoria === NUEVA) {
+      setError("Crea la categoría nueva antes de guardar");
+      return;
+    }
     if (!monto || Number(monto) <= 0) {
       setError("Ingresa un monto válido");
       return;
@@ -71,15 +121,36 @@ export default function FormMovimiento({ quincenaId, onGuardado, onCancelar }) {
         <label className="text-sm font-medium">Categoría</label>
         <select
           value={categoria}
-          onChange={(e) => setCategoria(e.target.value)}
+          onChange={(e) => cambiarCategoria(e.target.value)}
           className="border border-[var(--color-ledger-border)] rounded-md px-4 py-3 text-base bg-[var(--color-fondo)]/40"
         >
-          {CATEGORIAS_POR_TIPO[tipo].map((cat) => (
+          {categoriasDe(tipo).map((cat) => (
             <option key={cat} value={cat}>
-              {ETIQUETAS_CATEGORIA[cat]}
+              {ETIQUETAS_CATEGORIA[cat] || cat}
             </option>
           ))}
+          {TIPOS_PERSONALIZABLES.includes(tipo) && <option value={NUEVA}>+ Agregar categoría nueva…</option>}
         </select>
+        {categoria === NUEVA && (
+          <div className="flex items-center gap-2 mt-1">
+            <input
+              type="text"
+              value={nuevaCategoria}
+              onChange={(e) => setNuevaCategoria(e.target.value)}
+              placeholder="Nombre de la categoría"
+              className="flex-1 border border-[var(--color-ledger-border)] rounded-md px-3 py-2 text-sm bg-[var(--color-fondo)]/40"
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={crearCategoria}
+              disabled={creandoCategoria || !nuevaCategoria.trim()}
+              className="text-xs font-semibold bg-[var(--color-positivo)] text-white rounded-md px-3 py-2 disabled:opacity-40"
+            >
+              {creandoCategoria ? "..." : "Crear"}
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-1">

@@ -11,21 +11,27 @@ const CATEGORIAS_POR_TIPO = {
   ingreso: ["salario", "prima", "extra"],
 };
 
+function categoriaValida(db, tipo, categoria) {
+  if (!CATEGORIAS_POR_TIPO[tipo]) return false;
+  if (CATEGORIAS_POR_TIPO[tipo].includes(categoria)) return true;
+  const personalizadas = (db.categoriasPersonalizadas || {})[tipo] || {};
+  return categoria in personalizadas;
+}
+
 router.post("/", async (req, res) => {
   const mov = req.body;
 
-  if (!CATEGORIAS_POR_TIPO[mov.tipo]) {
-    return res.status(400).json({ error: "Tipo inválido" });
-  }
-  if (!CATEGORIAS_POR_TIPO[mov.tipo].includes(mov.categoria)) {
-    return res.status(400).json({ error: "Categoría inválida para ese tipo" });
-  }
   if (!mov.monto || Number(mov.monto) <= 0) {
     return res.status(400).json({ error: "Monto inválido" });
   }
 
   try {
     const nuevo = await withDB(async (db) => {
+      if (!categoriaValida(db, mov.tipo, mov.categoria)) {
+        const e = new Error("Categoría inválida para ese tipo");
+        e.status = 400;
+        throw e;
+      }
       const item = {
         id: `mov-${Date.now()}-${Math.round(Math.random() * 1000)}`,
         quincenaId: mov.quincenaId || quincenaId(),
@@ -43,7 +49,7 @@ router.post("/", async (req, res) => {
     });
     res.json(nuevo);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(err.status || 500).json({ error: err.message });
   }
 });
 

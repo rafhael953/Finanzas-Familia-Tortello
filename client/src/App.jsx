@@ -7,13 +7,14 @@ import Deudas from "./pages/Deudas";
 import Dashboard from "./pages/Dashboard";
 import Historial from "./pages/Historial";
 import Login from "./pages/Login";
-import { api } from "./api";
+import { api, aplicarCategoriasPersonalizadas } from "./api";
 
 export default function App() {
   const [usuario, setUsuario] = useState(undefined); // undefined = cargando
 
   useEffect(() => {
     api.whoami().then((r) => setUsuario(r.usuario));
+    api.getCategoriasPersonalizadas().then(aplicarCategoriasPersonalizadas).catch(() => {});
   }, []);
 
   if (usuario === undefined) {

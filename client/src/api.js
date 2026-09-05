@@ -45,6 +45,10 @@ export const api = {
   editarSaldoCuenta: (campo, valor) =>
     request("/api/cuentas/saldo", { method: "PUT", body: JSON.stringify({ campo, valor }) }),
 
+  getCategoriasPersonalizadas: () => request("/api/categorias"),
+  crearCategoria: (tipo, etiqueta) =>
+    request("/api/categorias", { method: "POST", body: JSON.stringify({ tipo, etiqueta }) }),
+
   getResumenJerardith: () => request("/api/jerardith/resumen"),
   getGastosJerardith: () => request("/api/jerardith/gastos"),
   postGastoJerardith: (gasto) =>
@@ -130,6 +134,18 @@ export const CATEGORIA_COLOR = {
   prima: "#5B8A4A",
   extra: "#7BA36A",
 };
+
+// Fusiona las categorias que la familia crea sobre la marcha (ver
+// categorias.js en el servidor) dentro de las etiquetas y colores conocidos,
+// para que se vean igual de bien que las categorias que ya traia la app.
+export function aplicarCategoriasPersonalizadas(porTipo) {
+  for (const tipo of Object.keys(porTipo || {})) {
+    for (const [categoria, info] of Object.entries(porTipo[tipo] || {})) {
+      ETIQUETAS_CATEGORIA[categoria] = info.etiqueta;
+      CATEGORIA_COLOR[categoria] = info.color;
+    }
+  }
+}
 
 export const ETIQUETAS_TIPO = {
   ingreso: "Ingreso",

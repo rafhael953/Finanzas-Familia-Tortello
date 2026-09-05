@@ -257,12 +257,7 @@
     "2026-09-Q1": false
   },
   "categoriasPersonalizadas": {
-    "gasto": {
-      "regalos": {
-        "etiqueta": "Regalos",
-        "color": "#C6A15B"
-      }
-    },
+    "gasto": {},
     "inversion": {},
     "ingreso": {}
   }

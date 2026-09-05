@@ -63,7 +63,16 @@ export function calcularEstadoQuincena(db, id) {
     };
   });
 
-  const gastos = [...gastosPresupuestados, ...gastosVariables];
+  // Categorias que la familia crea sobre la marcha (ver routes/categorias.js)
+  // -- tambien sin presupuesto fijo, igual que las variables de arriba.
+  const categoriasPersonalizadas = db.categoriasPersonalizadas || {};
+  const gastosPersonalizados = Object.keys(categoriasPersonalizadas.gasto || {}).map((cat) => ({
+    categoria: cat,
+    presupuesto: 0,
+    ...totales(movs, "gasto", cat),
+  }));
+
+  const gastos = [...gastosPresupuestados, ...gastosVariables, ...gastosPersonalizados];
 
   // Las cuotas de deuda son mensuales, no por quincena: si ya se pago en la
   // otra quincena del mismo mes, no hay que volver a sugerirla aqui.
@@ -81,7 +90,7 @@ export function calcularEstadoQuincena(db, id) {
     };
   });
 
-  const categoriasInversion = ["xtb"];
+  const categoriasInversion = ["xtb", ...Object.keys(categoriasPersonalizadas.inversion || {})];
   const inversiones = categoriasInversion.map((cat) => ({
     categoria: cat,
     presupuesto: 0,
@@ -95,10 +104,17 @@ export function calcularEstadoQuincena(db, id) {
   const prima = totales(movs, "ingreso", "prima");
   const extra = totales(movs, "ingreso", "extra");
 
+  const ingresosPersonalizados = Object.keys(categoriasPersonalizadas.ingreso || {}).map((cat) => ({
+    categoria: cat,
+    presupuesto: 0,
+    ...totales(movs, "ingreso", cat),
+  }));
+
   const ingresos = [
     { categoria: "salario", presupuesto: salarioDefault, ...salario },
     { categoria: "prima", presupuesto: 0, ...prima },
     { categoria: "extra", presupuesto: 0, ...extra },
+    ...ingresosPersonalizados,
   ];
 
   const sumar = (lista, campo) => lista.reduce((a, x) => a + x[campo], 0);
