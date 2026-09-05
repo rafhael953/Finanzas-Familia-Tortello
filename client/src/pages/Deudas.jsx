@@ -32,7 +32,7 @@ function FormCompraTarjeta({ onGuardado, onCancelar }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="ledger-card p-5 mb-5 flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="ledger-card p-6 mb-6 flex flex-col gap-4">
       <h2 className="section-title-editorial">Registrar compra con tarjeta</h2>
 
       <div className="flex flex-col gap-1">
@@ -169,7 +169,7 @@ export default function Deudas() {
       <header className="flex justify-between items-baseline mb-1">
         <div>
           <div className="kicker">Tortello · Libro de finanzas</div>
-          <h1 className="font-serif text-[26px] font-semibold tracking-tight">Deudas</h1>
+          <h1 className="font-serif text-[30px] font-semibold tracking-tight">Deudas</h1>
         </div>
       </header>
       <div className="flex justify-end">
@@ -177,13 +177,13 @@ export default function Deudas() {
           volver
         </Link>
       </div>
-      <div className="h-px bg-[var(--color-ledger-rule)] my-5" />
+      <div className="h-px bg-[var(--color-ledger-rule)] my-6" />
 
       {cargando ? (
         <p className="text-center py-8 font-serif-num">Cargando...</p>
       ) : (
         <>
-          <div className="ledger-card p-5 mb-5">
+          <div className="ledger-card p-6 mb-6">
             <h2 className="section-title-editorial mb-2">Estado actual</h2>
             {deudas.map((d) => (
               <BarraDeuda key={d.nombre} nombre={d.nombre} saldo={d.saldo} saldoInicial={d.saldoInicial} />
@@ -202,7 +202,7 @@ export default function Deudas() {
           )}
 
           {compras.length > 0 && (
-            <div className="ledger-card p-5 mb-5">
+            <div className="ledger-card p-6 mb-6">
               <h2 className="section-title-editorial mb-2">Compras a cuotas registradas</h2>
               {[...compras].reverse().map((c) => (
                 <div key={c.id} className="dashed-row py-2.5 flex justify-between items-baseline">

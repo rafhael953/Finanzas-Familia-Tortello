@@ -39,7 +39,7 @@ export default function PanelJerardith() {
       <header className="flex justify-between items-baseline mb-1">
         <div>
           <div className="kicker">Tortello · Libro de finanzas</div>
-          <h1 className="font-serif text-[26px] font-semibold tracking-tight">Panel Jerardith</h1>
+          <h1 className="font-serif text-[30px] font-semibold tracking-tight">Panel Jerardith</h1>
         </div>
       </header>
       <div className="flex justify-between">
@@ -50,13 +50,13 @@ export default function PanelJerardith() {
           cambiar perfil
         </Link>
       </div>
-      <div className="h-px bg-[var(--color-ledger-rule)] my-5" />
+      <div className="h-px bg-[var(--color-ledger-rule)] my-6" />
 
-      <div className="ledger-card p-5 mb-5">
-        <h2 className="section-title-editorial mb-3">Estado general de la familia</h2>
+      <div className="ledger-card ledger-card--hero p-6 mb-6">
+        <h2 className="section-title-editorial mb-3 text-white/85">Estado general de la familia</h2>
         <div className="flex justify-between">
           <div>
-            <span className="font-serif-num text-2xl font-bold text-[var(--color-negativo)] block">
+            <span className="font-serif-num text-2xl font-bold text-[var(--color-negativo-alto)] block">
               {formatoCOP(deudaTotal)}
             </span>
             <span className="kicker">Deuda total</span>
@@ -64,7 +64,7 @@ export default function PanelJerardith() {
           <div className="text-right">
             <span
               className={`font-serif-num text-2xl font-bold block ${
-                resumen.balanceGeneral < 0 ? "text-[var(--color-negativo)]" : "text-[var(--color-positivo)]"
+                resumen.balanceGeneral < 0 ? "text-[var(--color-negativo-alto)]" : "text-[var(--color-positivo-alto)]"
               }`}
             >
               {formatoCOP(resumen.balanceGeneral)}
@@ -72,15 +72,15 @@ export default function PanelJerardith() {
             <span className="kicker">Balance quincena</span>
           </div>
         </div>
-        <p className="text-xs text-[var(--color-muted)] mt-3">
+        <p className="text-xs text-white/50 mt-3">
           Quincena {resumen.quincenaActual} ·{" "}
-          <span className={resumen.activa ? "text-[var(--color-positivo)]" : "text-[#B58A00]"}>
+          <span className={resumen.activa ? "text-[var(--color-positivo-alto)]" : "text-[#E8C468]"}>
             {resumen.activa ? "✓ Activa" : "● Rafael aún no la activa"}
           </span>
         </p>
       </div>
 
-      <div className="ledger-card p-5 mb-5">
+      <div className="ledger-card p-6 mb-6">
         <h2 className="section-title-editorial mb-2">Tus rubros</h2>
         {resumen.resumen.map((r) => {
           const porcentaje = Math.min(100, Math.round((r.gastado / (r.presupuesto || 1)) * 100));
@@ -96,10 +96,10 @@ export default function PanelJerardith() {
                   {formatoCOP(r.disponible)} disp.
                 </span>
               </div>
-              <div className="h-[3px] bg-[var(--color-ledger-rule)] relative">
+              <div className="h-[3px] bg-[var(--color-ledger-rule)] relative rounded-full overflow-hidden">
                 <div
                   className="absolute left-0 top-0 h-full"
-                  style={{ width: `${porcentaje}%`, background: r.disponible < 0 ? "var(--color-negativo)" : "var(--color-acento)" }}
+                  style={{ width: `${porcentaje}%`, background: r.disponible < 0 ? "var(--color-negativo)" : "var(--color-acento-vivo)" }}
                 />
               </div>
               <span className="text-xs text-[var(--color-muted)] mt-1 block">
@@ -111,23 +111,23 @@ export default function PanelJerardith() {
       </div>
 
       {!resumen.activa ? (
-        <div className="ledger-card p-4 mb-5 text-center text-sm text-[#5c5347]">
+        <div className="ledger-card p-4 mb-6 text-center text-sm text-[#5c5347]">
           Rafael todavía no ha activado esta quincena. Cuando lo haga, vas a poder registrar tus gastos aquí.
         </div>
       ) : mostrarForm ? (
-        <div className="mb-5">
+        <div className="mb-6">
           <FormGasto onGuardar={guardarGasto} onCancelar={() => setMostrarForm(false)} />
         </div>
       ) : (
         <button
           onClick={() => setMostrarForm(true)}
-          className="bg-[var(--color-acento)] text-white rounded-md py-4 text-center font-semibold text-[15px] mb-5 shadow-sm hover:shadow-md active:scale-[0.98] transition-all"
+          className="bg-[var(--color-acento-vivo)] text-white rounded-md py-4 text-center font-semibold text-[15px] mb-6 shadow-sm hover:shadow-md hover:brightness-110 active:scale-[0.98] transition-all"
         >
           Registrar gasto
         </button>
       )}
 
-      <div className="ledger-card p-5">
+      <div className="ledger-card p-6">
         <div className="flex justify-between items-baseline dashed-row pb-2 mb-1">
           <h2 className="section-title-editorial">Historial del mes</h2>
           <span className="font-serif-num font-semibold text-[15px]">{formatoCOP(totalGastadoMes)}</span>

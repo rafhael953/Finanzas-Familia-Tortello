@@ -39,7 +39,7 @@ export default function Historial() {
       <header className="flex justify-between items-baseline mb-1">
         <div>
           <div className="kicker">Tortello · Libro de finanzas</div>
-          <h1 className="font-serif text-[26px] font-semibold tracking-tight">Historial completo</h1>
+          <h1 className="font-serif text-[30px] font-semibold tracking-tight">Historial completo</h1>
         </div>
       </header>
       <div className="flex justify-end">
@@ -47,24 +47,24 @@ export default function Historial() {
           volver
         </Link>
       </div>
-      <div className="h-px bg-[var(--color-ledger-rule)] my-5" />
+      <div className="h-px bg-[var(--color-ledger-rule)] my-6" />
 
-      <div className="ledger-card p-5 mb-5">
+      <div className="ledger-card ledger-card--hero p-6 mb-6">
         <span className="kicker">Balance neto desde el inicio (confirmado)</span>
         <span
-          className={`font-serif-num text-[28px] font-bold block ${
-            totalConfirmado >= 0 ? "text-[var(--color-positivo)]" : "text-[var(--color-negativo)]"
+          className={`font-serif-num text-[32px] font-bold block ${
+            totalConfirmado >= 0 ? "text-[var(--color-positivo-alto)]" : "text-[var(--color-negativo-alto)]"
           }`}
         >
           {formatoCOP(totalConfirmado)}
         </span>
-        <span className="text-xs text-[var(--color-muted)] mt-1 block">
+        <span className="text-xs text-white/50 mt-1 block">
           {movimientos.length} movimientos registrados en total
         </span>
       </div>
 
       {porQuincena.map((grupo) => (
-        <div key={grupo.quincenaId} className="ledger-card p-5 mb-5">
+        <div key={grupo.quincenaId} className="ledger-card p-6 mb-6">
           <h2 className="section-title-editorial mb-1">{formatoQuincena(grupo.quincenaId)}</h2>
           <p className="text-xs text-[var(--color-muted)] mb-2">{grupo.movimientos.length} movimientos</p>
           <ListaMovimientos movimientos={grupo.movimientos} onCambio={cargar} />

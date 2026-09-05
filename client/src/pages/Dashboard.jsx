@@ -104,7 +104,7 @@ export default function Dashboard() {
       <header className="flex justify-between items-baseline mb-1">
         <div>
           <div className="kicker">Tortello · Libro de finanzas</div>
-          <h1 className="font-serif text-[26px] font-semibold tracking-tight">Vista general</h1>
+          <h1 className="font-serif text-[30px] font-semibold tracking-tight">Vista general</h1>
         </div>
       </header>
       <div className="flex justify-between">
@@ -115,26 +115,26 @@ export default function Dashboard() {
           cambiar perfil
         </Link>
       </div>
-      <div className="h-px bg-[var(--color-ledger-rule)] my-5" />
+      <div className="h-px bg-[var(--color-ledger-rule)] my-6" />
 
-      {/* Patrimonio neto */}
-      <div className="ledger-card p-5 mb-5">
+      {/* Patrimonio neto -- tarjeta titular de esta pagina */}
+      <div className="ledger-card ledger-card--hero p-6 mb-6">
         <span className="kicker">Patrimonio neto (activos − deudas)</span>
         <span
-          className={`font-serif-num text-[32px] font-bold block leading-tight ${
-            patrimonioNeto >= 0 ? "text-[var(--color-positivo)]" : "text-[var(--color-negativo)]"
+          className={`font-serif-num text-[36px] font-bold block leading-tight ${
+            patrimonioNeto >= 0 ? "text-[var(--color-positivo-alto)]" : "text-[var(--color-negativo-alto)]"
           }`}
         >
           {formatoCOP(patrimonioNeto)}
         </span>
-        <div className="flex justify-between mt-3 pt-3 border-t border-dashed border-[var(--color-ledger-rule)] text-xs">
-          <span className="text-[var(--color-muted)]">Activos líquidos: {formatoCOP(patrimonioLiquido)}</span>
-          <span className="text-[var(--color-negativo)]">Deudas: {formatoCOP(deudaTotal)}</span>
+        <div className="flex justify-between mt-3 pt-3 border-t border-dashed border-white/15 text-xs">
+          <span className="text-white/55">Activos líquidos: {formatoCOP(patrimonioLiquido)}</span>
+          <span className="text-[var(--color-negativo-alto)]">Deudas: {formatoCOP(deudaTotal)}</span>
         </div>
       </div>
 
       {/* NU */}
-      <div className="ledger-card p-5 mb-5">
+      <div className="ledger-card p-6 mb-6">
         <div className="flex justify-between items-baseline mb-1">
           <h2 className="section-title-editorial">Saldo NU</h2>
           <span className="text-xs text-[var(--color-muted)]">rinde {(cuentas.rendNU * 100).toFixed(1)}% E.A.</span>
@@ -143,7 +143,7 @@ export default function Dashboard() {
       </div>
 
       {/* Cuentas */}
-      <div className="ledger-card p-5 mb-5">
+      <div className="ledger-card p-6 mb-6">
         <h2 className="section-title-editorial mb-3">Cuentas e inversiones</h2>
         <div className="flex justify-between items-baseline dashed-row py-2 text-[13.5px]">
           <span className="text-[#5c5347]">NU (ahorro)</span>
@@ -174,7 +174,7 @@ export default function Dashboard() {
       </div>
 
       {/* Deudas */}
-      <div className="ledger-card p-5 mb-5">
+      <div className="ledger-card p-6 mb-6">
         <div className="flex justify-between items-baseline mb-3">
           <h2 className="section-title-editorial">Deudas</h2>
           <span className="text-xs text-[var(--color-muted)]">
