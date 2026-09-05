@@ -249,6 +249,17 @@
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
       "confirmado": true
+    },
+    {
+      "id": "mov-1788575167273-806",
+      "quincenaId": "2026-09-Q1",
+      "tipo": "gasto",
+      "categoria": "mercado",
+      "monto": 5000,
+      "descripcion": "prueba",
+      "fecha": "2026-09-05",
+      "registradoPor": "jerardith",
+      "confirmado": true
     }
   ],
   "registros": [],
