@@ -40,6 +40,10 @@ export const api = {
   getGastosJerardith: () => request("/api/jerardith/gastos"),
   postGastoJerardith: (gasto) =>
     request("/api/jerardith/gastos", { method: "POST", body: JSON.stringify(gasto) }),
+  activarJerardith: (quincenaId) =>
+    request("/api/jerardith/activar", { method: "POST", body: JSON.stringify({ quincenaId }) }),
+  desactivarJerardith: (quincenaId) =>
+    request("/api/jerardith/desactivar", { method: "POST", body: JSON.stringify({ quincenaId }) }),
 };
 
 export function formatoCOP(valor) {

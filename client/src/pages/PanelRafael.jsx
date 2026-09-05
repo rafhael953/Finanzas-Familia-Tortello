@@ -323,7 +323,16 @@ export default function PanelRafael() {
 
       {resumenJerardith && (
         <div className="ledger-card p-5">
-          <h2 className="section-title-editorial mb-2">Resumen de Jerardith (esta quincena)</h2>
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="section-title-editorial">Resumen de Jerardith (esta quincena)</h2>
+            <span
+              className={`text-[11px] font-semibold ${
+                resumenJerardith.activa ? "text-[var(--color-positivo)]" : "text-[#B58A00]"
+              }`}
+            >
+              {resumenJerardith.activa ? "✓ Activa" : "● Inactiva"}
+            </span>
+          </div>
           {resumenJerardith.resumen.map((r) => (
             <div key={r.rubro} className="flex justify-between items-baseline dashed-row py-2 text-[13.5px]">
               <span className="capitalize text-[#5c5347]">{r.rubro}</span>
@@ -333,6 +342,28 @@ export default function PanelRafael() {
               </span>
             </div>
           ))}
+          <button
+            onClick={async () => {
+              if (resumenJerardith.activa) {
+                await api.desactivarJerardith(resumenJerardith.quincenaActual);
+              } else {
+                await api.activarJerardith(resumenJerardith.quincenaActual);
+              }
+              await cargarTodo(quincenaIdActual);
+            }}
+            className={`w-full mt-3 rounded-md py-2.5 font-semibold text-sm ${
+              resumenJerardith.activa
+                ? "border border-[var(--color-ledger-border)] text-[#5c5347]"
+                : "bg-[var(--color-positivo)] text-white"
+            }`}
+          >
+            {resumenJerardith.activa ? "Desactivar para Jerardith" : "Activar quincena para Jerardith"}
+          </button>
+          {!resumenJerardith.activa && (
+            <p className="text-xs text-[var(--color-muted)] mt-2">
+              Ella puede ver sus rubros, pero no podrá registrar gastos hasta que actives.
+            </p>
+          )}
         </div>
       )}
     </div>

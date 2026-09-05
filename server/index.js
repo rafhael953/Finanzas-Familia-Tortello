@@ -27,8 +27,13 @@ const APP_USERS = (process.env.APP_USERS || "tortello")
   .map((u) => u.trim().toLowerCase());
 const APP_PASS = process.env.APP_PASS || "cambiaesto";
 
+// Solo se exige en Railway (donde la app es publica). En desarrollo local
+// el cliente y el servidor corren en puertos distintos y el navegador no
+// maneja bien Basic Auth entre origenes distintos, asi que se omite.
+const EXIGIR_AUTH = !!process.env.RAILWAY_ENVIRONMENT;
+
 app.use((req, res, next) => {
-  if (req.path === "/api/health") return next();
+  if (!EXIGIR_AUTH || req.path === "/api/health") return next();
 
   const header = req.headers.authorization || "";
   const [tipo, credenciales] = header.split(" ");

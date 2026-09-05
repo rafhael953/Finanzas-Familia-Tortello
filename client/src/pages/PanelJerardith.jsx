@@ -69,7 +69,12 @@ export default function PanelJerardith() {
             <span className="kicker">Balance quincena</span>
           </div>
         </div>
-        <p className="text-xs text-[var(--color-muted)] mt-3">Quincena {resumen.quincenaActual}</p>
+        <p className="text-xs text-[var(--color-muted)] mt-3">
+          Quincena {resumen.quincenaActual} ·{" "}
+          <span className={resumen.activa ? "text-[var(--color-positivo)]" : "text-[#B58A00]"}>
+            {resumen.activa ? "✓ Activa" : "● Rafael aún no la activa"}
+          </span>
+        </p>
       </div>
 
       <div className="ledger-card p-5 mb-5">
@@ -102,7 +107,11 @@ export default function PanelJerardith() {
         })}
       </div>
 
-      {mostrarForm ? (
+      {!resumen.activa ? (
+        <div className="ledger-card p-4 mb-5 text-center text-sm text-[#5c5347]">
+          Rafael todavía no ha activado esta quincena. Cuando lo haga, vas a poder registrar tus gastos aquí.
+        </div>
+      ) : mostrarForm ? (
         <div className="mb-5">
           <FormGasto onGuardar={guardarGasto} onCancelar={() => setMostrarForm(false)} />
         </div>

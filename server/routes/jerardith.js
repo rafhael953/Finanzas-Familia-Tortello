@@ -17,6 +17,10 @@ function presupuestoRubro(db, rubro, q) {
   return db.gastosFijos[key][rubro] || 0;
 }
 
+function estaActiva(db, id) {
+  return !!(db.activacionesJerardith || {})[id];
+}
+
 router.get("/gastos", async (req, res) => {
   const db = await readDB();
   const gastos = (db.movimientos || [])
@@ -43,24 +47,50 @@ router.post("/gastos", async (req, res) => {
 
   const id = gasto.quincena || quincenaId();
 
-  const nuevo = await withDB(async (db) => {
-    const item = {
-      id: `mov-${Date.now()}-${Math.round(Math.random() * 1000)}`,
-      quincenaId: id,
-      tipo: mapa.tipo,
-      categoria: mapa.categoria,
-      monto: Number(gasto.monto),
-      descripcion: gasto.descripcion || "",
-      fecha: gasto.fecha || new Date().toISOString().slice(0, 10),
-      registradoPor: "jerardith",
-      confirmado: true,
-    };
-    db.movimientos = db.movimientos || [];
-    db.movimientos.push(item);
-    return item;
-  });
+  try {
+    const nuevo = await withDB(async (db) => {
+      if (!estaActiva(db, id)) {
+        const e = new Error("Rafael todavía no ha activado esta quincena para ti.");
+        e.status = 409;
+        throw e;
+      }
+      const item = {
+        id: `mov-${Date.now()}-${Math.round(Math.random() * 1000)}`,
+        quincenaId: id,
+        tipo: mapa.tipo,
+        categoria: mapa.categoria,
+        monto: Number(gasto.monto),
+        descripcion: gasto.descripcion || "",
+        fecha: gasto.fecha || new Date().toISOString().slice(0, 10),
+        registradoPor: "jerardith",
+        confirmado: true,
+      };
+      db.movimientos = db.movimientos || [];
+      db.movimientos.push(item);
+      return item;
+    });
+    res.json({ ...nuevo, rubro: gasto.rubro, quincena: id });
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
 
-  res.json({ ...nuevo, rubro: gasto.rubro, quincena: id });
+router.post("/activar", async (req, res) => {
+  const id = req.body.quincenaId || quincenaId();
+  await withDB(async (db) => {
+    db.activacionesJerardith = db.activacionesJerardith || {};
+    db.activacionesJerardith[id] = true;
+  });
+  res.json({ ok: true, quincenaId: id, activa: true });
+});
+
+router.post("/desactivar", async (req, res) => {
+  const id = req.body.quincenaId || quincenaId();
+  await withDB(async (db) => {
+    db.activacionesJerardith = db.activacionesJerardith || {};
+    db.activacionesJerardith[id] = false;
+  });
+  res.json({ ok: true, quincenaId: id, activa: false });
 });
 
 router.get("/resumen", async (req, res) => {
@@ -96,6 +126,7 @@ router.get("/resumen", async (req, res) => {
 
   res.json({
     quincenaActual: idActual,
+    activa: estaActiva(db, idActual),
     balanceGeneral: estado.balanceConfirmado,
     resumen,
     historialMes,
