@@ -30,8 +30,12 @@ export default function Historial() {
   }
   porQuincena.sort((a, b) => (a.quincenaId < b.quincenaId ? 1 : -1));
 
+  // Lo que Jerardith registra que gasto de su propio bolsillo es solo
+  // visibilidad para ella -- no es una segunda salida de dinero (ya se
+  // conto cuando Rafael se lo asigno), asi que no se vuelve a restar aqui.
   const totalConfirmado = movimientos
     .filter((m) => m.confirmado !== false)
+    .filter((m) => !(m.categoria === "jerardith" && m.registradoPor === "jerardith"))
     .reduce((acc, m) => acc + (m.tipo === "ingreso" ? m.monto : -m.monto), 0);
 
   return (

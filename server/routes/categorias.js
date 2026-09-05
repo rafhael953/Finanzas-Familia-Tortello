@@ -9,6 +9,19 @@ const router = Router();
 // nombre -- eso se resuelve como parte de registrar la deuda misma.
 const TIPOS_PERSONALIZABLES = ["gasto", "inversion", "ingreso"];
 
+// Categorias que ya existen de fabrica (ver CATEGORIAS_POR_TIPO en
+// routes/movimientos.js) -- una categoria nueva no puede reusar uno de
+// estos nombres, o pisaria en silencio su etiqueta y color de verdad.
+// En minuscula porque slugificar() siempre produce minusculas -- la
+// comparacion debe hacerse en el mismo formato.
+const CATEGORIAS_BASE = new Set([
+  "arriendo", "servicios", "mercado", "cuidado", "salud", "combustible", "ocio", "efectivo",
+  "medicabucaramanga", "jerardith",
+  "falabella", "rappi", "auteco", "numama", "decameron",
+  "xtb",
+  "salario", "prima", "extra",
+]);
+
 // Paleta de colores mutados para categorias nuevas -- se asigna de forma
 // estable segun el nombre, para no repetir siempre el mismo color.
 const PALETA = ["#8B5E3C", "#5B7B8C", "#7D8B5A", "#B77B8B", "#4E8380", "#C6A15B", "#7A5C7E", "#8A7F6E", "#C17A56", "#5C8A99"];
@@ -47,6 +60,9 @@ router.post("/", async (req, res) => {
   const categoria = slugificar(etiquetaLimpia);
   if (!categoria) {
     return res.status(400).json({ error: "Nombre inválido" });
+  }
+  if (CATEGORIAS_BASE.has(categoria)) {
+    return res.status(409).json({ error: "Ya existe una categoría con ese nombre" });
   }
 
   try {

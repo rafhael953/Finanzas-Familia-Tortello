@@ -99,8 +99,8 @@ router.get("/resumen", async (req, res) => {
   const q = estado.quincena;
 
   // El bolsillo de Jerardith ("amor") no es un monto fijo por quincena: solo
-  // cuenta lo que Rafael realmente le asigno (reserva/jerardith confirmada,
-  // registrada por el) como presupuesto, y lo que ella misma registro haber
+  // cuenta lo que Rafael realmente le asigno (gasto/jerardith confirmado,
+  // registrado por el) como presupuesto, y lo que ella misma registro haber
   // gastado de eso como "gastado". Si el aun no se lo ha entregado, es 0.
   const movsJerardith = (db.movimientos || []).filter(
     (m) => m.quincenaId === idActual && m.tipo === "gasto" && m.categoria === "jerardith" && m.confirmado !== false
