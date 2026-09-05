@@ -256,7 +256,7 @@
   "gastosJerardith": [],
   "activacionesJerardith": {
     "2026-09-Q1": false,
-    "2026-08-Q2": false
+    "2026-08-Q2": true
   },
   "categoriasPersonalizadas": {
     "gasto": {},
