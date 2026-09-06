@@ -94,10 +94,19 @@ export function calcularEstadoQuincena(db, id) {
   const deudas = Object.keys(presupuestoDeudas).map((cat) => {
     const propios = totales(movsCasa, "deuda", cat);
     const enHermana = totales(movsHermana, "deuda", cat).confirmado;
+
+    // Una deuda ya saldada no deberia seguir pidiendo que se confirme una
+    // cuota: se marca para que la interfaz la deje de ofrecer.
+    const pagadoSiempre = (db.movimientos || [])
+      .filter((m) => m.tipo === "deuda" && m.categoria === cat && esConfirmado(m))
+      .reduce((a, m) => a + Number(m.monto || 0), 0);
+    const saldoPendiente = (db.deudasIniciales?.[cat] || 0) - pagadoSiempre;
+
     return {
       categoria: cat,
       presupuesto: presupuestoDeudas[cat],
       pagadoEnOtraQuincena: enHermana,
+      saldada: saldoPendiente <= 0,
       ...propios,
     };
   });

@@ -3,7 +3,9 @@ import { api, ETIQUETAS_CATEGORIA, aplicarCategoriasPersonalizadas } from "../ap
 
 const CATEGORIAS_BASE = {
   gasto: ["arriendo", "servicios", "mercado", "cuidado", "salud", "combustible", "ocio", "efectivo", "medicaBucaramanga", "jerardith"],
-  deuda: ["falabella", "rappi", "auteco", "numama", "decameron", "nohora", "bancolombia"],
+  // Nohora y Bancolombia quedaron saldadas: viven en el historial pero no
+  // se ofrecen para registrar pagos nuevos.
+  deuda: ["falabella", "rappi", "auteco", "numama", "decameron"],
   inversion: ["nu", "xtb", "binance"],
   ingreso: ["salario", "prima", "extra"],
 };

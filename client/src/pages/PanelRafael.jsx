@@ -398,19 +398,23 @@ export default function PanelRafael() {
         descripcion="Confirma cada cuota cuando la pagues."
         resumen={formatoCOP(estado.deudasConfirmado)}
       >
-        {estado.deudas.map((d) => (
-          <FilaCategoria
-            key={d.categoria}
-            categoria={d.categoria}
-            tipo="deuda"
-            confirmado={d.confirmado}
-            pendiente={d.pendiente}
-            presupuesto={d.presupuesto}
-            pagadoEnOtraQuincena={d.pagadoEnOtraQuincena}
-            quincenaId={quincenaIdActual}
-            onCambio={() => cargarTodo(quincenaIdActual)}
-          />
-        ))}
+        {/* Las deudas ya saldadas no se ofrecen para confirmar; solo
+            aparecen si esta quincena tuvo movimiento suyo. */}
+        {estado.deudas
+          .filter((d) => !d.saldada || d.total > 0)
+          .map((d) => (
+            <FilaCategoria
+              key={d.categoria}
+              categoria={d.categoria}
+              tipo="deuda"
+              confirmado={d.confirmado}
+              pendiente={d.pendiente}
+              presupuesto={d.presupuesto}
+              pagadoEnOtraQuincena={d.pagadoEnOtraQuincena}
+              quincenaId={quincenaIdActual}
+              onCambio={() => cargarTodo(quincenaIdActual)}
+            />
+          ))}
       </SeccionPlegable>
 
       <SeccionPlegable
