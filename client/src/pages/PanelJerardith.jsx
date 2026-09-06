@@ -5,10 +5,13 @@ import {
   formatoCOP,
   formatoQuincena,
   ETIQUETAS_CATEGORIA,
+  CATEGORIA_COLOR,
   aplicarCategoriasPersonalizadas,
 } from "../api";
+import Navegacion from "../components/Navegacion";
 import FormGasto from "../components/FormGasto";
 import ListaMovimientos from "../components/ListaMovimientos";
+import GraficoDona from "../components/GraficoDona";
 
 const ETIQUETAS = {
   mercado: "Mercado",
@@ -17,6 +20,10 @@ const ETIQUETAS = {
   ocio: "Ocio",
   esposa: "Esposa",
 };
+
+function nombreRubro(rubro) {
+  return ETIQUETAS[rubro] || ETIQUETAS_CATEGORIA[rubro] || rubro;
+}
 
 export default function PanelJerardith() {
   const [resumen, setResumen] = useState(null);
@@ -59,15 +66,13 @@ export default function PanelJerardith() {
           <h1 className="font-serif text-[30px] font-semibold tracking-tight">Panel Jerardith</h1>
         </div>
       </header>
-      <div className="flex justify-between">
-        <Link to="/dashboard" className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
-          ver todo en un lugar
-        </Link>
+      <div className="flex justify-end">
         <Link to="/" className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
           cambiar perfil
         </Link>
       </div>
-      <div className="h-px bg-[var(--color-ledger-rule)] my-6" />
+      <div className="h-px bg-[var(--color-ledger-rule)] my-5" />
+      <Navegacion />
 
       {/* Lo que a ella le importa primero: cuanto le queda disponible */}
       <div className="ledger-card ledger-card--hero p-6 mb-6">
@@ -92,45 +97,56 @@ export default function PanelJerardith() {
       </div>
 
       <div className="ledger-card p-6 mb-6">
-        <h2 className="section-title-editorial mb-1">Tus rubros</h2>
+        <h2 className="section-title-editorial mb-1">Lo que recibiste</h2>
         <p className="text-xs text-[var(--color-muted)] mb-2">
-          Cada gasto que registres se descuenta de lo que recibiste para ese rubro.
+          Todo va a la misma bolsa. Esto es solo para saber para qué te lo dieron.
         </p>
-        {resumen.resumen.map((r) => {
-          const porcentaje = Math.min(100, Math.round((r.gastado / (r.presupuesto || 1)) * 100));
-          const sinRecibir = r.presupuesto === 0;
-          return (
-            <div key={r.rubro} className="py-3 dashed-row">
-              <div className="flex justify-between items-baseline mb-2">
-                <span className="font-medium text-[13.5px]">{ETIQUETAS[r.rubro] || ETIQUETAS_CATEGORIA[r.rubro] || r.rubro}</span>
+        {resumen.recibido.length === 0 ? (
+          <p className="text-sm text-[var(--color-muted)] py-3">
+            Rafael todavía no te ha entregado nada esta quincena.
+          </p>
+        ) : (
+          resumen.recibido.map((r) => (
+            <div
+              key={r.rubro}
+              className="flex justify-between items-baseline dashed-row py-2.5 text-[13.5px]"
+            >
+              <span className="flex items-center gap-2">
                 <span
-                  className={`font-serif-num font-semibold text-[16px] ${
-                    r.disponible < 0 ? "text-[var(--color-negativo)]" : "text-[var(--color-positivo)]"
-                  }`}
-                >
-                  {formatoCOP(r.disponible)} disp.
-                </span>
-              </div>
-              <div className="h-[3px] bg-[var(--color-ledger-rule)] relative rounded-full overflow-hidden">
-                <div
-                  className="absolute left-0 top-0 h-full"
-                  style={{
-                    width: `${porcentaje}%`,
-                    background: r.disponible < 0 ? "var(--color-negativo)" : "var(--color-acento-vivo)",
-                  }}
+                  className="inline-block w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ background: CATEGORIA_COLOR[r.categoria] || "#8A7F6E" }}
                 />
-              </div>
-              <span className="text-xs text-[var(--color-muted)] mt-1 block">
-                {sinRecibir
-                  ? r.planeado > 0
-                    ? `Rafael aún no te lo entrega (suele ser ${formatoCOP(r.planeado)})`
-                    : "Rafael aún no te lo entrega"
-                  : `Llevas gastado ${formatoCOP(r.gastado)} de ${formatoCOP(r.presupuesto)}`}
+                {nombreRubro(r.rubro)}
+              </span>
+              <span className="font-serif-num font-semibold">
+                {r.monto > 0 ? (
+                  formatoCOP(r.monto)
+                ) : (
+                  <span className="text-[var(--color-muted)] font-normal text-xs">
+                    pendiente (suele ser {formatoCOP(r.planeado)})
+                  </span>
+                )}
               </span>
             </div>
-          );
-        })}
+          ))
+        )}
       </div>
+
+      {resumen.gastos.length > 0 && (
+        <div className="ledger-card p-6 mb-6">
+          <h2 className="section-title-editorial mb-1">En qué lo has gastado</h2>
+          <p className="text-xs text-[var(--color-muted)] mb-2">
+            De {formatoCOP(resumen.asignadoTotal)} que recibiste
+          </p>
+          <GraficoDona
+            segmentos={resumen.gastos.map((g) => ({
+              nombre: nombreRubro(g.rubro),
+              valor: g.monto,
+              color: CATEGORIA_COLOR[g.categoria],
+            }))}
+          />
+        </div>
+      )}
 
       {!resumen.activa ? (
         <div className="ledger-card p-4 mb-6 text-center text-sm text-[var(--color-texto)]">
@@ -139,10 +155,7 @@ export default function PanelJerardith() {
       ) : mostrarForm ? (
         <div className="mb-6">
           <FormGasto
-            rubros={resumen.resumen.map((r) => ({
-              valor: r.rubro,
-              etiqueta: ETIQUETAS[r.rubro] || ETIQUETAS_CATEGORIA[r.rubro] || r.rubro,
-            }))}
+            rubros={resumen.rubros.map((r) => ({ valor: r, etiqueta: nombreRubro(r) }))}
             onGuardar={guardarGasto}
             onCancelar={() => setMostrarForm(false)}
             onRubroCreado={cargar}

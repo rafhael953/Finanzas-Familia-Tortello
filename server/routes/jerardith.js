@@ -83,10 +83,11 @@ router.post("/gastos", async (req, res) => {
 
   try {
     const nuevo = await withDB(async (db) => {
-      if (!rubroActivo(db, id, mapa.categoria)) {
-        const e = new Error(
-          `Todavía no has recibido nada para ${gasto.rubro} en esta quincena.`
-        );
+      // Lo que recibe es una bolsa, no sobres cerrados: puede gastar en
+      // cualquier rubro mientras haya recibido algo en la quincena. El
+      // rubro sirve para saber en que se fue, no para bloquear.
+      if (!estaActiva(db, id)) {
+        const e = new Error("Todavía no has recibido nada en esta quincena.");
         e.status = 409;
         throw e;
       }
@@ -134,21 +135,29 @@ router.get("/resumen", async (req, res) => {
       .reduce((a, m) => a + Number(m.monto || 0), 0);
 
   const rubrosActuales = mapaDe(db);
-  const resumen = Object.keys(rubrosActuales).map((rubro) => {
-    const categoria = rubrosActuales[rubro].categoria;
-    const recibido = sumar(categoria, false);
-    const gastado = sumar(categoria, true);
-    return {
+
+  // Todo lo que recibe va a una sola bolsa. Se separa por rubro solo para
+  // saber para que se lo dieron y en que lo fue gastando, pero lo
+  // disponible es uno solo: la resta de los dos totales.
+  const recibido = Object.keys(rubrosActuales)
+    .map((rubro) => ({
       rubro,
-      presupuesto: recibido,
-      gastado,
-      disponible: recibido - gastado,
-      // Referencia de cuanto se suele destinar a ese rubro por quincena.
+      categoria: rubrosActuales[rubro].categoria,
+      monto: sumar(rubrosActuales[rubro].categoria, false),
       planeado: presupuestoRubro(db, rubro, q),
-      // Puede registrar en este rubro solo si ya recibio algo para el.
-      activo: rubroActivo(db, idActual, categoria),
-    };
-  });
+    }))
+    .filter((x) => x.monto > 0 || x.planeado > 0);
+
+  const gastos = Object.keys(rubrosActuales)
+    .map((rubro) => ({
+      rubro,
+      categoria: rubrosActuales[rubro].categoria,
+      monto: sumar(rubrosActuales[rubro].categoria, true),
+    }))
+    .filter((x) => x.monto > 0);
+
+  // Las opciones del formulario: puede registrar en cualquiera.
+  const rubros = Object.keys(rubrosActuales);
 
   // Se devuelven tipo/categoria ademas del rubro para que el cliente pueda
   // reusar la misma lista editable que usa Rafael (editar monto y fecha,
@@ -171,18 +180,19 @@ router.get("/resumen", async (req, res) => {
     }))
     .sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
 
-  const disponibleTotal = resumen.reduce((a, r) => a + r.disponible, 0);
-  const asignadoTotal = resumen.reduce((a, r) => a + r.presupuesto, 0);
-  const gastadoTotal = resumen.reduce((a, r) => a + r.gastado, 0);
+  const asignadoTotal = recibido.reduce((a, r) => a + r.monto, 0);
+  const gastadoTotal = gastos.reduce((a, r) => a + r.monto, 0);
 
   res.json({
     quincenaActual: idActual,
     activa: estaActiva(db, idActual),
     balanceGeneral: estado.balanceConfirmado,
-    disponibleTotal,
+    disponibleTotal: asignadoTotal - gastadoTotal,
     asignadoTotal,
     gastadoTotal,
-    resumen,
+    recibido,
+    gastos,
+    rubros,
     historialMes,
   });
 });
