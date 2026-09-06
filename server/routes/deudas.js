@@ -192,6 +192,8 @@ function tasasPorDeuda(config) {
     auteco: tasaMensual(config.tasaAuteco),
     numama: 0,
     decameron: 0,
+    nohora: 0,
+    bancolombia: 0,
   };
 }
 

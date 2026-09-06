@@ -17,7 +17,7 @@ const TIPOS_PERSONALIZABLES = ["gasto", "inversion", "ingreso"];
 const CATEGORIAS_BASE = new Set([
   "arriendo", "servicios", "mercado", "cuidado", "salud", "combustible", "ocio", "efectivo",
   "medicabucaramanga", "jerardith",
-  "falabella", "rappi", "auteco", "numama", "decameron",
+  "falabella", "rappi", "auteco", "numama", "decameron", "nohora", "bancolombia",
   "nu", "xtb", "binance",
   "salario", "prima", "extra",
 ]);
