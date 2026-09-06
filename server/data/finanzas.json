@@ -2229,11 +2229,6 @@
       "pagotarjetas": {
         "etiqueta": "Pago de tarjetas",
         "color": "#A8453C"
-      },
-      "farmacia": {
-        "etiqueta": "Farmacia",
-        "color": "#7A5C7E",
-        "deJerardith": true
       }
     },
     "inversion": {},
