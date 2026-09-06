@@ -69,6 +69,127 @@
   "decameronMesesRestantes": 9,
   "movimientos": [
     {
+      "id": "mov-1788578032011-82",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "gasto",
+      "categoria": "ocio",
+      "monto": 768000,
+      "descripcion": "",
+      "fecha": "2026-09-05",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788578201315-725",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "gasto",
+      "categoria": "salud",
+      "monto": 178000,
+      "descripcion": "",
+      "fecha": "2026-08-31",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788578264983-827",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "gasto",
+      "categoria": "salud",
+      "monto": 130000,
+      "descripcion": "Viaje a Bucaramanga ",
+      "fecha": "2026-09-05",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788578363234-216",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "gasto",
+      "categoria": "ocio",
+      "monto": 25300,
+      "descripcion": "Varios ",
+      "fecha": "2026-09-01",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788657898389-69",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "gasto",
+      "categoria": "ocio",
+      "monto": 151500,
+      "descripcion": "Salida a comer",
+      "fecha": "2026-09-06",
+      "registradoPor": "rafael",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788668341794-181",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "gasto",
+      "categoria": "mercado",
+      "monto": 145260,
+      "descripcion": "D1 aseo y comida ",
+      "fecha": "2026-09-02",
+      "registradoPor": "jerardith",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788668515672-275",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "gasto",
+      "categoria": "mercado",
+      "monto": 145125,
+      "descripcion": "Supermercado comida ",
+      "fecha": "2026-09-02",
+      "registradoPor": "jerardith",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788668609854-413",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "gasto",
+      "categoria": "mercado",
+      "monto": 100000,
+      "descripcion": "Carnes ",
+      "fecha": "2026-09-03",
+      "registradoPor": "jerardith",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788668659034-880",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "gasto",
+      "categoria": "cuidado",
+      "monto": 33000,
+      "descripcion": "Jabón de cuerpo ",
+      "fecha": "2026-09-06",
+      "registradoPor": "jerardith",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788668843347-474",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "gasto",
+      "categoria": "cuidado",
+      "monto": 114000,
+      "descripcion": "Pijama-óleo-ritual ",
+      "fecha": "2026-09-03",
+      "registradoPor": "jerardith",
+      "confirmado": true
+    },
+    {
+      "id": "mov-1788714829767-343",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "gasto",
+      "categoria": "ocio",
+      "monto": 104000,
+      "descripcion": "Rifas y juguetes ",
+      "fecha": "2026-09-02",
+      "registradoPor": "jerardith",
+      "confirmado": true
+    },
+    {
       "id": "imp-1788665790744-1",
       "quincenaId": "2025-12-Q2",
       "tipo": "ingreso",
