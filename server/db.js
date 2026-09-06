@@ -1,4 +1,4 @@
-import { readFile, writeFile, rename, copyFile, mkdir, access } from "fs/promises";
+import { readFile, writeFile, rename, copyFile, mkdir, access, stat, readdir } from "fs/promises";
 import { fileURLToPath } from "url";
 import path from "path";
 import { execFile } from "child_process";
@@ -16,6 +16,9 @@ const BACKUP_PATH = DB_PATH + ".bak";
 // vacio la primera vez y tapar el archivo que traia el codigo. Al estar
 // afuera, la semilla siempre esta disponible para reponer los datos.
 const SEED_PATH = path.join(__dirname, "seed", "finanzas-seed.json");
+// Marca en el volumen que recuerda cual fue el ultimo reemplazo aplicado,
+// para que una variable olvidada no vuelva a pisar los datos en cada arranque.
+const MARCA_PATH = path.join(__dirname, "data", ".ultimo-reemplazo");
 
 let sembrado = false;
 
@@ -76,6 +79,59 @@ async function fusionarConSemilla() {
   );
 }
 
+// Reemplazo completo de los datos por la semilla. Es la operacion mas
+// destructiva que existe aca, asi que tiene tres seguros:
+//
+//   1. Si en produccion hay movimientos que la semilla no trae, NO reemplaza.
+//      Esos movimientos son lo que se registro desde el celular; pisarlos es
+//      justo lo que nunca se debe hacer. Se puede insistir a proposito con
+//      REEMPLAZAR_DATOS=FORZAR.
+//   2. Se desarma solo: deja una marca en el volumen con la senal usada, para
+//      que no se vuelva a ejecutar en cada arranque si la variable queda
+//      puesta por olvido.
+//   3. Siempre guarda una copia de lo que habia antes, descargable desde
+//      /api/respaldos.
+async function reemplazarConSemilla() {
+  const modo = process.env.REEMPLAZAR_DATOS;
+  const senal = `${modo}:${(await stat(SEED_PATH)).mtimeMs}`;
+
+  const yaHecho = await readFile(MARCA_PATH, "utf-8").catch(() => null);
+  if (yaHecho === senal) {
+    console.log(
+      "REEMPLAZAR_DATOS: este reemplazo ya se hizo antes; no se repite. " +
+        "Puedes borrar la variable en Railway."
+    );
+    return;
+  }
+
+  const actual = JSON.parse(await readFile(DB_PATH, "utf-8"));
+  const idsSemilla = new Set((JSON.parse(await readFile(SEED_PATH, "utf-8")).movimientos || []).map((m) => m.id));
+  const soloEnProduccion = (actual.movimientos || []).filter((m) => !idsSemilla.has(m.id));
+
+  if (soloEnProduccion.length > 0 && modo !== "FORZAR") {
+    console.error(
+      `REEMPLAZAR_DATOS: CANCELADO. Aqui hay ${soloEnProduccion.length} movimientos ` +
+        `que la semilla no trae y se perderian:\n` +
+        soloEnProduccion
+          .slice(0, 20)
+          .map((m) => `  - ${m.fecha} ${m.tipo} ${m.categoria} ${m.monto} ${m.descripcion || ""}`)
+          .join("\n") +
+        `\nBaja el respaldo desde /api/respaldos, incorpora eso a la semilla y vuelve a intentar. ` +
+        `Si de verdad quieres borrarlos, usa REEMPLAZAR_DATOS=FORZAR.`
+    );
+    return;
+  }
+
+  const copia = `${DB_PATH}.reemplazado-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.json`;
+  await copyFile(DB_PATH, copia).catch(() => {});
+  await copyFile(SEED_PATH, DB_PATH);
+  await writeFile(MARCA_PATH, senal, "utf-8").catch(() => {});
+  console.log(
+    `REEMPLAZAR_DATOS: datos reemplazados (se descartaron ${soloEnProduccion.length} movimientos ` +
+      `propios de produccion). Copia previa en ${copia}`
+  );
+}
+
 async function asegurarDB() {
   if (sembrado) return;
 
@@ -96,15 +152,8 @@ async function asegurarDB() {
     // despliegues, asi que la semilla normalmente no se aplica. Con esta
     // variable se agregan (no se reemplazan) los movimientos que falten.
     await fusionarConSemilla();
-  } else if (process.env.REEMPLAZAR_DATOS === "1") {
-    // Reemplazo completo. Solo tiene sentido cuando la copia local es la
-    // buena y la de produccion no tiene nada que no este aca -- por
-    // ejemplo despues de corregir la estructura de los datos. Guarda una
-    // copia de lo que habia antes de pisarlo.
-    const copia = `${DB_PATH}.reemplazado-${Date.now()}.json`;
-    await copyFile(DB_PATH, copia).catch(() => {});
-    await copyFile(SEED_PATH, DB_PATH);
-    console.log(`REEMPLAZAR_DATOS: datos reemplazados. Copia previa en ${copia}`);
+  } else if (process.env.REEMPLAZAR_DATOS) {
+    await reemplazarConSemilla();
   }
 
   sembrado = true;
@@ -170,4 +219,32 @@ export function withDB(mutador) {
   // Si esta tarea falla, no debe tumbar la cola para las siguientes.
   cola = tarea.catch(() => {});
   return tarea;
+}
+
+// Para que las rutas puedan listar y servir las copias de seguridad que
+// quedan guardadas en el volumen.
+export function carpetaDatos() {
+  return path.dirname(DB_PATH);
+}
+
+export async function listarRespaldos() {
+  const dir = carpetaDatos();
+  const archivos = await readdir(dir).catch(() => []);
+  // Se incluye el .bak (el estado justo antes de la ultima escritura), que
+  // es el que sirve cuando se borro algo por accidente hace un momento.
+  const copias = archivos.filter(
+    (a) => a.startsWith("finanzas.json.") && (a.endsWith(".json") || a.endsWith(".bak"))
+  );
+  const info = [];
+  for (const nombre of copias) {
+    const ruta = path.join(dir, nombre);
+    const st = await stat(ruta).catch(() => null);
+    if (!st) continue;
+    let movimientos = null;
+    try {
+      movimientos = (JSON.parse(await readFile(ruta, "utf-8")).movimientos || []).length;
+    } catch {}
+    info.push({ nombre, fecha: st.mtime.toISOString(), bytes: st.size, movimientos });
+  }
+  return info.sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
 }

@@ -16,7 +16,10 @@ export default function App() {
   const [usuario, setUsuario] = useState(undefined); // undefined = cargando
 
   useEffect(() => {
-    api.whoami().then((r) => setUsuario(r.usuario));
+    // Sin el catch, si esta llamada falla el estado se queda en "cargando"
+    // para siempre y la pantalla no muestra nada. Ante la duda, se pide
+    // iniciar sesion, que si es una pantalla visible.
+    api.whoami().then((r) => setUsuario(r.usuario)).catch(() => setUsuario(null));
     api.getCategoriasPersonalizadas().then(aplicarCategoriasPersonalizadas).catch(() => {});
   }, []);
 

@@ -10,7 +10,7 @@ import jerardithRouter from "./routes/jerardith.js";
 import movimientosRouter from "./routes/movimientos.js";
 import categoriasRouter from "./routes/categorias.js";
 import planRouter from "./routes/plan.js";
-import { readDB, withDB } from "./db.js";
+import { readDB, withDB, listarRespaldos, carpetaDatos } from "./db.js";
 import {
   leerSesion,
   exigirSesion,
@@ -68,6 +68,26 @@ app.get("/api/respaldo", async (req, res) => {
   res.setHeader("Content-Disposition", `attachment; filename="finanzas-${fecha}.json"`);
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.send(JSON.stringify(db, null, 2));
+});
+
+// Copias de seguridad que quedaron en el volumen (antes de un reemplazo,
+// de una importacion, o el .bak de la ultima escritura). Sirven para
+// recuperar algo que se haya perdido sin tener que entrar al servidor.
+app.get("/api/respaldos", async (req, res) => {
+  res.json(await listarRespaldos());
+});
+
+app.get("/api/respaldos/:nombre", async (req, res) => {
+  // Solo el nombre de archivo, nunca una ruta: asi no se puede pedir
+  // cualquier archivo del servidor poniendo ../ en la direccion.
+  const nombre = path.basename(req.params.nombre);
+  if (!nombre.startsWith("finanzas.json.") || nombre.includes("..")) {
+    return res.status(400).json({ error: "Nombre no válido" });
+  }
+  const ruta = path.join(carpetaDatos(), nombre);
+  res.download(ruta, nombre, (err) => {
+    if (err && !res.headersSent) res.status(404).json({ error: "No existe ese respaldo" });
+  });
 });
 
 app.get("/api/config", async (req, res) => {

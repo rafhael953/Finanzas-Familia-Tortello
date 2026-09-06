@@ -7,6 +7,8 @@ import GraficoDona from "../components/GraficoDona";
 import BarraDeuda from "../components/BarraDeuda";
 import FilaSaldo from "../components/FilaValorEditable";
 
+const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:3001" : "");
+
 const MESES_CORTOS = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
 function etiquetaMes(prefijo) {
@@ -18,6 +20,7 @@ export default function Dashboard() {
   const [cuentas, setCuentas] = useState(null);
   const [evolucionNU, setEvolucionNU] = useState([]);
   const [deudas, setDeudas] = useState([]);
+  const [respaldos, setRespaldos] = useState([]);
   const [cargando, setCargando] = useState(true);
 
   function cargarCuentas() {
@@ -29,10 +32,12 @@ export default function Dashboard() {
       api.getCuentas(),
       api.getEvolucionNUMensual(),
       api.getDeudas(),
-    ]).then(([c, e, d]) => {
+      api.getRespaldos().catch(() => []),
+    ]).then(([c, e, d, r]) => {
       setCuentas(c);
       setEvolucionNU(e);
       setDeudas(d);
+      setRespaldos(r || []);
       setCargando(false);
     });
   }
@@ -177,11 +182,34 @@ export default function Dashboard() {
           en OneDrive o Drive: si algo le pasa al servidor, ahí está todo.
         </p>
         <a
-          href={`${import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:3001" : "")}/api/respaldo`}
+          href={`${API}/api/respaldo`}
           className="bg-[var(--color-acento)] text-white rounded-[16px] py-3 px-5 font-semibold text-sm inline-block"
         >
           Descargar respaldo
         </a>
+
+        {/* Puntos de restauracion: copias que el servidor guarda solo antes
+            de cada cambio grande. Estan aca para poder recuperar algo sin
+            depender de nadie. */}
+        {respaldos.length > 0 && (
+          <div className="mt-5 pt-4 border-t border-dashed border-[var(--color-ledger-rule)]">
+            <span className="kicker">Puntos de restauración guardados</span>
+            <p className="text-xs text-[var(--color-muted)] mt-1 mb-2">
+              Copias que el servidor hizo solo antes de cada cambio grande. Si
+              algo se perdió, está aquí.
+            </p>
+            {respaldos.map((r) => (
+              <a
+                key={r.nombre}
+                href={`${API}/api/respaldos/${r.nombre}`}
+                className="flex justify-between items-baseline dashed-row py-2 text-[13px] hover:text-[var(--color-acento)]"
+              >
+                <span>{new Date(r.fecha).toLocaleString("es-CO")}</span>
+                <span className="font-serif-num">{r.movimientos ?? "?"} movs ↓</span>
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
