@@ -460,19 +460,54 @@ export default function PanelRafael() {
               {resumenJerardith.activa ? "✓ Activa" : "● Inactiva"}
             </span>
           </div>
-          {resumenJerardith.resumen.map((r) => (
-            <div key={r.rubro} className="flex justify-between items-baseline dashed-row py-2 text-[13.5px]">
-              <span className="capitalize text-[var(--color-texto)]">{r.rubro}</span>
-              <span className="font-serif-num font-semibold">
-                {formatoCOP(r.gastado)}
-                <span className="text-xs text-[var(--color-muted)] font-sans"> / {formatoCOP(r.presupuesto)}</span>
-              </span>
+          {/* Lo que ella recibe es una sola bolsa, no un sobre por rubro: lo
+              que importa aca es cuanto le entregaste, cuanto lleva gastado y
+              cuanto le queda. El detalle por rubro es solo para ver en que se
+              fue yendo. */}
+          <div className="flex justify-between items-baseline dashed-row py-2 text-[13.5px]">
+            <span className="text-[var(--color-texto)]">Le entregaste</span>
+            <span className="font-serif-num font-semibold">
+              {formatoCOP(resumenJerardith.asignadoTotal)}
+            </span>
+          </div>
+          <div className="flex justify-between items-baseline dashed-row py-2 text-[13.5px]">
+            <span className="text-[var(--color-texto)]">Lleva gastado</span>
+            <span className="font-serif-num font-semibold">
+              {formatoCOP(resumenJerardith.gastadoTotal)}
+            </span>
+          </div>
+          <div className="flex justify-between items-baseline py-2 text-[13.5px]">
+            <span className="text-[var(--color-texto)]">Le queda</span>
+            <span
+              className={`font-serif-num font-semibold ${
+                resumenJerardith.disponibleTotal < 0
+                  ? "text-[var(--color-negativo)]"
+                  : "text-[var(--color-positivo)]"
+              }`}
+            >
+              {formatoCOP(resumenJerardith.disponibleTotal)}
+            </span>
+          </div>
+
+          {resumenJerardith.gastos.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-dashed border-[var(--color-ledger-rule)]">
+              <span className="kicker">En qué lo ha gastado</span>
+              {resumenJerardith.gastos.map((g) => (
+                <div
+                  key={g.rubro}
+                  className="flex justify-between items-baseline py-1.5 text-[13px]"
+                >
+                  <span className="capitalize text-[var(--color-muted)]">{g.rubro}</span>
+                  <span className="font-serif-num">{formatoCOP(g.monto)}</span>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+
           <p className="text-xs text-[var(--color-muted)] mt-3">
             {resumenJerardith.activa
-              ? "Ya puede registrar en los rubros que le entregaste."
-              : "Se habilita sola: en cuanto confirmes mercado, cuidado o su bolsillo, ella puede registrar en ese rubro."}
+              ? "Puede registrar en cualquier rubro; todo se descuenta de lo que le entregaste."
+              : "Se habilita sola: en cuanto confirmes mercado, cuidado o su bolsillo, ella puede empezar a registrar."}
           </p>
         </div>
       )}
