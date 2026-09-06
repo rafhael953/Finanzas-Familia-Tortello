@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import Navegacion from "../components/Navegacion";
 import { api, formatoCOP, ETIQUETAS_CATEGORIA } from "../api";
 import BarraDeuda from "../components/BarraDeuda";
 import FilaValorEditable from "../components/FilaValorEditable";
@@ -311,12 +312,8 @@ export default function Deudas() {
           <h1 className="font-serif text-[30px] font-semibold tracking-tight">Deudas</h1>
         </div>
       </header>
-      <div className="flex justify-end">
-        <Link to="/rafael" className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
-          volver
-        </Link>
-      </div>
-      <div className="h-px bg-[var(--color-ledger-rule)] my-6" />
+      <div className="h-px bg-[var(--color-ledger-rule)] my-5" />
+      <Navegacion />
 
       {cargando ? (
         <p className="text-center py-8 font-serif-num">Cargando...</p>

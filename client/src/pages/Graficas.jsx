@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import Navegacion from "../components/Navegacion";
 import { api, formatoCOP, ETIQUETAS_CATEGORIA, CATEGORIA_COLOR } from "../api";
 import GraficoDona from "../components/GraficoDona";
 
@@ -114,12 +115,8 @@ export default function Graficas() {
           <h1 className="font-serif text-[30px] font-semibold tracking-tight">Gráficas</h1>
         </div>
       </header>
-      <div className="flex justify-end">
-        <Link to="/rafael" className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
-          volver
-        </Link>
-      </div>
-      <div className="h-px bg-[var(--color-ledger-rule)] my-6" />
+      <div className="h-px bg-[var(--color-ledger-rule)] my-5" />
+      <Navegacion />
 
       {/* Filtros */}
       <div className="ledger-card p-5 mb-6">

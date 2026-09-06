@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import Navegacion from "../components/Navegacion";
 import { api, formatoCOP, ETIQUETAS_CATEGORIA, CATEGORIA_COLOR } from "../api";
 import GraficoLinea from "../components/GraficoLinea";
 import GraficoDona from "../components/GraficoDona";
@@ -75,7 +76,8 @@ export default function Dashboard() {
           cambiar perfil
         </Link>
       </div>
-      <div className="h-px bg-[var(--color-ledger-rule)] my-6" />
+      <div className="h-px bg-[var(--color-ledger-rule)] my-5" />
+      <Navegacion />
 
       {/* Patrimonio neto -- tarjeta titular de esta pagina */}
       <div className="ledger-card ledger-card--hero p-6 mb-6">

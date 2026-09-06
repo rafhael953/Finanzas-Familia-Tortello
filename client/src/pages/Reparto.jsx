@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import Navegacion from "../components/Navegacion";
 import { api, formatoCOP, ETIQUETAS_CATEGORIA, CATEGORIA_COLOR } from "../api";
 
 // Un monto del plan que se puede tocar para cambiarlo. Es la pieza con la
@@ -132,12 +133,8 @@ export default function Reparto() {
           <h1 className="font-serif text-[30px] font-semibold tracking-tight">Reparto</h1>
         </div>
       </header>
-      <div className="flex justify-end">
-        <Link to="/rafael" className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
-          volver
-        </Link>
-      </div>
-      <div className="h-px bg-[var(--color-ledger-rule)] my-6" />
+      <div className="h-px bg-[var(--color-ledger-rule)] my-5" />
+      <Navegacion />
 
       <p className="text-[13px] text-[var(--color-muted)] mb-4 leading-relaxed">
         Con qué sueldo se paga cada cosa. Toca un monto para moverlo de una

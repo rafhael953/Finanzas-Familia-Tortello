@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
+import Navegacion from "../components/Navegacion";
 import {
   api,
   formatoCOP,
@@ -128,15 +129,13 @@ export default function PanelRafael() {
           <h1 className="font-serif text-[30px] font-semibold tracking-tight">Panel Rafael</h1>
         </div>
       </header>
-      <div className="flex justify-between">
-        <Link to="/dashboard" className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
-          ver todo en un lugar
-        </Link>
+      <div className="flex justify-end">
         <Link to="/" className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
           cambiar perfil
         </Link>
       </div>
-      <div className="h-px bg-[var(--color-ledger-rule)] my-6" />
+      <div className="h-px bg-[var(--color-ledger-rule)] my-5" />
+      <Navegacion />
 
       {alertas.length > 0 && (
         <div className="tile-suave bg-[var(--color-suave-ambar)] mb-4">

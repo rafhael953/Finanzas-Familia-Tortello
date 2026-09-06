@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import Navegacion from "../components/Navegacion";
 import { api, formatoCOP, formatoQuincena } from "../api";
 import GraficoLinea from "../components/GraficoLinea";
 import FilaValorEditable from "../components/FilaValorEditable";
@@ -57,12 +58,8 @@ export default function Ahorro() {
           <h1 className="font-serif text-[30px] font-semibold tracking-tight">Ahorro e inversión</h1>
         </div>
       </header>
-      <div className="flex justify-end">
-        <Link to="/rafael" className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)]">
-          volver
-        </Link>
-      </div>
-      <div className="h-px bg-[var(--color-ledger-rule)] my-6" />
+      <div className="h-px bg-[var(--color-ledger-rule)] my-5" />
+      <Navegacion />
 
       <div className="ledger-card ledger-card--hero p-6 mb-6">
         <span className="kicker">Saldo NU</span>
