@@ -20,7 +20,7 @@ export default function Dashboard() {
   const [cuentas, setCuentas] = useState(null);
   const [evolucionNU, setEvolucionNU] = useState([]);
   const [deudas, setDeudas] = useState([]);
-  const [respaldos, setRespaldos] = useState([]);
+  const [respaldos, setRespaldos] = useState({ copias: [], archivosEnLaCarpeta: [] });
   const [cargando, setCargando] = useState(true);
 
   function cargarCuentas() {
@@ -32,12 +32,12 @@ export default function Dashboard() {
       api.getCuentas(),
       api.getEvolucionNUMensual(),
       api.getDeudas(),
-      api.getRespaldos().catch(() => []),
+      api.getRespaldos().catch(() => ({ copias: [], archivosEnLaCarpeta: [] })),
     ]).then(([c, e, d, r]) => {
       setCuentas(c);
       setEvolucionNU(e);
       setDeudas(d);
-      setRespaldos(r || []);
+      setRespaldos(r && r.copias ? r : { copias: [], archivosEnLaCarpeta: [] });
       setCargando(false);
     });
   }
@@ -191,14 +191,19 @@ export default function Dashboard() {
         {/* Puntos de restauracion: copias que el servidor guarda solo antes
             de cada cambio grande. Estan aca para poder recuperar algo sin
             depender de nadie. */}
-        {respaldos.length > 0 && (
-          <div className="mt-5 pt-4 border-t border-dashed border-[var(--color-ledger-rule)]">
-            <span className="kicker">Puntos de restauración guardados</span>
-            <p className="text-xs text-[var(--color-muted)] mt-1 mb-2">
-              Copias que el servidor hizo solo antes de cada cambio grande. Si
-              algo se perdió, está aquí.
+        <div className="mt-5 pt-4 border-t border-dashed border-[var(--color-ledger-rule)]">
+          <span className="kicker">Puntos de restauración guardados</span>
+          <p className="text-xs text-[var(--color-muted)] mt-1 mb-2">
+            Copias que el servidor hizo solo antes de cada cambio grande. Si
+            algo se perdió, está aquí.
+          </p>
+
+          {respaldos.copias.length === 0 ? (
+            <p className="text-sm text-[var(--color-muted)] py-2">
+              No hay ninguna copia guardada en el servidor.
             </p>
-            {respaldos.map((r) => (
+          ) : (
+            respaldos.copias.map((r) => (
               <a
                 key={r.nombre}
                 href={`${API}/api/respaldos/${r.nombre}`}
@@ -207,9 +212,19 @@ export default function Dashboard() {
                 <span>{new Date(r.fecha).toLocaleString("es-CO")}</span>
                 <span className="font-serif-num">{r.movimientos ?? "?"} movs ↓</span>
               </a>
-            ))}
-          </div>
-        )}
+            ))
+          )}
+
+          {/* Sirve para saber si un archivo esta ahi aunque no se reconozca. */}
+          <details className="mt-3">
+            <summary className="text-xs text-[var(--color-muted)] cursor-pointer">
+              ver qué archivos hay en el servidor
+            </summary>
+            <pre className="text-[11px] mt-2 p-3 rounded-[12px] bg-[var(--color-fondo)]/60 border border-[var(--color-ledger-border)] overflow-x-auto whitespace-pre-wrap">
+              {respaldos.archivosEnLaCarpeta.join("\n") || "(la carpeta está vacía)"}
+            </pre>
+          </details>
+        </div>
       </div>
     </div>
   );

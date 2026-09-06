@@ -246,5 +246,11 @@ export async function listarRespaldos() {
     } catch {}
     info.push({ nombre, fecha: st.mtime.toISOString(), bytes: st.size, movimientos });
   }
-  return info.sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
+  info.sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
+
+  // Se devuelve tambien todo lo que hay en la carpeta. Cuando la lista sale
+  // vacia hay que poder distinguir "no hay ninguna copia" de "la copia esta
+  // ahi pero con otro nombre", que sin esto es imposible de saber desde el
+  // celular.
+  return { copias: info, archivosEnLaCarpeta: archivos };
 }
