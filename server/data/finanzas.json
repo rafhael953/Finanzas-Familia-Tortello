@@ -2079,7 +2079,7 @@
       "descripcion": "Salario quincena",
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
-      "confirmado": true
+      "confirmado": false
     },
     {
       "id": "mov-1788561819478-884",
@@ -2090,7 +2090,7 @@
       "descripcion": "Arriendo",
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
-      "confirmado": true
+      "confirmado": false
     },
     {
       "id": "mov-1788561819519-298",
@@ -2101,7 +2101,7 @@
       "descripcion": "Servicios",
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
-      "confirmado": true
+      "confirmado": false
     },
     {
       "id": "mov-1788561819557-881",
@@ -2112,7 +2112,7 @@
       "descripcion": "Mercado",
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
-      "confirmado": true
+      "confirmado": false
     },
     {
       "id": "mov-1788561819603-860",
@@ -2123,7 +2123,7 @@
       "descripcion": "Cuidado",
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
-      "confirmado": true
+      "confirmado": false
     },
     {
       "id": "mov-1788561819651-232",
@@ -2134,7 +2134,7 @@
       "descripcion": "Salud",
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
-      "confirmado": true
+      "confirmado": false
     },
     {
       "id": "mov-1788561819708-399",
@@ -2145,7 +2145,7 @@
       "descripcion": "Ocio",
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
-      "confirmado": true
+      "confirmado": false
     },
     {
       "id": "mov-1788561819748-728",
@@ -2156,7 +2156,7 @@
       "descripcion": "Efectivo",
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
-      "confirmado": true
+      "confirmado": false
     },
     {
       "id": "mov-1788561819789-332",
@@ -2167,7 +2167,7 @@
       "descripcion": "Decamer�n",
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
-      "confirmado": true
+      "confirmado": false
     },
     {
       "id": "mov-1788561819829-182",
@@ -2178,7 +2178,7 @@
       "descripcion": "Cuota Falabella",
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
-      "confirmado": true
+      "confirmado": false
     },
     {
       "id": "mov-1788561819870-365",
@@ -2189,7 +2189,7 @@
       "descripcion": "Cuota Rappi",
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
-      "confirmado": true
+      "confirmado": false
     },
     {
       "id": "mov-1788561819911-497",
@@ -2200,7 +2200,7 @@
       "descripcion": "Cuota Auteco",
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
-      "confirmado": true
+      "confirmado": false
     },
     {
       "id": "mov-1788561819950-952",
@@ -2211,7 +2211,7 @@
       "descripcion": "Cuota NU mam�",
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
-      "confirmado": true
+      "confirmado": false
     }
   ],
   "registros": [],
