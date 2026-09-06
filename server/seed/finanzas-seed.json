@@ -2240,5 +2240,39 @@
     "bancolombia": "2026-01",
     "auteco": "2026-01"
   },
-  "historialCuotas": {}
+  "historialCuotas": {},
+  "presupuestoIdeal": {
+    "q1": {
+      "ingreso": 4714000,
+      "categorias": {
+        "cuidado": 500000,
+        "mercado": 500000,
+        "efectivo": 200000,
+        "servicios": 100000,
+        "combustible": 500000,
+        "ocio": 264000,
+        "jerardith": 200000,
+        "nu": 1500000,
+        "xtb": 350000
+      },
+      "deudas": 600000
+    },
+    "q2": {
+      "ingreso": 4350500,
+      "categorias": {
+        "arriendo": 500000,
+        "cuidado": 500000,
+        "mercado": 500000,
+        "salud": 200000,
+        "efectivo": 200000,
+        "servicios": 200000,
+        "combustible": 100000,
+        "ocio": 250500,
+        "jerardith": 200000,
+        "nu": 1500000,
+        "xtb": 200000
+      },
+      "deudas": 0
+    }
+  }
 }

@@ -163,6 +163,11 @@ export function calcularEstadoQuincena(db, id) {
 
   const confirmada = (db.estadoQuincenas || {})[id] === "confirmada";
 
+  // El plan "ideal" de la hoja de presupuesto: cuanto deberia ir a cada
+  // rubro en esta quincena. Sirve para comparar contra lo que de verdad
+  // paso, que es donde se ve si el mes se esta saliendo de cauce.
+  const ideal = (db.presupuestoIdeal || {})[key] || null;
+
   return {
     id,
     mes,
@@ -188,6 +193,7 @@ export function calcularEstadoQuincena(db, id) {
     sobrante,
     aNU,
     aDeuda,
+    ideal,
     movimientos: [...movs].sort((a, b) => (a.fecha < b.fecha ? 1 : -1)),
   };
 }

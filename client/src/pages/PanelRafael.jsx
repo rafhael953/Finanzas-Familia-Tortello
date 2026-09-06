@@ -16,6 +16,7 @@ import ListaMovimientos from "../components/ListaMovimientos";
 import GraficoDona from "../components/GraficoDona";
 import SelectorQuincena from "../components/SelectorQuincena";
 import SeccionPlegable from "../components/SeccionPlegable";
+import PlanIdeal from "../components/PlanIdeal";
 
 export default function PanelRafael() {
   const [quincenaIdActual, setQuincenaIdActual] = useState(null);
@@ -339,6 +340,14 @@ export default function PanelRafael() {
           movimientos={estado.movimientos}
           onCambio={() => cargarTodo(quincenaIdActual)}
         />
+      </SeccionPlegable>
+
+      <SeccionPlegable
+        titulo="Tu plan ideal vs lo real"
+        descripcion="Lo que planeaste destinar a cada rubro contra lo que llevas."
+        abiertaPorDefecto={false}
+      >
+        <PlanIdeal estado={estado} />
       </SeccionPlegable>
 
       {/* Categorias — cada una con confirmacion rapida si aun esta en $0 */}
