@@ -25,6 +25,16 @@ function mapaDe(db) {
   return mapa;
 }
 
+// Rubros que por naturaleza son una entrega: confirmar el mercado ES
+// pasarle la plata del mercado. Los demas (ocio, aseo, los que ella cree)
+// son rubros donde ella puede gastar, pero donde Rafael tambien gasta por su
+// cuenta, asi que un gasto suyo ahi no significa que se lo haya entregado.
+const RUBROS_DE_ENTREGA = ["mercado", "cuidado", "esposa"];
+
+function esEntrega(rubro) {
+  return RUBROS_DE_ENTREGA.includes(rubro);
+}
+
 // Solo de referencia: cuanto se suele destinar a ese rubro por quincena,
 // segun el plan. No todos los rubros tienen un valor planeado.
 function presupuestoRubro(db, rubro, q) {
@@ -52,7 +62,7 @@ function rubroActivo(db, id, categoria) {
 // sus rubros.
 function estaActiva(db, id) {
   const mapa = mapaDe(db);
-  return Object.keys(mapa).some((r) => rubroActivo(db, id, mapa[r].categoria));
+  return RUBROS_DE_ENTREGA.some((r) => mapa[r] && rubroActivo(db, id, mapa[r].categoria));
 }
 
 router.get("/gastos", async (req, res) => {
@@ -139,12 +149,19 @@ router.get("/resumen", async (req, res) => {
   // Todo lo que recibe va a una sola bolsa. Se separa por rubro solo para
   // saber para que se lo dieron y en que lo fue gastando, pero lo
   // disponible es uno solo: la resta de los dos totales.
+  // OJO: no todo gasto de la casa en un rubro suyo es plata que se le
+  // entrego. El mercado y el cuidado si: cuando Rafael los confirma, se los
+  // esta pasando a ella. Pero el ocio o el aseo tambien los gasta el
+  // directamente, y contarlos como entrega inflaba lo que ella supuestamente
+  // recibio (una salida a comer de Rafael aparecia como plata en manos de
+  // ella). Solo cuentan como entrega los rubros que por naturaleza lo son,
+  // mas lo que se marque a proposito.
   const recibido = Object.keys(rubrosActuales)
     .map((rubro) => ({
       rubro,
       categoria: rubrosActuales[rubro].categoria,
-      monto: sumar(rubrosActuales[rubro].categoria, false),
-      planeado: presupuestoRubro(db, rubro, q),
+      monto: esEntrega(rubro) ? sumar(rubrosActuales[rubro].categoria, false) : 0,
+      planeado: esEntrega(rubro) ? presupuestoRubro(db, rubro, q) : 0,
     }))
     .filter((x) => x.monto > 0 || x.planeado > 0);
 

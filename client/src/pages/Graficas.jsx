@@ -12,8 +12,8 @@ function etiquetaMes(prefijo) {
 }
 
 const RANGOS = [
+  { id: 1, etiqueta: "1 mes" },
   { id: 3, etiqueta: "3 meses" },
-  { id: 6, etiqueta: "6 meses" },
   { id: 12, etiqueta: "1 año" },
   { id: 0, etiqueta: "Todo" },
 ];
@@ -54,7 +54,7 @@ function BarrasMes({ meses, valorDe, color }) {
 
 export default function Graficas() {
   const [datos, setDatos] = useState(null);
-  const [rango, setRango] = useState(6);
+  const [rango, setRango] = useState(3);
   const [tipo, setTipo] = useState("todo");
 
   useEffect(() => {

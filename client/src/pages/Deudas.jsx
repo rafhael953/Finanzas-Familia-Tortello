@@ -302,7 +302,10 @@ export default function Deudas() {
     await cargar();
   }
 
-  const nombres = deudas.map((d) => d.nombre);
+  // El plan de pagos solo tiene sentido para lo que todavia se debe. Nohora
+  // y Bancolombia ya estan saldadas: dejarlas solo agregaba dos columnas de
+  // ceros que volvian la tabla incomoda de leer en el celular.
+  const nombres = deudas.filter((d) => d.saldo > 0).map((d) => d.nombre);
 
   return (
     <div className="min-h-screen px-5 py-6 flex flex-col max-w-lg mx-auto">

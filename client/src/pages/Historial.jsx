@@ -74,6 +74,10 @@ export default function Historial() {
         <span className="text-xs text-white/50 mt-1 block">
           {movimientos.length} movimientos registrados en total · {porQuincena.length} quincenas
         </span>
+        <p className="text-xs text-white/40 mt-3 pt-3 border-t border-dashed border-white/15">
+          Esto es un registro de lo que pasó, no se edita desde aquí. Si hay
+          algo que corregir, se hace en la quincena donde se registró.
+        </p>
       </div>
 
       {porQuincena.map((grupo, i) => {
@@ -100,7 +104,9 @@ export default function Historial() {
               </div>
               <p className="text-xs text-[var(--color-muted)] mb-2">{grupo.movimientos.length} movimientos</p>
             </button>
-            {abierta && <ListaMovimientos movimientos={grupo.movimientos} onCambio={cargar} />}
+            {abierta && (
+              <ListaMovimientos movimientos={grupo.movimientos} onCambio={cargar} soloLectura />
+            )}
           </div>
         );
       })}

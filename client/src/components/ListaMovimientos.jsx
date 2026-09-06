@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { api, formatoCOP, ETIQUETAS_CATEGORIA, ETIQUETAS_TIPO, CATEGORIA_COLOR } from "../api";
 
-export default function ListaMovimientos({ movimientos, onCambio }) {
+// soloLectura: en el historial lo pasado ya paso. Poder borrar ahi un gasto
+// de hace un mes cambia hacia atras el balance de esa quincena y el de todo
+// el ano, sin que quede rastro de por que. Se corrige donde se registro,
+// mientras la quincena esta en curso.
+export default function ListaMovimientos({ movimientos, onCambio, soloLectura = false }) {
   const [editando, setEditando] = useState(null);
   const [valorEdit, setValorEdit] = useState("");
   const [fechaEdit, setFechaEdit] = useState("");
@@ -91,6 +95,10 @@ export default function ListaMovimientos({ movimientos, onCambio }) {
                     onChange={(e) => setFechaEdit(e.target.value)}
                     className="text-[11px] border border-[var(--color-ledger-border)] rounded-md px-1.5 py-0.5 mt-1 bg-[var(--color-fondo)]/40"
                   />
+                ) : soloLectura ? (
+                  <span className="text-[11px] text-[var(--color-muted)] block">
+                    {m.fecha} {m.descripcion ? `· ${m.descripcion}` : ""}
+                  </span>
                 ) : (
                   <button
                     onClick={() => iniciarEdicion(m)}
@@ -120,6 +128,10 @@ export default function ListaMovimientos({ movimientos, onCambio }) {
                       Guardar
                     </button>
                   </>
+                ) : soloLectura ? (
+                  <span className="font-serif-num font-semibold text-[14px]">
+                    {formatoCOP(m.monto)}
+                  </span>
                 ) : (
                   <button
                     onClick={() => iniciarEdicion(m)}
@@ -129,25 +141,40 @@ export default function ListaMovimientos({ movimientos, onCambio }) {
                   </button>
                 )}
 
-                <button
-                  onClick={() => alternarConfirmado(m)}
-                  disabled={ocupado === m.id}
-                  className={`text-[11px] font-semibold px-2 py-1 rounded-full ${
-                    confirmado ? "bg-[var(--color-positivo)]/10 text-[var(--color-positivo)]" : "bg-[#B0842A]/10 text-[#B0842A]"
-                  }`}
-                  title={confirmado ? "Ya sucedió — clic para marcar como plan" : "Es un plan — clic para confirmar"}
-                >
-                  {confirmado ? "✓" : "●"}
-                </button>
+                {soloLectura ? (
+                  <span
+                    className={`text-[11px] font-semibold px-2 py-1 rounded-full ${
+                      confirmado
+                        ? "bg-[var(--color-positivo)]/10 text-[var(--color-positivo)]"
+                        : "bg-[#B0842A]/10 text-[#B0842A]"
+                    }`}
+                    title={confirmado ? "Sucedió" : "Quedó como plan, no se confirmó"}
+                  >
+                    {confirmado ? "✓" : "●"}
+                  </span>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => alternarConfirmado(m)}
+                      disabled={ocupado === m.id}
+                      className={`text-[11px] font-semibold px-2 py-1 rounded-full ${
+                        confirmado ? "bg-[var(--color-positivo)]/10 text-[var(--color-positivo)]" : "bg-[#B0842A]/10 text-[#B0842A]"
+                      }`}
+                      title={confirmado ? "Ya sucedió — clic para marcar como plan" : "Es un plan — clic para confirmar"}
+                    >
+                      {confirmado ? "✓" : "●"}
+                    </button>
 
-                <button
-                  onClick={() => borrar(m.id)}
-                  disabled={ocupado === m.id}
-                  className="text-[var(--color-muted)] text-[13px]"
-                  title="Eliminar"
-                >
-                  ✕
-                </button>
+                    <button
+                      onClick={() => borrar(m.id)}
+                      disabled={ocupado === m.id}
+                      className="text-[var(--color-muted)] text-[13px]"
+                      title="Eliminar"
+                    >
+                      ✕
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
