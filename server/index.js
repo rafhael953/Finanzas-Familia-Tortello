@@ -9,6 +9,7 @@ import cuentasRouter from "./routes/cuentas.js";
 import jerardithRouter from "./routes/jerardith.js";
 import movimientosRouter from "./routes/movimientos.js";
 import categoriasRouter from "./routes/categorias.js";
+import planRouter from "./routes/plan.js";
 import { readDB, withDB } from "./db.js";
 import {
   leerSesion,
@@ -56,6 +57,7 @@ app.use("/api/cuentas", cuentasRouter);
 app.use("/api/jerardith", jerardithRouter);
 app.use("/api/movimientos", movimientosRouter);
 app.use("/api/categorias", categoriasRouter);
+app.use("/api/plan", planRouter);
 
 app.get("/api/config", async (req, res) => {
   const db = await readDB();

@@ -52,6 +52,10 @@ export const api = {
   editarConfig: (campo, valor) =>
     request("/api/config", { method: "PUT", body: JSON.stringify({ campo, valor }) }),
 
+  getPlan: () => request("/api/plan"),
+  editarPlan: (quincena, categoria, valor) =>
+    request("/api/plan", { method: "PUT", body: JSON.stringify({ quincena, categoria, valor }) }),
+
   getCuentas: () => request("/api/cuentas"),
   getEvolucionNU: () => request("/api/cuentas/evolucion-nu"),
   getEvolucionNUMensual: () => request("/api/cuentas/evolucion-nu-mensual"),

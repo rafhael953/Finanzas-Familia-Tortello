@@ -348,6 +348,12 @@ export default function PanelRafael() {
         abiertaPorDefecto={false}
       >
         <PlanIdeal estado={estado} />
+        <Link
+          to="/reparto"
+          className="text-xs text-[var(--color-muted)] underline hover:text-[var(--color-texto)] mt-4 block text-center"
+        >
+          ver y ajustar el reparto entre quincenas →
+        </Link>
       </SeccionPlegable>
 
       {/* Categorias — cada una con confirmacion rapida si aun esta en $0 */}
