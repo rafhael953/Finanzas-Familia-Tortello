@@ -27,7 +27,7 @@
   },
   "cuotasRecomendadas": {
     "falabella": 700000,
-    "rappi": 1200000,
+    "rappi": 1228100,
     "auteco": 600000,
     "numama": 600000,
     "decameron": 220000,
@@ -2339,9 +2339,9 @@
       "quincenaId": "2026-08-Q2",
       "tipo": "compraTarjeta",
       "categoria": "rappi",
-      "monto": 300000,
-      "cuotas": 3,
-      "cuotaMensual": 100000,
+      "monto": 128100,
+      "cuotas": 1,
+      "cuotaMensual": 128100,
       "descripcion": "Bebe",
       "fecha": "2026-09-06",
       "confirmado": true
@@ -2385,7 +2385,7 @@
       },
       {
         "desde": "2026-09",
-        "valor": 1200000
+        "valor": 1228100
       }
     ]
   },
