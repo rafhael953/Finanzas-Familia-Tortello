@@ -2212,6 +2212,17 @@
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
       "confirmado": false
+    },
+    {
+      "id": "mov-1788669608391-31",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "gasto",
+      "categoria": "farmacia",
+      "monto": 80000,
+      "descripcion": "TEST",
+      "fecha": "2026-09-06",
+      "registradoPor": "rafael",
+      "confirmado": true
     }
   ],
   "registros": [],
