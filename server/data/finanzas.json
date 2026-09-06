@@ -2212,17 +2212,6 @@
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
       "confirmado": false
-    },
-    {
-      "id": "mov-1788669608741-302",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "gasto",
-      "categoria": "farmacia",
-      "monto": 25000,
-      "descripcion": "",
-      "fecha": "2026-09-06",
-      "registradoPor": "jerardith",
-      "confirmado": true
     }
   ],
   "registros": [],
