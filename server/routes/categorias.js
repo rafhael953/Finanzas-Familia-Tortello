@@ -49,7 +49,7 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  const { tipo, etiqueta } = req.body || {};
+  const { tipo, etiqueta, paraJerardith } = req.body || {};
   if (!TIPOS_PERSONALIZABLES.includes(tipo)) {
     return res.status(400).json({ error: "Tipo inválido" });
   }
@@ -77,9 +77,12 @@ router.post("/", async (req, res) => {
         throw e;
       }
 
+      // Marcar las que crea Jerardith para que aparezcan entre sus rubros
+      // y no se mezclen con categorias de la casa (como Pago de tarjetas).
       db.categoriasPersonalizadas[tipo][categoria] = {
         etiqueta: etiquetaLimpia,
         color: colorPara(categoria),
+        ...(paraJerardith ? { deJerardith: true } : {}),
       };
       return { categoria, etiqueta: etiquetaLimpia, color: colorPara(categoria) };
     });

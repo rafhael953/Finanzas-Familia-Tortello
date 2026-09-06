@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, formatoCOP, formatoQuincena } from "../api";
+import { api, formatoCOP, formatoQuincena, ETIQUETAS_CATEGORIA } from "../api";
 import FormGasto from "../components/FormGasto";
 import ListaMovimientos from "../components/ListaMovimientos";
 
@@ -89,7 +89,7 @@ export default function PanelJerardith() {
           return (
             <div key={r.rubro} className="py-3 dashed-row">
               <div className="flex justify-between items-baseline mb-2">
-                <span className="font-medium text-[13.5px]">{ETIQUETAS[r.rubro]}</span>
+                <span className="font-medium text-[13.5px]">{ETIQUETAS[r.rubro] || ETIQUETAS_CATEGORIA[r.rubro] || r.rubro}</span>
                 <span
                   className={`font-serif-num font-semibold text-[16px] ${
                     r.disponible < 0 ? "text-[var(--color-negativo)]" : "text-[var(--color-positivo)]"
@@ -125,7 +125,15 @@ export default function PanelJerardith() {
         </div>
       ) : mostrarForm ? (
         <div className="mb-6">
-          <FormGasto onGuardar={guardarGasto} onCancelar={() => setMostrarForm(false)} />
+          <FormGasto
+            rubros={resumen.resumen.map((r) => ({
+              valor: r.rubro,
+              etiqueta: ETIQUETAS[r.rubro] || ETIQUETAS_CATEGORIA[r.rubro] || r.rubro,
+            }))}
+            onGuardar={guardarGasto}
+            onCancelar={() => setMostrarForm(false)}
+            onRubroCreado={cargar}
+          />
         </div>
       ) : (
         <button

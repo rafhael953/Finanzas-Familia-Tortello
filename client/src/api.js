@@ -59,8 +59,11 @@ export const api = {
     request("/api/cuentas/saldo", { method: "PUT", body: JSON.stringify({ campo, valor }) }),
 
   getCategoriasPersonalizadas: () => request("/api/categorias"),
-  crearCategoria: (tipo, etiqueta) =>
-    request("/api/categorias", { method: "POST", body: JSON.stringify({ tipo, etiqueta }) }),
+  crearCategoria: (tipo, etiqueta, paraJerardith = false) =>
+    request("/api/categorias", {
+      method: "POST",
+      body: JSON.stringify({ tipo, etiqueta, paraJerardith }),
+    }),
 
   getResumenJerardith: () => request("/api/jerardith/resumen"),
   getGastosJerardith: () => request("/api/jerardith/gastos"),

@@ -1,26 +1,43 @@
 import { useState } from "react";
+import { api } from "../api";
 
-const RUBROS = [
-  { valor: "mercado", etiqueta: "Mercado" },
-  { valor: "cuidado", etiqueta: "Cuidado" },
-  { valor: "aseo", etiqueta: "Aseo" },
-  { valor: "ocio", etiqueta: "Ocio" },
-  { valor: "esposa", etiqueta: "Esposa (bolsillo)" },
-];
+const NUEVO = "__nuevo__";
 
-export default function FormGasto({ rubroInicial, onGuardar, onCancelar }) {
-  const [rubro, setRubro] = useState(rubroInicial || "mercado");
+export default function FormGasto({ rubros = [], rubroInicial, onGuardar, onCancelar, onRubroCreado }) {
+  const [rubro, setRubro] = useState(rubroInicial || rubros[0]?.valor || "mercado");
+  const [nuevoRubro, setNuevoRubro] = useState("");
+  const [creando, setCreando] = useState(false);
   const [monto, setMonto] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [fecha, setFecha] = useState(new Date().toISOString().slice(0, 10));
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
 
+  async function crearRubro() {
+    if (!nuevoRubro.trim()) return;
+    setCreando(true);
+    setError("");
+    try {
+      const creado = await api.crearCategoria("gasto", nuevoRubro.trim(), true);
+      await onRubroCreado?.();
+      setRubro(creado.categoria);
+      setNuevoRubro("");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCreando(false);
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     if (!monto || Number(monto) <= 0) {
       setError("Ingresa un monto válido");
+      return;
+    }
+    if (rubro === NUEVO) {
+      setError("Crea el rubro nuevo antes de guardar");
       return;
     }
     setGuardando(true);
@@ -42,12 +59,33 @@ export default function FormGasto({ rubroInicial, onGuardar, onCancelar }) {
           onChange={(e) => setRubro(e.target.value)}
           className="border border-[var(--color-ledger-border)] rounded-[14px] px-4 py-3 text-base bg-[var(--color-fondo)]/40"
         >
-          {RUBROS.map((r) => (
+          {rubros.map((r) => (
             <option key={r.valor} value={r.valor}>
               {r.etiqueta}
             </option>
           ))}
+          <option value={NUEVO}>+ Crear un rubro nuevo…</option>
         </select>
+        {rubro === NUEVO && (
+          <div className="flex items-center gap-2 mt-1">
+            <input
+              type="text"
+              value={nuevoRubro}
+              onChange={(e) => setNuevoRubro(e.target.value)}
+              placeholder="Ej. Farmacia"
+              className="flex-1 border border-[var(--color-ledger-border)] rounded-[14px] px-3 py-2 text-sm bg-[var(--color-fondo)]/40"
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={crearRubro}
+              disabled={creando || !nuevoRubro.trim()}
+              className="text-xs font-semibold bg-[var(--color-positivo)] text-white rounded-[14px] px-3 py-2 disabled:opacity-40"
+            >
+              {creando ? "..." : "Crear"}
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-1">

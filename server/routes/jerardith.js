@@ -13,13 +13,23 @@ const MAPA_RUBRO = {
   esposa: { tipo: "gasto", categoria: "jerardith" },
 };
 
-const RUBROS = Object.keys(MAPA_RUBRO);
+// A los rubros fijos se suman las categorias que ella misma haya creado
+// (las marcadas como deJerardith). Asi puede organizar sus gastos a su
+// manera sin que se le mezclen categorias de la casa.
+function mapaDe(db) {
+  const mapa = { ...MAPA_RUBRO };
+  const propias = (db.categoriasPersonalizadas || {}).gasto || {};
+  for (const [cat, info] of Object.entries(propias)) {
+    if (info?.deJerardith) mapa[cat] = { tipo: "gasto", categoria: cat };
+  }
+  return mapa;
+}
 
 // Solo de referencia: cuanto se suele destinar a ese rubro por quincena,
 // segun el plan. No todos los rubros tienen un valor planeado.
 function presupuestoRubro(db, rubro, q) {
   const key = q === 1 ? "q1" : "q2";
-  const categoria = MAPA_RUBRO[rubro].categoria;
+  const categoria = mapaDe(db)[rubro]?.categoria || rubro;
   const ideal = (db.presupuestoIdeal || {})[key]?.categorias || {};
   return ideal[categoria] ?? db.gastosFijos[key][categoria] ?? 0;
 }
@@ -41,7 +51,8 @@ function rubroActivo(db, id, categoria) {
 // La quincena esta "activa" para ella si ya recibio algo en cualquiera de
 // sus rubros.
 function estaActiva(db, id) {
-  return RUBROS.some((r) => rubroActivo(db, id, MAPA_RUBRO[r].categoria));
+  const mapa = mapaDe(db);
+  return Object.keys(mapa).some((r) => rubroActivo(db, id, mapa[r].categoria));
 }
 
 router.get("/gastos", async (req, res) => {
@@ -62,7 +73,7 @@ router.get("/gastos", async (req, res) => {
 
 router.post("/gastos", async (req, res) => {
   const gasto = req.body;
-  const mapa = MAPA_RUBRO[gasto.rubro];
+  const mapa = mapaDe(await readDB())[gasto.rubro];
   if (!mapa) return res.status(400).json({ error: "Rubro inválido" });
   if (!gasto.monto || Number(gasto.monto) <= 0) {
     return res.status(400).json({ error: "Monto inválido" });
@@ -122,8 +133,9 @@ router.get("/resumen", async (req, res) => {
       )
       .reduce((a, m) => a + Number(m.monto || 0), 0);
 
-  const resumen = RUBROS.map((rubro) => {
-    const categoria = MAPA_RUBRO[rubro].categoria;
+  const rubrosActuales = mapaDe(db);
+  const resumen = Object.keys(rubrosActuales).map((rubro) => {
+    const categoria = rubrosActuales[rubro].categoria;
     const recibido = sumar(categoria, false);
     const gastado = sumar(categoria, true);
     return {
