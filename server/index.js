@@ -103,8 +103,22 @@ app.put("/api/config", async (req, res) => {
 // lo sirve, para que todo quede en una sola direccion (un solo servicio).
 const CLIENT_DIST = path.join(__dirname, "..", "client", "dist");
 if (existsSync(CLIENT_DIST)) {
-  app.use(express.static(CLIENT_DIST));
+  // Los archivos de /assets llevan un hash en el nombre y cambian en cada
+  // despliegue, asi que se pueden cachear para siempre sin riesgo.
+  app.use(express.static(CLIENT_DIST, { index: false, maxAge: "1y" }));
+
+  // Un /assets que no existe tiene que dar 404, NO el index.html. Si se
+  // responde con HTML, el navegador recibe una pagina donde esperaba un
+  // modulo de JavaScript, se niega a ejecutarla y la app queda en blanco
+  // sin ningun mensaje. Pasa cuando el celular tiene guardado un index.html
+  // viejo que pide un archivo del despliegue anterior.
+  app.get(/^\/assets\//, (req, res) => res.status(404).end());
+
   app.get(/^(?!\/api).*/, (req, res) => {
+    // El index.html nunca se cachea: es el que dice cuales son los archivos
+    // buenos de esta version. Si el navegador se queda con uno viejo, sigue
+    // pidiendo archivos que ya no existen.
+    res.set("Cache-Control", "no-store");
     res.sendFile(path.join(CLIENT_DIST, "index.html"));
   });
 }
