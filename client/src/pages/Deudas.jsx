@@ -322,7 +322,13 @@ export default function Deudas() {
           <div className="ledger-card p-6 mb-6">
             <h2 className="section-title-editorial mb-2">Estado actual</h2>
             {deudas.map((d) => (
-              <BarraDeuda key={d.nombre} nombre={d.nombre} saldo={d.saldo} saldoInicial={d.saldoInicial} />
+              <BarraDeuda
+              key={d.nombre}
+              nombre={d.nombre}
+              saldo={d.saldo}
+              saldoInicial={d.saldoInicial}
+              comprado={d.comprado}
+            />
             ))}
           </div>
 

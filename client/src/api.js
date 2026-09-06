@@ -195,4 +195,5 @@ export const ETIQUETAS_TIPO = {
   gasto: "Gasto",
   deuda: "Deuda",
   inversion: "Inversión",
+  compraTarjeta: "Compra con tarjeta",
 };

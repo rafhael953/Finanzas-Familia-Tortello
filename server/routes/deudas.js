@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { readDB, withDB } from "../db.js";
-import { calcularAlertasDeudas } from "../calculos.js";
+import { calcularAlertasDeudas, quincenaId } from "../calculos.js";
 
 const router = Router();
 
@@ -14,9 +14,36 @@ router.get("/alertas", async (req, res) => {
   res.json(calcularAlertasDeudas(db));
 });
 
+// Una compra con tarjeta es un movimiento mas, igual que un gasto o una
+// cuota. Antes vivia en un arreglo aparte (db.comprasTarjeta) y eso tenia
+// dos problemas graves: no salia en el historial, y sobre todo las
+// sincronizaciones entre el celular y el computador solo copian
+// "movimientos", asi que cualquier compra registrada se perdia sin dejar
+// rastro en el primer reemplazo de datos. Aca se traduce al formato que
+// espera la app.
+function comoCompra(m) {
+  return {
+    id: m.id,
+    tarjeta: m.categoria,
+    monto: m.monto,
+    cuotas: m.cuotas,
+    cuotaMensual: m.cuotaMensual,
+    fecha: m.fecha,
+    descripcion: m.descripcion || "",
+  };
+}
+
+function comprasDe(db) {
+  return (db.movimientos || []).filter((m) => m.tipo === "compraTarjeta");
+}
+
 router.get("/compras", async (req, res) => {
   const db = await readDB();
-  res.json(db.comprasTarjeta || []);
+  res.json(
+    comprasDe(db)
+      .sort((a, b) => (a.fecha < b.fecha ? 1 : -1))
+      .map(comoCompra)
+  );
 });
 
 function mesActualPrefijo() {
@@ -91,25 +118,32 @@ router.post("/compra", async (req, res) => {
   const cuotaMensual = Math.round(montoNum / cuotasNum);
 
   const compra = await withDB(async (db) => {
-    db.deudasIniciales[tarjeta] += montoNum;
+    // El saldo inicial NO se toca: significa "lo que se debia al empezar" y
+    // si se le suman las compras deja de querer decir nada (el "% pagado"
+    // cambiaria hacia atras cada vez que se usa la tarjeta). El saldo de hoy
+    // se calcula: inicial + compras - pagos.
     registrarCambioCuota(db, tarjeta, db.cuotasRecomendadas[tarjeta], db.cuotasRecomendadas[tarjeta] + cuotaMensual);
     db.cuotasRecomendadas[tarjeta] += cuotaMensual;
 
-    db.comprasTarjeta = db.comprasTarjeta || [];
+    const cuando = fecha || new Date().toISOString().slice(0, 10);
     const registro = {
       id: `compra-${Date.now()}-${Math.round(Math.random() * 1000)}`,
-      tarjeta,
+      quincenaId: quincenaId(new Date(`${cuando}T12:00:00`)),
+      tipo: "compraTarjeta",
+      categoria: tarjeta,
       monto: montoNum,
       cuotas: cuotasNum,
       cuotaMensual,
-      fecha: fecha || new Date().toISOString().slice(0, 10),
       descripcion: descripcion || "",
+      fecha: cuando,
+      confirmado: true,
     };
-    db.comprasTarjeta.push(registro);
+    db.movimientos = db.movimientos || [];
+    db.movimientos.push(registro);
     return registro;
   });
 
-  res.json(compra);
+  res.json(comoCompra(compra));
 });
 
 // Corregir una compra ya registrada (se equivoco en el monto o le
@@ -128,7 +162,7 @@ router.put("/compra/:id", async (req, res) => {
 
   try {
     const actualizada = await withDB(async (db) => {
-      const compra = (db.comprasTarjeta || []).find((c) => c.id === req.params.id);
+      const compra = comprasDe(db).find((c) => c.id === req.params.id);
       if (!compra) {
         const e = new Error("No encontrada");
         e.status = 404;
@@ -136,20 +170,22 @@ router.put("/compra/:id", async (req, res) => {
       }
       const nuevaCuota = Math.round(montoNum / cuotasNum);
 
-      db.deudasIniciales[compra.tarjeta] += montoNum - compra.monto;
-      const cuotaAntes = db.cuotasRecomendadas[compra.tarjeta];
+      const cuotaAntes = db.cuotasRecomendadas[compra.categoria];
       const cuotaDespues = cuotaAntes - compra.cuotaMensual + nuevaCuota;
-      registrarCambioCuota(db, compra.tarjeta, cuotaAntes, cuotaDespues);
-      db.cuotasRecomendadas[compra.tarjeta] = cuotaDespues;
+      registrarCambioCuota(db, compra.categoria, cuotaAntes, cuotaDespues);
+      db.cuotasRecomendadas[compra.categoria] = cuotaDespues;
 
       compra.monto = montoNum;
       compra.cuotas = cuotasNum;
       compra.cuotaMensual = nuevaCuota;
-      if (fecha !== undefined) compra.fecha = fecha;
+      if (fecha !== undefined) {
+        compra.fecha = fecha;
+        compra.quincenaId = quincenaId(new Date(`${fecha}T12:00:00`));
+      }
       if (descripcion !== undefined) compra.descripcion = descripcion;
       return compra;
     });
-    res.json(actualizada);
+    res.json(comoCompra(actualizada));
   } catch (err) {
     res.status(err.status || 500).json({ error: err.message });
   }
@@ -160,24 +196,43 @@ router.put("/compra/:id", async (req, res) => {
 router.delete("/compra/:id", async (req, res) => {
   try {
     await withDB(async (db) => {
-      const idx = (db.comprasTarjeta || []).findIndex((c) => c.id === req.params.id);
+      const idx = (db.movimientos || []).findIndex(
+        (m) => m.tipo === "compraTarjeta" && m.id === req.params.id
+      );
       if (idx < 0) {
         const e = new Error("No encontrada");
         e.status = 404;
         throw e;
       }
-      const [compra] = db.comprasTarjeta.splice(idx, 1);
-      db.deudasIniciales[compra.tarjeta] -= compra.monto;
-      const cuotaAntes = db.cuotasRecomendadas[compra.tarjeta];
+      const [compra] = db.movimientos.splice(idx, 1);
+      const cuotaAntes = db.cuotasRecomendadas[compra.categoria];
       const cuotaDespues = Math.max(0, cuotaAntes - compra.cuotaMensual);
-      registrarCambioCuota(db, compra.tarjeta, cuotaAntes, cuotaDespues);
-      db.cuotasRecomendadas[compra.tarjeta] = cuotaDespues;
+      registrarCambioCuota(db, compra.categoria, cuotaAntes, cuotaDespues);
+      db.cuotasRecomendadas[compra.categoria] = cuotaDespues;
     });
     res.json({ ok: true });
   } catch (err) {
     res.status(err.status || 500).json({ error: err.message });
   }
 });
+
+
+// Saldo de hoy = lo que se debia al empezar + lo que se ha comprado con la
+// tarjeta - lo que se ha abonado. Antes las compras se sumaban al saldo
+// inicial, lo que borraba el sentido de ese numero y del "% pagado".
+function saldosActuales(db) {
+  const saldos = { ...db.deudasIniciales };
+  for (const m of db.movimientos || []) {
+    if (saldos[m.categoria] === undefined || !esFirme(m)) continue;
+    if (m.tipo === "deuda") saldos[m.categoria] -= Number(m.monto || 0);
+    else if (m.tipo === "compraTarjeta") saldos[m.categoria] += Number(m.monto || 0);
+  }
+  return saldos;
+}
+
+function esFirme(m) {
+  return m.confirmado !== false;
+}
 
 const ORDEN_ABONO_EXTRA = ["rappi", "falabella", "auteco"];
 
@@ -201,16 +256,20 @@ function tasasPorDeuda(config) {
 // (movimientos en vivo, sin esperar a que se confirme la quincena)
 router.get("/", async (req, res) => {
   const db = await readDB();
-  const saldos = { ...db.deudasIniciales };
-  for (const m of db.movimientos || []) {
-    if (m.tipo === "deuda" && m.confirmado !== false && saldos[m.categoria] !== undefined) {
-      saldos[m.categoria] -= Number(m.monto || 0);
-    }
+  const saldos = saldosActuales(db);
+  // Cuanto se ha comprado con cada tarjeta despues del saldo inicial: hace
+  // falta para que el "% pagado" se calcule sobre el total real y no sobre
+  // un punto de partida que quedo viejo.
+  const comprado = {};
+  for (const m of comprasDe(db)) {
+    comprado[m.categoria] = (comprado[m.categoria] || 0) + Number(m.monto || 0);
   }
+
   const detalle = Object.keys(saldos).map((nombre) => ({
     nombre,
     saldo: Math.max(0, Math.round(saldos[nombre])),
     saldoInicial: db.deudasIniciales[nombre],
+    comprado: comprado[nombre] || 0,
     cuotaRecomendada: db.cuotasRecomendadas[nombre],
   }));
   res.json(detalle);
@@ -222,14 +281,9 @@ router.get("/proyeccion", async (req, res) => {
   const tasas = tasasPorDeuda(db.config);
 
   // saldos actuales reales (con abonos ya hechos) como punto de partida
-  const saldosActuales = { ...db.deudasIniciales };
-  for (const m of db.movimientos || []) {
-    if (m.tipo === "deuda" && m.confirmado !== false && saldosActuales[m.categoria] !== undefined) {
-      saldosActuales[m.categoria] -= Number(m.monto || 0);
-    }
-  }
+  const actuales = saldosActuales(db);
   let saldos = {};
-  for (const k of Object.keys(saldosActuales)) saldos[k] = Math.max(0, saldosActuales[k]);
+  for (const k of Object.keys(actuales)) saldos[k] = Math.max(0, actuales[k]);
 
   // El abono extra es un valor que se define a mano, NO uno que se asume.
   // Antes se calculaba como la mitad del sobrante teorico del presupuesto,

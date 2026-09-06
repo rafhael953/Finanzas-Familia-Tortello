@@ -63,6 +63,14 @@ router.put("/:id", async (req, res) => {
         throw e;
       }
       const actual = db.movimientos[idx];
+      // Las compras con tarjeta tambien ajustan la cuota mensual de esa
+      // tarjeta, asi que no se pueden tocar desde aca: quedarian el saldo y
+      // la cuota diciendo cosas distintas. Se editan en Deudas.
+      if (actual.tipo === "compraTarjeta") {
+        const e = new Error("Las compras con tarjeta se corrigen en la sección de Deudas");
+        e.status = 400;
+        throw e;
+      }
       const cambios = req.body || {};
       if (cambios.monto !== undefined) {
         if (!cambios.monto || Number(cambios.monto) <= 0) {
@@ -87,6 +95,14 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     await withDB(async (db) => {
+      const esCompra = (db.movimientos || []).some(
+        (m) => m.id === req.params.id && m.tipo === "compraTarjeta"
+      );
+      if (esCompra) {
+        const e = new Error("Las compras con tarjeta se borran en la sección de Deudas");
+        e.status = 400;
+        throw e;
+      }
       const existe = (db.movimientos || []).some((m) => m.id === req.params.id);
       if (!existe) {
         const e = new Error("No encontrado");

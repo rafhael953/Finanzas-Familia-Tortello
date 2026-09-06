@@ -162,7 +162,13 @@ export default function Dashboard() {
         />
         <div className="mt-4">
           {deudas.map((d) => (
-            <BarraDeuda key={d.nombre} nombre={d.nombre} saldo={d.saldo} saldoInicial={d.saldoInicial} />
+            <BarraDeuda
+              key={d.nombre}
+              nombre={d.nombre}
+              saldo={d.saldo}
+              saldoInicial={d.saldoInicial}
+              comprado={d.comprado}
+            />
           ))}
         </div>
       </div>
