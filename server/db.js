@@ -19,6 +19,63 @@ const SEED_PATH = path.join(__dirname, "seed", "finanzas-seed.json");
 
 let sembrado = false;
 
+// Agrega a los datos que ya existen los movimientos de la semilla que
+// falten (comparando por id), SIN tocar lo que ya estaba. Se usa para
+// llevar a produccion una carga historica hecha en local sin perder lo
+// que se haya registrado desde el celular mientras tanto.
+async function fusionarConSemilla() {
+  const actual = JSON.parse(await readFile(DB_PATH, "utf-8"));
+  const semilla = JSON.parse(await readFile(SEED_PATH, "utf-8"));
+
+  const idsActuales = new Set((actual.movimientos || []).map((m) => m.id));
+  const nuevos = (semilla.movimientos || []).filter((m) => !idsActuales.has(m.id));
+
+  if (nuevos.length === 0) {
+    console.log("IMPORTAR_HISTORIA: no hay movimientos nuevos que agregar.");
+    return;
+  }
+
+  const copia = `${DB_PATH}.antes-de-importar-${Date.now()}.json`;
+  await copyFile(DB_PATH, copia).catch(() => {});
+
+  // Cada pago historico que se agrega tiene que sumarse al saldo inicial
+  // de esa deuda, o el saldo actual (que es el correcto) se desplomaria.
+  // Se calcula desde los movimientos que de verdad se estan agregando,
+  // asi el ajuste es exacto sin importar como estuvieran los datos.
+  actual.deudasIniciales = actual.deudasIniciales || {};
+  for (const m of nuevos) {
+    if (m.tipo === "deuda") {
+      actual.deudasIniciales[m.categoria] = (actual.deudasIniciales[m.categoria] || 0) + m.monto;
+    }
+  }
+
+  // Deudas que solo existen en la carga historica (ya saldadas).
+  actual.cuotasRecomendadas = actual.cuotasRecomendadas || {};
+  actual.deudasFechaCreacion = actual.deudasFechaCreacion || {};
+  for (const cat of Object.keys(actual.deudasIniciales)) {
+    if (actual.cuotasRecomendadas[cat] === undefined) actual.cuotasRecomendadas[cat] = 0;
+    if (!actual.deudasFechaCreacion[cat]) actual.deudasFechaCreacion[cat] = "2026-01";
+  }
+
+  // Configuracion que viene con la carga y que no borra nada existente.
+  if (semilla.presupuestoIdeal) actual.presupuestoIdeal = semilla.presupuestoIdeal;
+  actual.categoriasPersonalizadas = actual.categoriasPersonalizadas || {};
+  for (const tipo of Object.keys(semilla.categoriasPersonalizadas || {})) {
+    actual.categoriasPersonalizadas[tipo] = {
+      ...(semilla.categoriasPersonalizadas[tipo] || {}),
+      ...(actual.categoriasPersonalizadas[tipo] || {}),
+    };
+  }
+
+  actual.movimientos = [...nuevos, ...(actual.movimientos || [])];
+
+  await writeFile(TMP_PATH, JSON.stringify(actual, null, 2), "utf-8");
+  await rename(TMP_PATH, DB_PATH);
+  console.log(
+    `IMPORTAR_HISTORIA: se agregaron ${nuevos.length} movimientos. Copia previa en ${copia}`
+  );
+}
+
 async function asegurarDB() {
   if (sembrado) return;
 
@@ -29,27 +86,18 @@ async function asegurarDB() {
     existe = false;
   }
 
-  // En produccion los datos viven en un volumen que sobrevive a los
-  // despliegues, asi que la semilla normalmente NO se aplica. Para
-  // reemplazarlos a proposito (ej. una carga historica hecha en local) se
-  // pone SEMBRAR_FORZADO=1 en las variables de Railway, se despliega, y
-  // se quita. Siempre se guarda antes una copia del archivo que habia.
-  const forzar = process.env.SEMBRAR_FORZADO === "1";
-
-  if (!existe || forzar) {
+  if (!existe) {
+    // Volumen nuevo o vacio: se parte de la semilla.
     await mkdir(path.dirname(DB_PATH), { recursive: true });
-    if (existe && forzar) {
-      const copia = `${DB_PATH}.reemplazado-${Date.now()}.json`;
-      await copyFile(DB_PATH, copia).catch(() => {});
-      console.log(`SEMBRAR_FORZADO: se reemplazan los datos. Copia previa en ${copia}`);
-    }
     await copyFile(SEED_PATH, DB_PATH);
-    console.log(
-      existe
-        ? "finanzas.json reemplazado desde server/seed/finanzas-seed.json"
-        : "finanzas.json no existia — sembrado desde server/seed/finanzas-seed.json"
-    );
+    console.log("finanzas.json no existia — sembrado desde server/seed/finanzas-seed.json");
+  } else if (process.env.IMPORTAR_HISTORIA === "1") {
+    // En produccion los datos viven en un volumen que sobrevive a los
+    // despliegues, asi que la semilla normalmente no se aplica. Con esta
+    // variable se agregan (no se reemplazan) los movimientos que falten.
+    await fusionarConSemilla();
   }
+
   sembrado = true;
 }
 
