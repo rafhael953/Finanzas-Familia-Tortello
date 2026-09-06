@@ -2422,5 +2422,8 @@
       },
       "deudas": 0
     }
+  },
+  "repartoCuotas": {
+    "rappi": 1
   }
 }
