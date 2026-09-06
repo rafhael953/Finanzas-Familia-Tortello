@@ -2212,17 +2212,6 @@
       "fecha": "2026-09-04",
       "registradoPor": "rafael",
       "confirmado": false
-    },
-    {
-      "id": "mov-1788669171074-591",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "gasto",
-      "categoria": "aseo",
-      "monto": 40000,
-      "descripcion": "TEST jabon",
-      "fecha": "2026-09-06",
-      "registradoPor": "jerardith",
-      "confirmado": true
     }
   ],
   "registros": [],
