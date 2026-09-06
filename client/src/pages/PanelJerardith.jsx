@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, formatoCOP, formatoQuincena, ETIQUETAS_CATEGORIA } from "../api";
+import {
+  api,
+  formatoCOP,
+  formatoQuincena,
+  ETIQUETAS_CATEGORIA,
+  aplicarCategoriasPersonalizadas,
+} from "../api";
 import FormGasto from "../components/FormGasto";
 import ListaMovimientos from "../components/ListaMovimientos";
 
@@ -19,7 +25,14 @@ export default function PanelJerardith() {
   const [cargando, setCargando] = useState(true);
 
   function cargar() {
-    return Promise.all([api.getResumenJerardith(), api.getDeudas()]).then(([r, d]) => {
+    // Se piden tambien las categorias personalizadas para que un rubro
+    // recien creado se vea con su nombre bonito y no con el identificador.
+    return Promise.all([
+      api.getResumenJerardith(),
+      api.getDeudas(),
+      api.getCategoriasPersonalizadas().catch(() => null),
+    ]).then(([r, d, cats]) => {
+      if (cats) aplicarCategoriasPersonalizadas(cats);
       setResumen(r);
       setDeudaTotal(d.reduce((a, x) => a + x.saldo, 0));
       setCargando(false);

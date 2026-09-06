@@ -164,10 +164,25 @@ export default function Dashboard() {
 
       <Link
         to="/rafael/deudas"
-        className="border border-[var(--color-ledger-border)] rounded-[18px] py-4 text-center font-semibold text-[15px] bg-[var(--color-ledger)] hover:bg-white hover:border-[var(--color-muted)] hover:shadow-sm transition-all"
+        className="border border-[var(--color-ledger-border)] rounded-[18px] py-4 text-center font-semibold text-[15px] bg-[var(--color-ledger)] hover:bg-white hover:border-[var(--color-muted)] hover:shadow-sm transition-all mb-6"
       >
         Ver plan de pagos proyectado
       </Link>
+
+      {/* Copia de seguridad: descarga todo lo registrado en un archivo. */}
+      <div className="ledger-card p-6">
+        <h2 className="section-title-editorial mb-1">Copia de seguridad</h2>
+        <p className="text-xs text-[var(--color-muted)] mb-3">
+          Descarga todo lo registrado en un archivo. Guárdalo de vez en cuando
+          en OneDrive o Drive: si algo le pasa al servidor, ahí está todo.
+        </p>
+        <a
+          href={`${import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:3001" : "")}/api/respaldo`}
+          className="bg-[var(--color-acento)] text-white rounded-[16px] py-3 px-5 font-semibold text-sm inline-block"
+        >
+          Descargar respaldo
+        </a>
+      </div>
     </div>
   );
 }
