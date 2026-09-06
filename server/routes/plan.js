@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { readDB, withDB } from "../db.js";
+import { calcularAsesor } from "../asesor.js";
 
 const router = Router();
 
@@ -23,6 +24,12 @@ function conTotales(plan) {
     },
   };
 }
+
+// Todo lo que responde "me alcanza o no": meta realista, cupo de tarjetas,
+// reparto de cuotas por quincena y semaforo mes a mes.
+router.get("/asesor", async (req, res) => {
+  res.json(calcularAsesor(await readDB()));
+});
 
 router.get("/", async (req, res) => {
   const db = await readDB();

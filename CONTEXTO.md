@@ -107,3 +107,26 @@ Garcia 2026.xlsx`, hoja "Estado de Cuenta 2026".
 
 Enero–agosto es historia real (los montos varían). De septiembre en
 adelante es proyección (se repite idéntica mes a mes) y **no se importó**.
+
+## Decisiones de presupuesto (6 sep 2026)
+
+Los números reales, no los del plan: ingreso promedio $9.300.471/mes, gastos
+$7.008.893, cuotas $1.587.222, **neto $704.356 = 7,6%**. Cinco de nueve meses
+cerraron negativos. La causa no es el día a día (mercado y cuidado van casi
+clavados al presupuesto) sino las tarjetas: **$2.244.444/mes en promedio**.
+Los cuatro meses que cerraron bien son exactamente los cuatro sin pago a
+tarjetas.
+
+Con la meta declarada del 39,2% no se puede: el plan como está da 17,4% como
+techo teórico. Rafael eligió:
+
+- **Meta calculada sola** del promedio real de los últimos 3 meses cerrados,
+  que sube si mejora. Hoy da $883.400 (10%).
+- **Cupo mensual de compras con tarjeta**, editable, por defecto $500.000.
+  Se mide sobre las compras (el uso), no sobre los pagos.
+- **Reparto automático**: las cuotas se asignan a Q1 o Q2 buscando que las dos
+  queden con margen parecido. Deja de ser informativo, es la guía.
+- **Alertas**: riesgo en la quincena en curso, ya se pasó, y mes que va a
+  cerrar negativo. (No quiso alerta por pasarse del cupo de tarjeta.)
+
+Todo eso vive en `server/asesor.js` y se ve en la página Reparto.

@@ -69,6 +69,8 @@ export const api = {
       body: JSON.stringify({ tipo, etiqueta, paraJerardith }),
     }),
 
+  getAsesor: () => request("/api/plan/asesor"),
+
   getRespaldos: () => request("/api/respaldos"),
 
   getResumenJerardith: () => request("/api/jerardith/resumen"),

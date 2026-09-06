@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 // Todas las secciones a la mano. La app crecio a varias pantallas y los
 // enlaces quedaron repartidos por dentro de las tarjetas, donde no se
 // encuentran; aqui estan siempre visibles.
-const SECCIONES = [
+export const SECCIONES = [
   { a: "/rafael", texto: "Quincena" },
   { a: "/reparto", texto: "Reparto" },
   { a: "/graficas", texto: "Gráficas" },
@@ -17,7 +17,7 @@ export default function Navegacion() {
   const { pathname } = useLocation();
 
   return (
-    <nav className="-mx-5 px-5 mb-5 overflow-x-auto">
+    <nav className="-mx-5 px-5 mb-2 overflow-x-auto">
       <div className="flex gap-2 w-max">
         {SECCIONES.map((s) => {
           const activa = pathname === s.a;
@@ -36,6 +36,9 @@ export default function Navegacion() {
           );
         })}
       </div>
+      <p className="text-[10.5px] text-[var(--color-muted)] mt-1.5 mb-3">
+        o desliza el dedo &#8592;&#8594; para pasar de una a otra
+      </p>
     </nav>
   );
 }

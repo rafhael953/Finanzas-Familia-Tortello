@@ -102,7 +102,7 @@ app.get("/api/config", async (req, res) => {
 // Valores de configuracion que se ajustan a mano desde la app (la TRM
 // cambia todos los dias, el abono extra depende de cuanto se quiera
 // meterle de mas a las deudas ese mes).
-const CONFIG_EDITABLE = ["trm", "abonoExtraMensual", "rendNU"];
+const CONFIG_EDITABLE = ["trm", "abonoExtraMensual", "rendNU", "cupoTarjetasMensual"];
 
 app.put("/api/config", async (req, res) => {
   const { campo, valor } = req.body || {};

@@ -10,6 +10,7 @@ import Ahorro from "./pages/Ahorro";
 import Graficas from "./pages/Graficas";
 import Reparto from "./pages/Reparto";
 import Login from "./pages/Login";
+import Deslizable from "./components/Deslizable";
 import { api, aplicarCategoriasPersonalizadas } from "./api";
 
 export default function App() {
@@ -33,17 +34,19 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Inicio />} />
-        <Route path="/rafael" element={<PanelRafael />} />
-        <Route path="/rafael/deudas" element={<Deudas />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/historial" element={<Historial />} />
-        <Route path="/ahorro" element={<Ahorro />} />
-        <Route path="/graficas" element={<Graficas />} />
-        <Route path="/reparto" element={<Reparto />} />
-        <Route path="/jerardith" element={<PanelJerardith />} />
-      </Routes>
+      <Deslizable>
+        <Routes>
+          <Route path="/" element={<Inicio />} />
+          <Route path="/rafael" element={<PanelRafael />} />
+          <Route path="/rafael/deudas" element={<Deudas />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/historial" element={<Historial />} />
+          <Route path="/ahorro" element={<Ahorro />} />
+          <Route path="/graficas" element={<Graficas />} />
+          <Route path="/reparto" element={<Reparto />} />
+          <Route path="/jerardith" element={<PanelJerardith />} />
+        </Routes>
+      </Deslizable>
     </BrowserRouter>
   );
 }

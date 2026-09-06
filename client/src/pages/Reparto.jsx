@@ -1,234 +1,260 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import Navegacion from "../components/Navegacion";
-import { api, formatoCOP, ETIQUETAS_CATEGORIA, CATEGORIA_COLOR } from "../api";
+import { api, formatoCOP, ETIQUETAS_CATEGORIA } from "../api";
+import FilaValorEditable from "../components/FilaValorEditable";
 
-// Un monto del plan que se puede tocar para cambiarlo. Es la pieza con la
-// que se mueve carga de una quincena a la otra.
-function Monto({ valor, onGuardar }) {
-  const [editando, setEditando] = useState(false);
-  const [texto, setTexto] = useState(String(valor));
-  const [guardando, setGuardando] = useState(false);
+const MESES = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
-  async function guardar() {
-    if (texto === "" || Number(texto) < 0) return;
-    setGuardando(true);
-    try {
-      await onGuardar(Number(texto));
-      setEditando(false);
-    } finally {
-      setGuardando(false);
-    }
-  }
-
-  if (editando) {
-    return (
-      <span className="flex items-center gap-1">
-        <input
-          type="number"
-          inputMode="numeric"
-          value={texto}
-          onChange={(e) => setTexto(e.target.value)}
-          onBlur={guardar}
-          className="font-serif-num w-[86px] text-right border border-[var(--color-ledger-border)] rounded-lg px-1.5 py-1 text-[12px] bg-[var(--color-fondo)]"
-          autoFocus
-        />
-        <button
-          onClick={guardar}
-          disabled={guardando}
-          className="text-[10px] font-bold text-[var(--color-positivo)]"
-        >
-          ✓
-        </button>
-      </span>
-    );
-  }
-
-  return (
-    <button
-      onClick={() => {
-        setTexto(String(valor));
-        setEditando(true);
-      }}
-      className={`font-serif-num text-[12.5px] ${
-        valor > 0 ? "font-semibold underline decoration-dotted" : "text-[var(--color-muted)]"
-      }`}
-    >
-      {valor > 0 ? formatoCOP(valor) : "—"}
-    </button>
-  );
+function nombreMes(prefijo) {
+  const [anio, mes] = prefijo.split("-");
+  return `${MESES[Number(mes)]} ${anio}`;
 }
 
-function ResumenQuincena({ titulo, datos }) {
-  const alcanza = datos.libre >= 0;
+// Una quincena del reparto: lo que entra, lo que ya está comprometido y lo
+// que queda libre de verdad. En rojo si no alcanza.
+function Quincena({ titulo, plan }) {
+  const rojo = !plan.alcanza;
+
   return (
-    <div
-      className={`tile-suave ${
-        alcanza ? "bg-[var(--color-suave-verde)]" : "bg-[var(--color-suave-rojo)]"
-      }`}
-    >
-      <div
-        className={`text-[11px] font-semibold opacity-80 ${
-          alcanza ? "text-[var(--color-suave-verde-texto)]" : "text-[var(--color-suave-rojo-texto)]"
-        }`}
-      >
-        {titulo}
+    <div className="ledger-card p-6 mb-4">
+      <div className="flex justify-between items-baseline dashed-row pb-2 mb-3">
+        <h2 className="section-title-editorial">{titulo}</h2>
+        <span className="font-serif-num font-semibold text-[15px]">
+          {formatoCOP(plan.ingreso)}
+        </span>
       </div>
-      <div
-        className={`font-serif-num text-[17px] font-bold mt-1 ${
-          alcanza ? "text-[var(--color-suave-verde-texto)]" : "text-[var(--color-suave-rojo-texto)]"
-        }`}
-      >
-        {alcanza ? `Libre ${formatoCOP(datos.libre)}` : `Faltan ${formatoCOP(-datos.libre)}`}
+
+      <div className="flex justify-between items-baseline py-1.5 text-[13.5px]">
+        <span className="text-[var(--color-muted)]">Gastos fijos</span>
+        <span className="font-serif-num">− {formatoCOP(plan.fijos)}</span>
       </div>
+
+      <div className="flex justify-between items-baseline py-1.5 text-[13.5px]">
+        <span className="text-[var(--color-muted)]">Cuotas de deuda</span>
+        <span className="font-serif-num">− {formatoCOP(plan.totalCuotas)}</span>
+      </div>
+
+      {plan.cuotas.length > 0 && (
+        <div className="pl-3 border-l-2 border-[var(--color-ledger-rule)] ml-1 my-1">
+          {plan.cuotas.map((c) => (
+            <div key={c.categoria} className="flex justify-between items-baseline py-1 text-[12.5px]">
+              <span className="text-[var(--color-muted)]">
+                {ETIQUETAS_CATEGORIA[c.categoria] || c.categoria}
+              </span>
+              <span className="font-serif-num text-[var(--color-muted)]">{formatoCOP(c.valor)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div
-        className={`text-[10.5px] mt-1 ${
-          alcanza ? "text-[var(--color-suave-verde-texto)]" : "text-[var(--color-suave-rojo-texto)]"
+        className={`flex justify-between items-baseline mt-3 pt-3 border-t border-dashed ${
+          rojo ? "border-[var(--color-negativo)]" : "border-[var(--color-ledger-rule)]"
         }`}
       >
-        Entra {formatoCOP(datos.ingreso)} · sale {formatoCOP(datos.comprometido)}
+        <span className={`font-semibold text-[13.5px] ${rojo ? "text-[var(--color-negativo)]" : ""}`}>
+          {rojo ? "No alcanza" : "Te queda libre"}
+        </span>
+        <span
+          className={`font-serif-num font-bold text-[18px] ${
+            rojo ? "text-[var(--color-negativo)]" : "text-[var(--color-positivo)]"
+          }`}
+        >
+          {formatoCOP(plan.libre)}
+        </span>
       </div>
     </div>
   );
 }
 
 export default function Reparto() {
-  const [plan, setPlan] = useState(undefined);
+  const [datos, setDatos] = useState(null);
+
+  function cargar() {
+    return api.getAsesor().then(setDatos);
+  }
 
   useEffect(() => {
-    api.getPlan().then(setPlan);
+    cargar();
   }, []);
 
-  if (plan === undefined) {
-    return <div className="p-6 text-center font-serif-num text-lg">Cargando...</div>;
-  }
-  if (plan === null) {
-    return (
-      <div className="min-h-screen px-5 py-6 max-w-lg mx-auto">
-        <p className="ledger-card p-6 text-sm text-[var(--color-muted)]">
-          Todavía no hay un plan cargado.
-        </p>
-      </div>
-    );
-  }
+  if (!datos) return <div className="p-6 text-center font-serif-num text-lg">Cargando...</div>;
 
-  async function cambiar(quincena, categoria, valor) {
-    setPlan(await api.editarPlan(quincena, categoria, valor));
-  }
-
-  // Todos los rubros que aparecen en cualquiera de las dos quincenas.
-  const rubros = [...new Set([
-    ...Object.keys(plan.q1.categorias || {}),
-    ...Object.keys(plan.q2.categorias || {}),
-  ])].sort((a, b) => {
-    const t = (k) => (plan.q1.categorias[k] || 0) + (plan.q2.categorias[k] || 0);
-    return t(b) - t(a);
-  });
+  const { meta, tarjetas, reparto, meses, quincenaActual } = datos;
+  const enRojo = meses.filter((m) => m.estado !== "bien");
 
   return (
     <div className="min-h-screen px-5 py-6 flex flex-col max-w-lg mx-auto">
-      <header className="flex justify-between items-baseline mb-1">
-        <div>
-          <div className="kicker">Tortello · Libro de finanzas</div>
-          <h1 className="font-serif text-[30px] font-semibold tracking-tight">Reparto</h1>
-        </div>
+      <header className="mb-1">
+        <div className="kicker">Tortello · Libro de finanzas</div>
+        <h1 className="font-serif text-[30px] font-semibold tracking-tight">Cómo repartir</h1>
       </header>
       <div className="h-px bg-[var(--color-ledger-rule)] my-5" />
       <Navegacion />
 
-      <p className="text-[13px] text-[var(--color-muted)] mb-4 leading-relaxed">
-        Con qué sueldo se paga cada cosa. Toca un monto para moverlo de una
-        quincena a la otra y equilibrar la carga.
+      {/* Lo primero: cómo va la quincena que se está viviendo ahora */}
+      <div
+        className={`ledger-card p-6 mb-6 ${
+          quincenaActual.excedido || quincenaActual.enRiesgo ? "" : "ledger-card--hero"
+        }`}
+        style={
+          quincenaActual.excedido
+            ? { background: "#2B1416", color: "white" }
+            : quincenaActual.enRiesgo
+            ? { background: "#7A2E1E", color: "white" }
+            : undefined
+        }
+      >
+        <span className="kicker" style={{ color: "rgba(255,255,255,.6)" }}>
+          {quincenaActual.excedido
+            ? "Ya te pasaste en esta quincena"
+            : quincenaActual.enRiesgo
+            ? "Riesgo en esta quincena"
+            : "Vas bien en esta quincena"}
+        </span>
+        <span className="font-serif-num text-[34px] font-bold block leading-tight text-white">
+          {formatoCOP(quincenaActual.disponibleReal)}
+        </span>
+        <p className="text-xs mt-3" style={{ color: "rgba(255,255,255,.6)" }}>
+          Entró {formatoCOP(quincenaActual.entro)} · ya salió{" "}
+          {formatoCOP(quincenaActual.salio)}
+        </p>
+        {quincenaActual.faltaPorPagar > 0 && (
+          <p className="text-xs mt-2 pt-2 border-t border-dashed border-white/15" style={{ color: "rgba(255,255,255,.75)" }}>
+            Todavía falta pagar {formatoCOP(quincenaActual.faltaPorPagar)} de lo
+            comprometido{" "}
+            {quincenaActual.enRiesgo && "— y eso no cabe en lo que queda."}
+          </p>
+        )}
+      </div>
+
+      <p className="text-xs text-[var(--color-muted)] mb-3 -mt-3">
+        Así queda repartida la carga entre las dos quincenas para que ninguna
+        se ahogue. Es la guía: si pagas siguiendo esto, el mes cierra.
       </p>
 
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <ResumenQuincena titulo="Q1 · del 16 al 30" datos={plan.q1} />
-        <ResumenQuincena titulo="Q2 · del 1 al 15" datos={plan.q2} />
-      </div>
+      <Quincena titulo="Quincena 1 · del 16 al 31" plan={reparto.q1} />
+      <Quincena titulo="Quincena 2 · del 1 al 15" plan={reparto.q2} />
 
       <div className="ledger-card p-6 mb-6">
-        <div className="flex justify-between items-baseline dashed-row pb-2 mb-1">
-          <h2 className="section-title-editorial">Qué se paga con cada una</h2>
-          <span className="text-[10px] text-[var(--color-muted)] flex gap-4">
-            <span className="w-[86px] text-right">Q1</span>
-            <span className="w-[86px] text-right">Q2</span>
-          </span>
-        </div>
-
-        <div className="flex justify-between items-center py-2.5 dashed-row">
-          <span className="text-[13px] font-bold">Entra (sueldo)</span>
-          <span className="flex gap-4">
-            <span className="w-[86px] text-right">
-              <Monto valor={plan.q1.ingreso} onGuardar={(v) => cambiar("q1", "_ingreso", v)} />
-            </span>
-            <span className="w-[86px] text-right">
-              <Monto valor={plan.q2.ingreso} onGuardar={(v) => cambiar("q2", "_ingreso", v)} />
-            </span>
-          </span>
-        </div>
-
-        {rubros.map((cat) => (
-          <div key={cat} className="flex justify-between items-center py-2.5 dashed-row">
-            <span className="text-[13px] flex items-center gap-2 min-w-0">
-              <span
-                className="inline-block w-2 h-2 rounded-full flex-shrink-0"
-                style={{ background: CATEGORIA_COLOR[cat] || "#8A7F6E" }}
-              />
-              <span className="truncate">{ETIQUETAS_CATEGORIA[cat] || cat}</span>
-            </span>
-            <span className="flex gap-4 flex-shrink-0">
-              <span className="w-[86px] text-right">
-                <Monto
-                  valor={plan.q1.categorias[cat] || 0}
-                  onGuardar={(v) => cambiar("q1", cat, v)}
-                />
-              </span>
-              <span className="w-[86px] text-right">
-                <Monto
-                  valor={plan.q2.categorias[cat] || 0}
-                  onGuardar={(v) => cambiar("q2", cat, v)}
-                />
-              </span>
-            </span>
-          </div>
-        ))}
-
-        <div className="flex justify-between items-center py-2.5 dashed-row">
-          <span className="text-[13px] flex items-center gap-2">
-            <span
-              className="inline-block w-2 h-2 rounded-full flex-shrink-0"
-              style={{ background: "#A8453C" }}
-            />
-            Deudas y tarjetas
-          </span>
-          <span className="flex gap-4">
-            <span className="w-[86px] text-right">
-              <Monto valor={plan.q1.deudas} onGuardar={(v) => cambiar("q1", "_deudas", v)} />
-            </span>
-            <span className="w-[86px] text-right">
-              <Monto valor={plan.q2.deudas} onGuardar={(v) => cambiar("q2", "_deudas", v)} />
-            </span>
-          </span>
-        </div>
-
-        <div className="flex justify-between items-center pt-3 mt-1 border-t-2 border-[var(--color-texto)]">
-          <span className="text-[11px] uppercase tracking-wide font-bold">Sale</span>
-          <span className="flex gap-4">
-            <span className="w-[86px] text-right font-serif-num text-[13px] font-bold">
-              {formatoCOP(plan.q1.comprometido)}
-            </span>
-            <span className="w-[86px] text-right font-serif-num text-[13px] font-bold">
-              {formatoCOP(plan.q2.comprometido)}
-            </span>
+        <div className="flex justify-between items-baseline">
+          <h2 className="section-title-editorial">Te queda libre al mes</h2>
+          <span
+            className={`font-serif-num font-bold text-[18px] ${
+              reparto.libreMes >= 0 ? "text-[var(--color-positivo)]" : "text-[var(--color-negativo)]"
+            }`}
+          >
+            {formatoCOP(reparto.libreMes)}
           </span>
         </div>
       </div>
 
-      <p className="text-[12px] text-[var(--color-muted)] leading-relaxed">
-        Si una quincena queda en rojo es que le pusiste más de lo que entra:
-        mueve algo a la otra. Recuerda que la Q2 de un mes es la que financia
-        del 1 al 15 del mes siguiente.
-      </p>
+      {/* Meta calculada de lo real, no puesta a dedo */}
+      <div className="ledger-card p-6 mb-6">
+        <h2 className="section-title-editorial mb-1">Meta de ahorro realista</h2>
+        <p className="text-xs text-[var(--color-muted)] mb-3">
+          Sale de lo que de verdad te sobró en los últimos {meta.mesesMirados}{" "}
+          meses cerrados. Si mejoras, sube sola.
+        </p>
+        <div className="flex justify-between items-baseline">
+          <span className="font-serif-num text-[26px] font-bold text-[var(--color-positivo)]">
+            {formatoCOP(meta.valor)}
+          </span>
+          <span className="text-sm text-[var(--color-muted)]">{meta.porcentaje}% de lo que entra</span>
+        </div>
+        <div className="mt-3 pt-3 border-t border-dashed border-[var(--color-ledger-rule)]">
+          {meta.base.map((b) => (
+            <div key={b.mes} className="flex justify-between text-[12.5px] py-1">
+              <span className="text-[var(--color-muted)]">{nombreMes(b.mes)}</span>
+              <span
+                className={`font-serif-num ${
+                  b.neto < 0 ? "text-[var(--color-negativo)]" : "text-[var(--color-muted)]"
+                }`}
+              >
+                {formatoCOP(b.neto)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* El cupo de tarjetas: la causa de los meses en rojo */}
+      <div className="ledger-card p-6 mb-6">
+        <h2 className="section-title-editorial mb-1">Cupo de tarjeta este mes</h2>
+        <p className="text-xs text-[var(--color-muted)] mb-2">
+          Cuánto te permites comprar con tarjeta al mes. Tócalo para ajustarlo.
+        </p>
+        <FilaValorEditable
+          etiqueta="Tope mensual"
+          valor={tarjetas.cupo}
+          onGuardar={(v) => api.editarConfig("cupoTarjetasMensual", v).then(cargar)}
+        />
+        <div className="flex justify-between items-baseline py-2 text-[13.5px]">
+          <span className="text-[var(--color-muted)]">Usado</span>
+          <span className="font-serif-num">{formatoCOP(tarjetas.usado)}</span>
+        </div>
+        <div className="h-[6px] bg-[var(--color-ledger-rule)] rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-300"
+            style={{
+              width: `${Math.min(100, (tarjetas.usado / (tarjetas.cupo || 1)) * 100)}%`,
+              background: tarjetas.excedido ? "var(--color-negativo)" : "var(--color-acento)",
+            }}
+          />
+        </div>
+        <p
+          className={`text-xs mt-2 ${
+            tarjetas.excedido ? "text-[var(--color-negativo)]" : "text-[var(--color-muted)]"
+          }`}
+        >
+          {tarjetas.excedido
+            ? `Te pasaste ${formatoCOP(-tarjetas.disponible)} del tope.`
+            : `Te quedan ${formatoCOP(tarjetas.disponible)} de cupo este mes.`}
+        </p>
+      </div>
+
+      {/* Semáforo mes a mes */}
+      <div className="ledger-card p-6">
+        <h2 className="section-title-editorial mb-1">Los próximos meses</h2>
+        <p className="text-xs text-[var(--color-muted)] mb-3">
+          Con los ingresos, los gastos fijos y las cuotas de hoy. Un mes en rojo
+          es un aviso de que algo hay que cambiar antes de que llegue.
+        </p>
+        {enRojo.length === 0 && (
+          <p className="text-sm text-[var(--color-positivo)] mb-2">
+            ✓ Ningún mes queda en rojo con las cuentas actuales.
+          </p>
+        )}
+        {meses.map((m) => {
+          const rojo = m.estado === "riesgo";
+          const negro = m.estado === "pasado";
+          return (
+            <div key={m.mes} className="flex justify-between items-baseline dashed-row py-2 text-[13.5px]">
+              <span className="flex items-center gap-2">
+                <span
+                  className="inline-block w-2 h-2 rounded-full flex-shrink-0"
+                  style={{
+                    background: negro ? "#1A1A1A" : rojo ? "var(--color-negativo)" : "var(--color-positivo)",
+                  }}
+                />
+                <span className={negro ? "font-semibold text-[var(--color-negativo)]" : ""}>
+                  {nombreMes(m.mes)}
+                </span>
+                {m.prima > 0 && (
+                  <span className="text-[10px] uppercase text-[var(--color-muted)]">con prima</span>
+                )}
+              </span>
+              <span
+                className={`font-serif-num font-semibold ${
+                  negro || rojo ? "text-[var(--color-negativo)]" : "text-[var(--color-texto)]"
+                }`}
+              >
+                {formatoCOP(m.real !== null ? m.real : m.proyectado)}
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
