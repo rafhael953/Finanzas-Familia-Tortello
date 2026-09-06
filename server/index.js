@@ -59,6 +59,17 @@ app.use("/api/movimientos", movimientosRouter);
 app.use("/api/categorias", categoriasRouter);
 app.use("/api/plan", planRouter);
 
+// Descarga todo lo registrado, tal cual esta guardado. Sirve como copia
+// de seguridad y para traer lo del celular al computador cuando haya que
+// trabajar con los datos de verdad.
+app.get("/api/respaldo", async (req, res) => {
+  const db = await readDB();
+  const fecha = new Date().toISOString().slice(0, 10);
+  res.setHeader("Content-Disposition", `attachment; filename="finanzas-${fecha}.json"`);
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.send(JSON.stringify(db, null, 2));
+});
+
 app.get("/api/config", async (req, res) => {
   const db = await readDB();
   res.json({
