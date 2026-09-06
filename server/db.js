@@ -96,6 +96,15 @@ async function asegurarDB() {
     // despliegues, asi que la semilla normalmente no se aplica. Con esta
     // variable se agregan (no se reemplazan) los movimientos que falten.
     await fusionarConSemilla();
+  } else if (process.env.REEMPLAZAR_DATOS === "1") {
+    // Reemplazo completo. Solo tiene sentido cuando la copia local es la
+    // buena y la de produccion no tiene nada que no este aca -- por
+    // ejemplo despues de corregir la estructura de los datos. Guarda una
+    // copia de lo que habia antes de pisarlo.
+    const copia = `${DB_PATH}.reemplazado-${Date.now()}.json`;
+    await copyFile(DB_PATH, copia).catch(() => {});
+    await copyFile(SEED_PATH, DB_PATH);
+    console.log(`REEMPLAZAR_DATOS: datos reemplazados. Copia previa en ${copia}`);
   }
 
   sembrado = true;
