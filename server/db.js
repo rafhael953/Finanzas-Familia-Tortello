@@ -21,13 +21,34 @@ let sembrado = false;
 
 async function asegurarDB() {
   if (sembrado) return;
+
+  let existe = true;
   try {
     await access(DB_PATH);
   } catch {
-    // No existe (volumen nuevo/vacio): sembrar con el ultimo estado conocido.
+    existe = false;
+  }
+
+  // En produccion los datos viven en un volumen que sobrevive a los
+  // despliegues, asi que la semilla normalmente NO se aplica. Para
+  // reemplazarlos a proposito (ej. una carga historica hecha en local) se
+  // pone SEMBRAR_FORZADO=1 en las variables de Railway, se despliega, y
+  // se quita. Siempre se guarda antes una copia del archivo que habia.
+  const forzar = process.env.SEMBRAR_FORZADO === "1";
+
+  if (!existe || forzar) {
     await mkdir(path.dirname(DB_PATH), { recursive: true });
+    if (existe && forzar) {
+      const copia = `${DB_PATH}.reemplazado-${Date.now()}.json`;
+      await copyFile(DB_PATH, copia).catch(() => {});
+      console.log(`SEMBRAR_FORZADO: se reemplazan los datos. Copia previa en ${copia}`);
+    }
     await copyFile(SEED_PATH, DB_PATH);
-    console.log("finanzas.json no existia — sembrado desde server/seed/finanzas-seed.json");
+    console.log(
+      existe
+        ? "finanzas.json reemplazado desde server/seed/finanzas-seed.json"
+        : "finanzas.json no existia — sembrado desde server/seed/finanzas-seed.json"
+    );
   }
   sembrado = true;
 }
