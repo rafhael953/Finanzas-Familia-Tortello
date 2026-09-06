@@ -12,8 +12,9 @@ function nombreMes(prefijo) {
 
 // Una quincena del reparto: lo que entra, lo que ya está comprometido y lo
 // que queda libre de verdad. En rojo si no alcanza.
-function Quincena({ titulo, plan }) {
+function Quincena({ titulo, plan, quincena, onMover, onSoltar, ocupado }) {
   const rojo = !plan.alcanza;
+  const otra = quincena === 1 ? 2 : 1;
 
   return (
     <div className="ledger-card p-6 mb-4">
@@ -37,11 +38,31 @@ function Quincena({ titulo, plan }) {
       {plan.cuotas.length > 0 && (
         <div className="pl-3 border-l-2 border-[var(--color-ledger-rule)] ml-1 my-1">
           {plan.cuotas.map((c) => (
-            <div key={c.categoria} className="flex justify-between items-baseline py-1 text-[12.5px]">
-              <span className="text-[var(--color-muted)]">
+            <div key={c.categoria} className="flex justify-between items-center py-1.5 text-[12.5px] gap-2">
+              <span className="text-[var(--color-muted)] min-w-0 truncate">
                 {ETIQUETAS_CATEGORIA[c.categoria] || c.categoria}
+                {c.aMano && (
+                  <button
+                    onClick={() => onSoltar(c.categoria)}
+                    disabled={ocupado}
+                    className="ml-1.5 text-[10px] uppercase text-[var(--color-acento)] underline decoration-dotted"
+                    title="Volver a dejar que la app la acomode sola"
+                  >
+                    fija
+                  </button>
+                )}
               </span>
-              <span className="font-serif-num text-[var(--color-muted)]">{formatoCOP(c.valor)}</span>
+              <span className="flex items-center gap-2 flex-shrink-0">
+                <span className="font-serif-num text-[var(--color-muted)]">{formatoCOP(c.valor)}</span>
+                <button
+                  onClick={() => onMover(c.categoria, otra)}
+                  disabled={ocupado}
+                  className="text-[11px] font-semibold text-[var(--color-acento)] border border-[var(--color-ledger-border)] rounded-full px-2 py-0.5 disabled:opacity-40"
+                  title={`Pagarla con la quincena ${otra}`}
+                >
+                  {quincena === 1 ? "→ Q2" : "← Q1"}
+                </button>
+              </span>
             </div>
           ))}
         </div>
@@ -69,9 +90,30 @@ function Quincena({ titulo, plan }) {
 
 export default function Reparto() {
   const [datos, setDatos] = useState(null);
+  const [ocupado, setOcupado] = useState(false);
 
   function cargar() {
     return api.getAsesor().then(setDatos);
+  }
+
+  // Mover una cuota la deja fijada a esa quincena; las demás se siguen
+  // acomodando solas alrededor.
+  async function mover(categoria, quincena) {
+    setOcupado(true);
+    try {
+      setDatos(await api.moverCuota(categoria, quincena));
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  async function soltar(categoria) {
+    setOcupado(true);
+    try {
+      setDatos(await api.soltarCuota(categoria));
+    } finally {
+      setOcupado(false);
+    }
   }
 
   useEffect(() => {
@@ -133,8 +175,30 @@ export default function Reparto() {
         se ahogue. Es la guía: si pagas siguiendo esto, el mes cierra.
       </p>
 
-      <Quincena titulo="Quincena 1 · del 16 al 31" plan={reparto.q1} />
-      <Quincena titulo="Quincena 2 · del 1 al 15" plan={reparto.q2} />
+      <Quincena
+        titulo="Quincena 1 · del 16 al 31"
+        plan={reparto.q1}
+        quincena={1}
+        onMover={mover}
+        onSoltar={soltar}
+        ocupado={ocupado}
+      />
+      <Quincena
+        titulo="Quincena 2 · del 1 al 15"
+        plan={reparto.q2}
+        quincena={2}
+        onMover={mover}
+        onSoltar={soltar}
+        ocupado={ocupado}
+      />
+
+      {reparto.desbalance > 600000 && (
+        <p className="text-xs text-[#B0842A] -mt-2 mb-4">
+          Las dos quincenas quedaron bastante disparejas (
+          {formatoCOP(reparto.desbalance)} de diferencia). Se puede, pero una va
+          a ir mucho más apretada que la otra.
+        </p>
+      )}
 
       <div className="ledger-card p-6 mb-6">
         <div className="flex justify-between items-baseline">

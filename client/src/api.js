@@ -71,6 +71,10 @@ export const api = {
 
   getAsesor: () => request("/api/plan/asesor"),
 
+  moverCuota: (categoria, quincena) =>
+    request("/api/plan/reparto", { method: "PUT", body: JSON.stringify({ categoria, quincena }) }),
+  soltarCuota: (categoria) => request(`/api/plan/reparto/${categoria}`, { method: "DELETE" }),
+
   getRespaldos: () => request("/api/respaldos"),
 
   getResumenJerardith: () => request("/api/jerardith/resumen"),

@@ -108,22 +108,42 @@ export function repartoQuincenas(db) {
   const asignadas = { q1: [], q2: [] };
   const margen = { q1: ingresos.q1 - fijos.q1, q2: ingresos.q2 - fijos.q2 };
 
-  for (const cuota of cuotas) {
+  // Lo que Rafael haya movido a mano manda sobre el reparto automatico: el
+  // solo sabe cuando le cobran cada cuota. Lo que no haya tocado se sigue
+  // repartiendo buscando que las dos quincenas queden parejas.
+  const aMano = db.repartoCuotas || {};
+  const fijadas = cuotas.filter((c) => aMano[c.categoria]);
+  const libres = cuotas.filter((c) => !aMano[c.categoria]);
+
+  for (const cuota of fijadas) {
+    const donde = Number(aMano[cuota.categoria]) === 1 ? "q1" : "q2";
+    asignadas[donde].push({ ...cuota, aMano: true });
+    margen[donde] -= cuota.valor;
+  }
+
+  for (const cuota of libres) {
     const donde = margen.q1 >= margen.q2 ? "q1" : "q2";
-    asignadas[donde].push(cuota);
+    asignadas[donde].push({ ...cuota, aMano: false });
     margen[donde] -= cuota.valor;
   }
 
   const armar = (q) => ({
     ingreso: ingresos[q],
     fijos: fijos[q],
-    cuotas: asignadas[q],
+    cuotas: asignadas[q].sort((a, b) => b.valor - a.valor),
     totalCuotas: asignadas[q].reduce((a, c) => a + c.valor, 0),
     libre: margen[q],
     alcanza: margen[q] >= 0,
   });
 
-  return { q1: armar("q1"), q2: armar("q2"), libreMes: margen.q1 + margen.q2 };
+  return {
+    q1: armar("q1"),
+    q2: armar("q2"),
+    libreMes: margen.q1 + margen.q2,
+    // Que tan disparejas quedaron. Sirve para avisar cuando un cambio a mano
+    // deja una quincena muy apretada frente a la otra.
+    desbalance: Math.abs(margen.q1 - margen.q2),
+  };
 }
 
 // Semaforo mes a mes hacia adelante: con los ingresos, los gastos fijos y

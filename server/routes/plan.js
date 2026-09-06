@@ -31,6 +31,39 @@ router.get("/asesor", async (req, res) => {
   res.json(calcularAsesor(await readDB()));
 });
 
+
+// Mover una cuota a la otra quincena. Queda fijada a mano: el reparto
+// automatico ya no la toca, pero sigue acomodando las demas alrededor.
+router.put("/reparto", async (req, res) => {
+  const { categoria, quincena } = req.body || {};
+  const q = Number(quincena);
+  if (q !== 1 && q !== 2) {
+    return res.status(400).json({ error: "La quincena tiene que ser 1 o 2" });
+  }
+  try {
+    await withDB(async (db) => {
+      if (!(categoria in (db.cuotasRecomendadas || {}))) {
+        const e = new Error("Esa deuda no existe");
+        e.status = 400;
+        throw e;
+      }
+      db.repartoCuotas = db.repartoCuotas || {};
+      db.repartoCuotas[categoria] = q;
+    });
+    res.json(calcularAsesor(await readDB()));
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+// Soltar una cuota que estaba fijada, para que vuelva al reparto automatico.
+router.delete("/reparto/:categoria", async (req, res) => {
+  await withDB(async (db) => {
+    if (db.repartoCuotas) delete db.repartoCuotas[req.params.categoria];
+  });
+  res.json(calcularAsesor(await readDB()));
+});
+
 router.get("/", async (req, res) => {
   const db = await readDB();
   if (!db.presupuestoIdeal) return res.json(null);
