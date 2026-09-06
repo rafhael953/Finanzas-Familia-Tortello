@@ -27,7 +27,7 @@ export default function GraficoDona({ segmentos }) {
     <div>
       <div className="flex h-[11px] rounded-full overflow-hidden gap-[2px] mb-3">
         {conColor.map((s) => (
-          <div key={s.nombre} style={{ flex: s.valor, background: s.color }} />
+          <div key={s.nombre} className="barra-crece" style={{ flex: s.valor, background: s.color }} />
         ))}
       </div>
 

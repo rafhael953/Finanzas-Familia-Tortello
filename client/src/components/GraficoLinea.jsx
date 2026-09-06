@@ -38,7 +38,15 @@ export default function GraficoLinea({ puntos, color = "var(--color-positivo)" }
     <div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-[90px]">
         <path d={areaPath} fill={color} opacity="0.08" />
-        <path d={path} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+        <path
+          d={path}
+          fill="none"
+          stroke={color}
+          strokeWidth="2"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          className="linea-dibuja"
+        />
         {coords.map(([x, y], i) => (
           <circle key={i} cx={x} cy={y} r="2.5" fill={color} />
         ))}

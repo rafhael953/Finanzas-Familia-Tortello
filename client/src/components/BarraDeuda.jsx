@@ -31,7 +31,7 @@ export default function BarraDeuda({ nombre, saldo, saldoInicial, comprado = 0 }
       </div>
       <div className="h-[3px] bg-[var(--color-ledger-rule)] relative rounded-full overflow-hidden">
         <div
-          className="absolute left-0 top-0 h-full transition-all duration-300"
+          className="absolute left-0 top-0 h-full transition-all duration-300 barra-crece"
           style={{ width: `${porcentaje}%`, background: color }}
         />
       </div>

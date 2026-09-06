@@ -49,15 +49,41 @@ router.get("/analisis", async (req, res) => {
     if (m.registradoPor === "jerardith") continue;
 
     const mes = m.quincenaId.slice(0, 7);
-    porMes[mes] = porMes[mes] || { mes, ingreso: 0, gasto: 0, deuda: 0, inversion: 0, categorias: {} };
+    porMes[mes] = porMes[mes] || {
+      mes,
+      ingreso: 0,
+      gasto: 0,
+      deuda: 0,
+      inversion: 0,
+      compras: 0,
+      categorias: {},
+    };
     const monto = Number(m.monto || 0);
+
+    // Una compra con tarjeta no es plata que salio: crea deuda. Va en su
+    // propia serie y NO entra en las categorias, o se sumaria junto con los
+    // abonos a esa misma tarjeta y el mismo peso apareceria dos veces.
+    if (m.tipo === "compraTarjeta") {
+      porMes[mes].compras += monto;
+      continue;
+    }
+
     porMes[mes][m.tipo] = (porMes[mes][m.tipo] || 0) + monto;
     if (m.tipo !== "ingreso") {
       porMes[mes].categorias[m.categoria] = (porMes[mes].categorias[m.categoria] || 0) + monto;
     }
   }
 
-  res.json(Object.values(porMes).sort((a, b) => (a.mes < b.mes ? -1 : 1)));
+  // Cuanta deuda quedaba al cerrar cada mes, para poder ver si de verdad
+  // esta bajando. Se arranca del saldo inicial y se va moviendo mes a mes.
+  const meses = Object.values(porMes).sort((a, b) => (a.mes < b.mes ? -1 : 1));
+  let saldoDeuda = Object.values(db.deudasIniciales || {}).reduce((a, b) => a + Number(b || 0), 0);
+  for (const m of meses) {
+    saldoDeuda = saldoDeuda + m.compras - m.deuda;
+    m.deudaTotal = Math.max(0, Math.round(saldoDeuda));
+  }
+
+  res.json(meses);
 });
 
 export default router;

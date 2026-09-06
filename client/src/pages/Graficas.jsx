@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import Navegacion from "../components/Navegacion";
 import { api, formatoCOP, ETIQUETAS_CATEGORIA, CATEGORIA_COLOR } from "../api";
 import GraficoDona from "../components/GraficoDona";
+import GraficoLinea from "../components/GraficoLinea";
+import GraficoEntradaSalida from "../components/GraficoEntradaSalida";
 
 const MESES = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
@@ -102,6 +104,16 @@ export default function Graficas() {
     .sort((a, b) => b.valor - a.valor)
     .slice(0, 8);
 
+  const mesesEnRojo = meses.filter((m) => m.gasto + m.deuda + m.inversion > m.ingreso);
+
+  // La deuda al cerrar cada mes. Solo se dibuja si el servidor la trae y hay
+  // mas de un punto: una linea de un solo punto no dice nada.
+  const serieDeuda = meses
+    .filter((m) => m.deudaTotal !== undefined)
+    .map((m) => ({ label: etiquetaMes(m.mes), valor: m.deudaTotal }));
+  const bajoLaDeuda =
+    serieDeuda.length > 1 && serieDeuda[serieDeuda.length - 1].valor <= serieDeuda[0].valor;
+
   const mesMasCaro = meses.reduce(
     (peor, m) => (salidaDe(m) > salidaDe(peor) ? m : peor),
     meses[0] || { mes: "", gasto: 0, deuda: 0, inversion: 0, ingreso: 0, categorias: {} }
@@ -196,18 +208,48 @@ export default function Graficas() {
             </p>
           </div>
 
+          {/* Lo primero: entrada contra salida. Es la comparación que
+              importa, y antes había que hacerla a ojo entre dos gráficas
+              separadas. */}
+          <div className="ledger-card p-6 mb-6">
+            <h2 className="section-title-editorial mb-1">Entró contra salió</h2>
+            <p className="text-xs text-[var(--color-muted)] mb-3">
+              {mesesEnRojo.length > 0
+                ? `${mesesEnRojo.length} de ${meses.length} meses cerraron gastando más de lo que entró`
+                : "Todos los meses del periodo cerraron en positivo"}
+            </p>
+            <GraficoEntradaSalida
+              meses={meses.map((m) => ({
+                mes: m.mes,
+                ingreso: m.ingreso,
+                salida: m.gasto + m.deuda + m.inversion,
+              }))}
+              etiquetaMes={etiquetaMes}
+            />
+          </div>
+
+          {/* Si la deuda no baja, nada de lo demás sirvió. */}
+          {serieDeuda.length > 1 && (
+            <div className="ledger-card p-6 mb-6">
+              <h2 className="section-title-editorial mb-1">La deuda, mes a mes</h2>
+              <p className="text-xs text-[var(--color-muted)] mb-3">
+                {bajoLaDeuda
+                  ? `Bajó ${formatoCOP(serieDeuda[0].valor - serieDeuda[serieDeuda.length - 1].valor)} en el periodo`
+                  : `Subió ${formatoCOP(serieDeuda[serieDeuda.length - 1].valor - serieDeuda[0].valor)} en el periodo`}
+              </p>
+              <GraficoLinea
+                puntos={serieDeuda}
+                color={bajoLaDeuda ? "var(--color-positivo)" : "var(--color-negativo)"}
+              />
+            </div>
+          )}
+
           <div className="ledger-card p-6 mb-6">
             <h2 className="section-title-editorial mb-1">Mes a mes</h2>
             <p className="text-xs text-[var(--color-muted)] mb-3">
               {tipo === "todo" ? "Todo lo que salió" : TIPOS.find((t) => t.id === tipo).etiqueta} por mes
             </p>
             <BarrasMes meses={meses} valorDe={salidaDe} color="var(--color-acento-vivo)" />
-          </div>
-
-          <div className="ledger-card p-6 mb-6">
-            <h2 className="section-title-editorial mb-1">Ingresos mes a mes</h2>
-            <p className="text-xs text-[var(--color-muted)] mb-3">Lo que entró en cada mes</p>
-            <BarrasMes meses={meses} valorDe={(m) => m.ingreso} color="var(--color-positivo)" />
           </div>
 
           <div className="ledger-card p-6 mb-6">

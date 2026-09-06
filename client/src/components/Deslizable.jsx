@@ -35,9 +35,14 @@ export default function Deslizable({ children }) {
     navegar(SECCIONES[destino].a);
   }
 
+  // La key hace que React vuelva a montar el contenido en cada cambio de
+  // ruta, que es lo que dispara la animacion de entrada. Sin eso, React
+  // reutiliza los nodos y la pantalla cambia de golpe.
   return (
     <div onTouchStart={alTocar} onTouchEnd={alSoltar}>
-      {children}
+      <div key={pathname} className="pagina-entra">
+        {children}
+      </div>
     </div>
   );
 }
