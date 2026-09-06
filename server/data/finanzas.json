@@ -2424,6 +2424,7 @@
     }
   },
   "repartoCuotas": {
-    "rappi": 1
+    "rappi": 1,
+    "falabella": 2
   }
 }
