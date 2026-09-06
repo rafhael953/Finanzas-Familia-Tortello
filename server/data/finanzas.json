@@ -2229,6 +2229,11 @@
       "pagotarjetas": {
         "etiqueta": "Pago de tarjetas",
         "color": "#A8453C"
+      },
+      "peluqueria": {
+        "etiqueta": "Peluqueria",
+        "color": "#C6A15B",
+        "deJerardith": true
       }
     },
     "inversion": {},
