@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { api, ETIQUETAS_CATEGORIA, aplicarCategoriasPersonalizadas } from "../api";
 
 const CATEGORIAS_BASE = {
-  gasto: ["arriendo", "servicios", "mercado", "cuidado", "salud", "combustible", "ocio", "efectivo", "medicaBucaramanga", "jerardith"],
+  gasto: ["arriendo", "servicios", "mercado", "cuidado", "salud", "combustible", "ocio", "efectivo", "aseo", "medicaBucaramanga", "jerardith"],
   // Nohora y Bancolombia quedaron saldadas: viven en el historial pero no
   // se ofrecen para registrar pagos nuevos.
   deuda: ["falabella", "rappi", "auteco", "numama", "decameron"],

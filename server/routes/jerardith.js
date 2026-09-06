@@ -8,12 +8,20 @@ const router = Router();
 const MAPA_RUBRO = {
   mercado: { tipo: "gasto", categoria: "mercado" },
   cuidado: { tipo: "gasto", categoria: "cuidado" },
+  aseo: { tipo: "gasto", categoria: "aseo" },
+  ocio: { tipo: "gasto", categoria: "ocio" },
   esposa: { tipo: "gasto", categoria: "jerardith" },
 };
 
+const RUBROS = Object.keys(MAPA_RUBRO);
+
+// Solo de referencia: cuanto se suele destinar a ese rubro por quincena,
+// segun el plan. No todos los rubros tienen un valor planeado.
 function presupuestoRubro(db, rubro, q) {
   const key = q === 1 ? "q1" : "q2";
-  return db.gastosFijos[key][rubro] || 0;
+  const categoria = MAPA_RUBRO[rubro].categoria;
+  const ideal = (db.presupuestoIdeal || {})[key]?.categorias || {};
+  return ideal[categoria] ?? db.gastosFijos[key][categoria] ?? 0;
 }
 
 // Un rubro queda habilitado para ella en el momento en que Rafael le
@@ -33,7 +41,7 @@ function rubroActivo(db, id, categoria) {
 // La quincena esta "activa" para ella si ya recibio algo en cualquiera de
 // sus rubros.
 function estaActiva(db, id) {
-  return ["mercado", "cuidado", "jerardith"].some((cat) => rubroActivo(db, id, cat));
+  return RUBROS.some((r) => rubroActivo(db, id, MAPA_RUBRO[r].categoria));
 }
 
 router.get("/gastos", async (req, res) => {
@@ -114,8 +122,7 @@ router.get("/resumen", async (req, res) => {
       )
       .reduce((a, m) => a + Number(m.monto || 0), 0);
 
-  const rubros = ["mercado", "cuidado", "esposa"];
-  const resumen = rubros.map((rubro) => {
+  const resumen = RUBROS.map((rubro) => {
     const categoria = MAPA_RUBRO[rubro].categoria;
     const recibido = sumar(categoria, false);
     const gastado = sumar(categoria, true);

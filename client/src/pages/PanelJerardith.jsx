@@ -4,7 +4,13 @@ import { api, formatoCOP, formatoQuincena } from "../api";
 import FormGasto from "../components/FormGasto";
 import ListaMovimientos from "../components/ListaMovimientos";
 
-const ETIQUETAS = { mercado: "Mercado", cuidado: "Cuidado", esposa: "Esposa" };
+const ETIQUETAS = {
+  mercado: "Mercado",
+  cuidado: "Cuidado",
+  aseo: "Aseo",
+  ocio: "Ocio",
+  esposa: "Esposa",
+};
 
 export default function PanelJerardith() {
   const [resumen, setResumen] = useState(null);

@@ -3,6 +3,8 @@ import { useState } from "react";
 const RUBROS = [
   { valor: "mercado", etiqueta: "Mercado" },
   { valor: "cuidado", etiqueta: "Cuidado" },
+  { valor: "aseo", etiqueta: "Aseo" },
+  { valor: "ocio", etiqueta: "Ocio" },
   { valor: "esposa", etiqueta: "Esposa (bolsillo)" },
 ];
 

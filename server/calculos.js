@@ -68,7 +68,7 @@ export function calcularEstadoQuincena(db, id) {
   // Gastos sin presupuesto fijo: no son un monto fijo cada quincena (lo que
   // le des a Jerardith varia, la reserva medica tambien), asi que su
   // presupuesto siempre es 0 -- solo cuentan lo que realmente se registro.
-  const categoriasGastoVariable = ["medicaBucaramanga", "jerardith"];
+  const categoriasGastoVariable = ["aseo", "medicaBucaramanga", "jerardith"];
   const gastosVariables = categoriasGastoVariable.map((cat) => ({
     categoria: cat,
     presupuesto: 0,

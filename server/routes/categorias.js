@@ -15,7 +15,7 @@ const TIPOS_PERSONALIZABLES = ["gasto", "inversion", "ingreso"];
 // En minuscula porque slugificar() siempre produce minusculas -- la
 // comparacion debe hacerse en el mismo formato.
 const CATEGORIAS_BASE = new Set([
-  "arriendo", "servicios", "mercado", "cuidado", "salud", "combustible", "ocio", "efectivo",
+  "arriendo", "servicios", "mercado", "cuidado", "salud", "combustible", "ocio", "efectivo", "aseo",
   "medicabucaramanga", "jerardith",
   "falabella", "rappi", "auteco", "numama", "decameron", "nohora", "bancolombia",
   "nu", "xtb", "binance",
