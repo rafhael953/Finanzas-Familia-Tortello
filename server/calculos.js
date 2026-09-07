@@ -35,6 +35,56 @@ function esConfirmado(m) {
   return m.confirmado !== false;
 }
 
+function sumaValores(obj) {
+  return Object.values(obj || {}).reduce((a, b) => a + Number(b || 0), 0);
+}
+
+// A que quincena le toca la cuota de cada deuda. Es la misma logica que
+// arma el reparto en server/asesor.js (repartoQuincenas) -- se repite aca
+// porque calcularEstadoQuincena tambien la necesita: sin esto, la pantalla
+// de Quincena ofrecia confirmar las cinco deudas completas en las dos
+// quincenas del mes, en vez de solo la mitad que a cada una le toca, e
+// inflaba el balance proyectado con cuotas que en realidad salen del
+// sueldo de la otra quincena (paso el 2026-09-07 con Rappi y NU mama
+// contando de mas en la Q1). Si cambia el algoritmo de reparto, hay que
+// cambiarlo en los dos lados.
+export function asignacionDeudas(db) {
+  const ingresos = { q1: Number(db.config.ingresoQ1 || 0), q2: Number(db.config.ingresoQ2 || 0) };
+  const fijos = { q1: sumaValores(db.gastosFijos?.q1), q2: sumaValores(db.gastosFijos?.q2) };
+
+  const saldos = { ...db.deudasIniciales };
+  for (const m of db.movimientos || []) {
+    if (saldos[m.categoria] === undefined || m.confirmado === false) continue;
+    if (m.tipo === "deuda") saldos[m.categoria] -= Number(m.monto || 0);
+    else if (m.tipo === "compraTarjeta") saldos[m.categoria] += Number(m.monto || 0);
+  }
+
+  const cuotas = Object.entries(db.cuotasRecomendadas || {})
+    .filter(([cat, valor]) => Number(valor) > 0 && (saldos[cat] || 0) > 0)
+    .map(([categoria, valor]) => ({ categoria, valor: Number(valor) }))
+    .sort((a, b) => b.valor - a.valor);
+
+  const margen = { q1: ingresos.q1 - fijos.q1, q2: ingresos.q2 - fijos.q2 };
+  const asignacion = {};
+
+  const aMano = db.repartoCuotas || {};
+  const fijadas = cuotas.filter((c) => aMano[c.categoria]);
+  const libres = cuotas.filter((c) => !aMano[c.categoria]);
+
+  for (const cuota of fijadas) {
+    const donde = Number(aMano[cuota.categoria]) === 1 ? "q1" : "q2";
+    asignacion[cuota.categoria] = donde;
+    margen[donde] -= cuota.valor;
+  }
+  for (const cuota of libres) {
+    const donde = margen.q1 >= margen.q2 ? "q1" : "q2";
+    asignacion[cuota.categoria] = donde;
+    margen[donde] -= cuota.valor;
+  }
+
+  return asignacion;
+}
+
 function totales(movs, tipo, categoria) {
   const deCategoria = movs.filter((m) => m.tipo === tipo && m.categoria === categoria);
   const confirmado = deCategoria.filter(esConfirmado).reduce((a, m) => a + Number(m.monto || 0), 0);
@@ -91,6 +141,11 @@ export function calcularEstadoQuincena(db, id) {
   const idHermana = idQuincena(anio, mes, q === 1 ? 2 : 1);
   const movsHermana = (db.movimientos || []).filter((m) => m.quincenaId === idHermana);
 
+  // Cada deuda tiene una sola cuota al mes: solo cuenta como presupuesto de
+  // ESTA quincena si el reparto se la asigno a ella. Si no, el presupuesto
+  // es 0 aca aunque la cuota exista, porque le toca a la otra quincena.
+  const asignacion = asignacionDeudas(db);
+
   const deudas = Object.keys(presupuestoDeudas).map((cat) => {
     const propios = totales(movsCasa, "deuda", cat);
     const enHermana = totales(movsHermana, "deuda", cat).confirmado;
@@ -104,7 +159,7 @@ export function calcularEstadoQuincena(db, id) {
 
     return {
       categoria: cat,
-      presupuesto: presupuestoDeudas[cat],
+      presupuesto: asignacion[cat] === key ? presupuestoDeudas[cat] : 0,
       pagadoEnOtraQuincena: enHermana,
       saldada: saldoPendiente <= 0,
       ...propios,
