@@ -92,6 +92,24 @@ function totales(movs, tipo, categoria) {
   return { confirmado, pendiente, total: confirmado + pendiente };
 }
 
+// Antes de esta quincena el arrastre en vivo no cuenta: enero-julio de 2026
+// se importo del Excel del presupuesto (ver commit "Importar la historia
+// real de enero a agosto"), y ese historial refleja que lo que sobraba de
+// una quincena se terminaba gastando en la siguiente -- no habia disciplina
+// de ahorro todavia, asi que encadenar el arrastre hasta ahi solo arrastra
+// numeros que ya se sabe que no se conservaron. Ademas nunca se registro
+// cuanta plata en mano habia realmente al inicio de esa historia (diciembre
+// 2025), asi que cualquier arrastre desde antes de aqui seria un numero
+// inventado, no uno real.
+//
+// La Q2 de agosto es el ancla porque es la que Rafael ya habia registrado a
+// mano cuando se hizo esa importacion, y la propia importacion la trato
+// como el punto seguro (no la toco). De aqui en adelante el arrastre es en
+// vivo; antes de aqui, enero-julio sigue existiendo para graficas,
+// promedios y el semaforo de meses, pero como historia, no como saldo que
+// se siga acumulando.
+const ANCLA_ARRASTRE = "2026-08-Q2";
+
 // Cuanto se trae de la quincena anterior. Se arrastra completo, en los dos
 // sentidos: ni el rojo ni el sobrante desaparecen solos. Un hueco hay que
 // taparlo con lo que entra despues, y un sobrante sigue siendo plata real
@@ -107,6 +125,8 @@ function totales(movs, tipo, categoria) {
 // taparse -- eso paso el 2026-09-10 con la Q2 de septiembre, que seguia
 // mostrando el mismo numero en rojo.
 export function calcularSaldoInicial(db, id) {
+  if (id === ANCLA_ARRASTRE) return 0;
+
   const { anio, mes, q } = partesQuincena(id);
   let anioAnt = anio;
   let mesAnt = mes;

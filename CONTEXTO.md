@@ -75,6 +75,27 @@ todavía no se haya gastado. Si ni reservando eso alcanza, se muestra
 "🛑 No gastes más" en el Panel de Rafael, sin esperar a que el balance real
 ya esté en rojo.
 
+### El arrastre tiene un ancla: no encadena con la historia de antes de agosto
+
+Enero-julio de 2026 se importó del Excel del presupuesto (commit "Importar
+la historia real de enero a agosto"), y esa historia muestra que lo que
+sobraba de una quincena se terminaba gastando en la siguiente -- no había
+disciplina de ahorro todavía. Si el arrastre en vivo encadenara hasta ahí,
+arrastraría un "sobrante" que la propia historia dice que nunca se
+conservó, e inflaría el balance de hoy con plata que en la práctica no
+existe. Tampoco se registró nunca cuánta plata en mano había de verdad al
+inicio de esa historia (diciembre 2025) -- cualquier arrastre desde ahí
+sería un número inventado.
+
+`ANCLA_ARRASTRE` en `calcularSaldoInicial` corta la cadena en **2026-08-Q2**
+(la quincena que Rafael ya había registrado a mano cuando se hizo esa
+importación, y que la propia importación trató como el punto seguro). De
+ahí en adelante el arrastre es en vivo; antes de ahí, enero-julio sigue
+existiendo para gráficas, promedios y el semáforo de meses, pero como
+historia, no como saldo que se siga acumulando. Si se necesita mover el
+ancla más adelante (otro punto que se sepa cierto), es esa constante la que
+hay que cambiar.
+
 ## Cupo de tarjeta: dos cosas distintas
 
 - `cupoTarjetasMensual` (`server/asesor.js`, página Reparto → "Cupo de
