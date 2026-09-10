@@ -92,6 +92,40 @@ function totales(movs, tipo, categoria) {
   return { confirmado, pendiente, total: confirmado + pendiente };
 }
 
+// Cuanto se trae de la quincena anterior. Se arrastra completo, en los dos
+// sentidos: ni el rojo ni el sobrante desaparecen solos. Un hueco hay que
+// taparlo con lo que entra despues, y un sobrante sigue siendo plata real
+// disponible HASTA que de verdad se registre un movimiento moviendola (ej.
+// un aporte confirmado a NU) -- no se asume por defecto que ya se fue al
+// fondo de emergencia, porque el ahorro solo cuenta cuando se confirma (ver
+// calcularEvolucionNU, que ya solo mira aportes confirmados). Asumirlo por
+// defecto haria que la plata se "perdiera" de la contabilidad sin que
+// realmente se hubiera movido.
+//
+// Sin este arrastre cada quincena se calculaba aislada y una quincena podia
+// mostrarse "bien" aunque viniera arrastrando un hueco de la anterior sin
+// taparse -- eso paso el 2026-09-10 con la Q2 de septiembre, que seguia
+// mostrando el mismo numero en rojo.
+export function calcularSaldoInicial(db, id) {
+  const { anio, mes, q } = partesQuincena(id);
+  let anioAnt = anio;
+  let mesAnt = mes;
+  if (q === 1) {
+    mesAnt -= 1;
+    if (mesAnt === 0) {
+      mesAnt = 12;
+      anioAnt -= 1;
+    }
+  }
+  const idAnterior = idQuincena(anioAnt, mesAnt, q === 1 ? 2 : 1);
+
+  const huboAntes = (db.movimientos || []).some((m) => m.quincenaId === idAnterior);
+  if (!huboAntes) return 0;
+
+  const estadoAnterior = calcularEstadoQuincena(db, idAnterior);
+  return estadoAnterior.balanceConfirmado;
+}
+
 // Estado en vivo de una quincena, con separacion confirmado (real, ya paso)
 // vs pendiente (planeado/estimado, aun no confirmado item a item).
 export function calcularEstadoQuincena(db, id) {
@@ -208,8 +242,9 @@ export function calcularEstadoQuincena(db, id) {
   const egresoConfirmado = gastosConfirmado + deudasConfirmado + inversionesConfirmado;
   const egresoTotal = gastosTotal + deudasTotal + inversionesTotal;
 
-  const balanceConfirmado = ingresosConfirmado - egresoConfirmado;
-  const balanceProyectado = ingresosTotal - egresoTotal;
+  const saldoInicial = calcularSaldoInicial(db, id);
+  const balanceConfirmado = saldoInicial + ingresosConfirmado - egresoConfirmado;
+  const balanceProyectado = saldoInicial + ingresosTotal - egresoTotal;
 
   // El sobrante que se reparte a NU/abono-extra NO puede calcularse solo con
   // lo confirmado hasta ahora: eso ignora gastos y cuotas que sabemos que
@@ -219,11 +254,18 @@ export function calcularEstadoQuincena(db, id) {
   // se considera sobrante seguro para mover a NU.
   const egresoEsperado = (lista) => lista.reduce((a, x) => a + Math.max(x.presupuesto, x.total), 0);
   const egresoEsperadoTotal = egresoEsperado(gastos) + egresoEsperado(deudas) + inversionesTotal;
-  const sobranteSeguro = ingresosConfirmado - egresoEsperadoTotal;
+  const sobranteSeguro = saldoInicial + ingresosConfirmado - egresoEsperadoTotal;
 
   const sobrante = sobranteSeguro > 0 ? sobranteSeguro : 0;
   const aNU = Math.round(sobrante * 0.5);
   const aDeuda = sobrante - aNU;
+
+  // Advertencia activa de "no gastes mas": si sobranteSeguro ya esta en
+  // negativo, ni siquiera reservando solo lo comprometido (presupuesto y lo
+  // que ya se registro) alcanza con lo que de verdad ha entrado. No es una
+  // proyeccion a futuro (eso es balanceProyectado) -- es que ahora mismo
+  // cualquier gasto extra pone en riesgo lo fijo del mes.
+  const riesgoGasto = sobranteSeguro < 0;
 
   const confirmada = (db.estadoQuincenas || {})[id] === "confirmada";
 
@@ -238,6 +280,7 @@ export function calcularEstadoQuincena(db, id) {
     anio,
     quincena: q,
     confirmada,
+    saldoInicial,
     ingresos,
     ingresosConfirmado,
     ingresosTotal,
@@ -255,6 +298,8 @@ export function calcularEstadoQuincena(db, id) {
     balanceConfirmado,
     balanceProyectado,
     sobrante,
+    sobranteSeguro,
+    riesgoGasto,
     aNU,
     aDeuda,
     ideal,

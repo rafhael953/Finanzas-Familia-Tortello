@@ -6,8 +6,16 @@
 // miran solo lo que pasó, sino lo que va a pasar si nada cambia.
 
 import { quincenaId, partesQuincena } from "./calculos.js";
+import { saldosActuales } from "./routes/deudas.js";
 
 const CUPO_TARJETAS_POR_DEFECTO = 500000;
+
+// Cupo REAL que da el banco por cada tarjeta -- no confundir con
+// cupoTarjetasMensual de arriba, que es un tope de disciplina que Rafael se
+// pone a si mismo sobre cuanto comprar al mes. Este es el limite de credito
+// de verdad: si el saldo de la tarjeta se le acerca o se lo pasa, la tarjeta
+// deja de servir sin importar si viene o no dentro del tope de disciplina.
+const CUPOS_CREDITO_POR_DEFECTO = { rappi: 10000000, falabella: 16000000 };
 
 function suma(obj) {
   return Object.values(obj || {}).reduce((a, b) => a + Number(b || 0), 0);
@@ -82,6 +90,25 @@ export function estadoTarjetas(db, mes = prefijoMes()) {
     excedido: usado > cupo,
     compras: compras.length,
   };
+}
+
+// Que tan cerca esta cada tarjeta de su cupo real de credito (el que da el
+// banco), no del tope de disciplina. Se calcula sobre el saldo actual
+// (rotativo: sube con compras, baja con abonos), igual que en /api/deudas.
+export function estadoCupoCredito(db) {
+  const cupos = { ...CUPOS_CREDITO_POR_DEFECTO, ...(db.config?.cupoCreditoTarjetas || {}) };
+  const saldos = saldosActuales(db);
+  return Object.keys(cupos).map((categoria) => {
+    const saldo = Math.max(0, saldos[categoria] || 0);
+    const cupo = Number(cupos[categoria]);
+    return {
+      categoria,
+      saldo,
+      cupo,
+      disponible: cupo - saldo,
+      excedido: saldo > cupo,
+    };
+  });
 }
 
 // Reparte las cuotas entre las dos quincenas buscando que las dos queden
@@ -235,6 +262,7 @@ export function calcularAsesor(db) {
   return {
     meta: metaSugerida(db),
     tarjetas: estadoTarjetas(db),
+    cupoCredito: estadoCupoCredito(db),
     reparto: repartoQuincenas(db),
     meses: semaforoMeses(db),
     quincenaActual: estadoQuincenaActual(db),

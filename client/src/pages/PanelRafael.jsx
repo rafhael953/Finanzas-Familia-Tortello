@@ -82,6 +82,8 @@ export default function PanelRafael() {
   const deudaTotal = deudas.reduce((a, d) => a + d.saldo, 0);
   const faltanteTotal = alertas.reduce((a, x) => a + x.faltante, 0);
   const balanceNegativo = estado.balanceConfirmado < 0;
+  const proyeccionNegativa = estado.balanceProyectado < 0 && !balanceNegativo;
+  const riesgoGastoActivo = estado.riesgoGasto && !balanceNegativo;
 
   // Deslizar la tarjeta de quincena para moverse entre periodos, ademas de
   // las flechas: en el celular es el gesto natural.
@@ -257,6 +259,26 @@ export default function PanelRafael() {
           </div>
         )}
 
+        {riesgoGastoActivo && (
+          <div className="mb-3 text-xs text-[var(--color-negativo-alto)] font-medium">
+            🛑 No gastes más: ya no alcanza ni para lo comprometido de esta quincena (
+            {formatoCOP(-estado.sobranteSeguro)} corto)
+          </div>
+        )}
+
+        {estado.saldoInicial !== 0 && (
+          <div className="flex justify-between items-baseline dashed-row py-2 text-[13.5px]">
+            <span className="text-white/60">Arrastre de la quincena anterior</span>
+            <span
+              className={`font-serif-num font-semibold ${
+                estado.saldoInicial < 0 ? "text-[var(--color-negativo-alto)]" : "text-[var(--color-positivo-alto)]"
+              }`}
+            >
+              {formatoCOP(estado.saldoInicial)}
+            </span>
+          </div>
+        )}
+
         <div className="flex justify-between items-baseline dashed-row py-2 text-[13.5px]">
           <span className="text-white/60">Ingresos confirmados</span>
           <span className="font-serif-num font-semibold">{formatoCOP(estado.ingresosConfirmado)}</span>
@@ -277,8 +299,18 @@ export default function PanelRafael() {
           </span>
         </div>
 
+        {proyeccionNegativa && (
+          <div className="mt-2 text-xs text-[var(--color-negativo-alto)] font-medium">
+            ⚠ Riesgo: si se cumple lo pendiente, esta quincena cierra en rojo
+          </div>
+        )}
+
         {hayPendientes && (
-          <div className="mt-2 flex justify-between items-baseline text-xs text-[#E8C468]">
+          <div
+            className={`mt-2 flex justify-between items-baseline text-xs ${
+              proyeccionNegativa ? "text-[var(--color-negativo-alto)]" : "text-[#E8C468]"
+            }`}
+          >
             <span>Si se cumple lo pendiente → balance proyectado</span>
             <span className="font-serif-num font-semibold">{formatoCOP(estado.balanceProyectado)}</span>
           </div>

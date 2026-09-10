@@ -47,6 +47,51 @@ tarjetas", 20.200.000 en 2026) y no como abonos a la deuda. Si se importa
 más historia de tarjetas, hay que hacer lo mismo o el saldo inicial se
 infla hasta un número sin sentido.
 
+## Las quincenas se arrastran, no son cajas separadas (10 sep 2026)
+
+Antes cada quincena se calculaba aislada: `balanceConfirmado` solo miraba sus
+propios movimientos. Eso hacía que una quincena se viera "bien" aunque
+viniera arrastrando un hueco de la anterior sin taparse, y que el balance
+proyectado de la quincena que sigue no avisara a tiempo si con lo que entra
+no alcanza a cubrir lo que ya se sabe que falta.
+
+El arrastre (`saldoInicial` en `calcularEstadoQuincena`, `server/calculos.js`)
+es completo, en los dos sentidos: **ni el rojo ni el sobrante desaparecen
+solos.** Un hueco resta del balance de la quincena que sigue. Un sobrante
+sigue siendo plata real disponible -- sigue ahí hasta que de verdad se
+registre un movimiento moviéndola (un aporte confirmado a NU, por ejemplo).
+No se asume por defecto que el sobrante ya se fue al ahorro: eso lo decide
+Rafael a mano, confirmando el movimiento, igual que todo lo demás en esta
+app (ver "Confirmado vs pendiente" abajo). `calcularEvolucionNU` ya solo
+cuenta aportes confirmados, no el `aNU` sugerido -- este arrastre sigue esa
+misma regla.
+
+Como el sobrante ya no se resta solo, la alerta de "¿me alcanza?" no puede
+ser solo "el balance da negativo": para cuando eso pasa ya es tarde. Por eso
+existe `riesgoGasto` (mismo archivo): compara lo que de verdad ha entrado
+(`ingresosConfirmado`, más el arrastre) contra lo que ya está comprometido
+--presupuesto de gastos fijos y cuotas, más lo que ya se registró-- así
+todavía no se haya gastado. Si ni reservando eso alcanza, se muestra
+"🛑 No gastes más" en el Panel de Rafael, sin esperar a que el balance real
+ya esté en rojo.
+
+## Cupo de tarjeta: dos cosas distintas
+
+- `cupoTarjetasMensual` (`server/asesor.js`, página Reparto → "Cupo de
+  tarjeta este mes") es un tope de **disciplina** que Rafael se pone a sí
+  mismo sobre cuánto comprar al mes con cualquier tarjeta. Por defecto
+  $500.000.
+- `cupoCreditoTarjetas` (`db.config`, mismo `asesor.js` →
+  `estadoCupoCredito`, página Reparto → "Cupo real de cada tarjeta") es el
+  límite de crédito que **da el banco**, por tarjeta: Rappi $10.000.000,
+  Falabella $16.000.000. Se compara contra el saldo actual rotativo (el
+  mismo `saldosActuales` de `routes/deudas.js`), no contra la suma de
+  compras del año — eso ya está explicado arriba en "Las tarjetas rotativas
+  no son préstamos" y aplica igual acá.
+
+Que una compra quede dentro del tope de disciplina no dice nada sobre si cabe
+en el cupo real del banco, y viceversa: son dos alertas independientes.
+
 ## Confirmado vs pendiente
 
 - `confirmado: true` → ya pasó de verdad.

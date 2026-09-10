@@ -98,6 +98,26 @@ router.put("/cuota", async (req, res) => {
   }
 });
 
+// Cupo REAL de credito que da el banco por tarjeta (no el tope de disciplina
+// de gasto, ese es /api/config con cupoTarjetasMensual). Sirve para avisar
+// cuando el saldo rotativo de una tarjeta se le acerca o se le pasa al
+// limite de verdad.
+router.put("/cupo-credito", async (req, res) => {
+  const { categoria, valor } = req.body || {};
+  const valorNum = Number(valor);
+  if (!TARJETAS.includes(categoria)) {
+    return res.status(400).json({ error: "Esa tarjeta no existe" });
+  }
+  if (!valorNum || valorNum <= 0) {
+    return res.status(400).json({ error: "Valor inválido" });
+  }
+  await withDB(async (db) => {
+    db.config.cupoCreditoTarjetas = db.config.cupoCreditoTarjetas || {};
+    db.config.cupoCreditoTarjetas[categoria] = valorNum;
+  });
+  res.json({ ok: true, categoria, valor: valorNum });
+});
+
 // Registrar una compra nueva con tarjeta: se suma al saldo pendiente de esa
 // tarjeta, y la cuota mensual recomendada sube lo necesario para pagarla en
 // el numero de cuotas elegido (ademas de lo que ya se venia pagando).
@@ -220,7 +240,7 @@ router.delete("/compra/:id", async (req, res) => {
 // Saldo de hoy = lo que se debia al empezar + lo que se ha comprado con la
 // tarjeta - lo que se ha abonado. Antes las compras se sumaban al saldo
 // inicial, lo que borraba el sentido de ese numero y del "% pagado".
-function saldosActuales(db) {
+export function saldosActuales(db) {
   const saldos = { ...db.deudasIniciales };
   for (const m of db.movimientos || []) {
     if (saldos[m.categoria] === undefined || !esFirme(m)) continue;

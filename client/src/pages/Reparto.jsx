@@ -122,7 +122,7 @@ export default function Reparto() {
 
   if (!datos) return <div className="p-6 text-center font-serif-num text-lg">Cargando...</div>;
 
-  const { meta, tarjetas, reparto, meses, quincenaActual } = datos;
+  const { meta, tarjetas, cupoCredito, reparto, meses, quincenaActual } = datos;
   const enRojo = meses.filter((m) => m.estado !== "bien");
 
   return (
@@ -275,6 +275,47 @@ export default function Reparto() {
             ? `Te pasaste ${formatoCOP(-tarjetas.disponible)} del tope.`
             : `Te quedan ${formatoCOP(tarjetas.disponible)} de cupo este mes.`}
         </p>
+      </div>
+
+      {/* Cupo real de credito por tarjeta -- el limite que da el banco, no
+          el tope de disciplina de arriba */}
+      <div className="ledger-card p-6 mb-6">
+        <h2 className="section-title-editorial mb-1">Cupo real de cada tarjeta</h2>
+        <p className="text-xs text-[var(--color-muted)] mb-2">
+          El límite que da el banco. Si el saldo se le acerca o se lo pasa, la
+          tarjeta deja de servir sin importar el tope de disciplina de arriba.
+        </p>
+        {(cupoCredito || []).map((c) => (
+          <div key={c.categoria} className="mt-3 first:mt-0">
+            <FilaValorEditable
+              etiqueta={c.categoria === "rappi" ? "Rappi" : "Falabella"}
+              valor={c.cupo}
+              onGuardar={(v) => api.editarCupoCredito(c.categoria, v).then(cargar)}
+            />
+            <div className="flex justify-between items-baseline py-1 text-[13.5px]">
+              <span className="text-[var(--color-muted)]">Saldo actual</span>
+              <span className="font-serif-num">{formatoCOP(c.saldo)}</span>
+            </div>
+            <div className="h-[6px] bg-[var(--color-ledger-rule)] rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-300"
+                style={{
+                  width: `${Math.min(100, (c.saldo / (c.cupo || 1)) * 100)}%`,
+                  background: c.excedido ? "var(--color-negativo)" : "var(--color-acento)",
+                }}
+              />
+            </div>
+            <p
+              className={`text-xs mt-1 ${
+                c.excedido ? "text-[var(--color-negativo)]" : "text-[var(--color-muted)]"
+              }`}
+            >
+              {c.excedido
+                ? `Te pasaste ${formatoCOP(-c.disponible)} del cupo real.`
+                : `Te quedan ${formatoCOP(c.disponible)} de cupo real.`}
+            </p>
+          </div>
+        ))}
       </div>
 
       {/* Semáforo mes a mes */}

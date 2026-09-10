@@ -48,6 +48,8 @@ export const api = {
   editarCompraTarjeta: (id, compra) =>
     request(`/api/deudas/compra/${id}`, { method: "PUT", body: JSON.stringify(compra) }),
   borrarCompraTarjeta: (id) => request(`/api/deudas/compra/${id}`, { method: "DELETE" }),
+  editarCupoCredito: (categoria, valor) =>
+    request("/api/deudas/cupo-credito", { method: "PUT", body: JSON.stringify({ categoria, valor }) }),
 
   editarConfig: (campo, valor) =>
     request("/api/config", { method: "PUT", body: JSON.stringify({ campo, valor }) }),
