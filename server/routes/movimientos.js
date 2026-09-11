@@ -97,11 +97,16 @@ router.put("/:id", async (req, res) => {
         actual.monto = Number(cambios.monto);
       }
       if (cambios.descripcion !== undefined) actual.descripcion = cambios.descripcion;
-      if (cambios.fecha !== undefined) {
-        actual.fecha = cambios.fecha;
-        actual.quincenaId = quincenaDeFecha(cambios.fecha);
-      }
+      if (cambios.fecha !== undefined) actual.fecha = cambios.fecha;
       if (cambios.confirmado !== undefined) actual.confirmado = !!cambios.confirmado;
+      // Recalcula siempre, no solo cuando se toca la fecha explicitamente:
+      // asi cualquier edicion (incluido solo tocar el circulo de confirmar)
+      // autocorrige un quincenaId que haya quedado mal -- por ejemplo de
+      // antes de este arreglo, cuando se guardaba la quincena de la
+      // pantalla abierta en vez de la que le toca a la fecha. Es barato y
+      // siempre da el mismo resultado si la fecha no cambio, asi que no
+      // hay riesgo de mover algo que ya estaba bien.
+      actual.quincenaId = quincenaDeFecha(actual.fecha);
       db.movimientos[idx] = actual;
       return actual;
     });
