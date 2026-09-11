@@ -546,6 +546,14 @@ export function calcularEstadoMensual(db, id) {
     return egresoEsperado(estado.gastos) + egresoEsperado(estado.deudas) + estado.inversionesTotal;
   };
   const egresoEsperadoTotal = egresoEsperadoQuincena(q1) + egresoEsperadoQuincena(q2);
+  // sobranteSeguro YA es un balance (no solo un "cuanto sobra"): saldo
+  // inicial mas lo confirmado que ha entrado, menos TODO lo comprometido
+  // del mes aunque todavia no se haya registrado como movimiento. Es la
+  // cifra que hay que mostrar como "balance esperado", no balanceProyectado
+  // (que solo suma lo que ya se registro como pendiente, y por eso al
+  // principio del mes se ve mas optimista de lo real: la mayoria de los
+  // gastos fijos y cuotas del mes todavia no se han registrado como
+  // movimiento, aunque ya se sabe que van a caer).
   const sobranteSeguro = saldoInicial + ingresosConfirmado - egresoEsperadoTotal;
   const sobrante = sobranteSeguro > 0 ? sobranteSeguro : 0;
   const riesgoGasto = sobranteSeguro < 0;
@@ -564,6 +572,7 @@ export function calcularEstadoMensual(db, id) {
     egresoTotal,
     balanceConfirmado,
     balanceProyectado,
+    egresoEsperadoTotal,
     sobrante,
     sobranteSeguro,
     riesgoGasto,
