@@ -2,6 +2,21 @@ import { Router } from "express";
 import { withDB } from "../db.js";
 import { quincenaId } from "../calculos.js";
 
+// La quincena de un movimiento la decide su FECHA, no la pantalla en la
+// que se estaba parado al crearlo -- quincenaId(fecha) es la definicion
+// oficial de a cual quincena pertenece cada dia (ver el comentario en
+// calculos.js). Antes se confiaba en el quincenaId que mandaba el cliente
+// (la quincena que tenia abierta en el Panel), que puede no coincidir con
+// la fecha real que se escribio: asi quedaron pagos de Rappi con fecha
+// 2026-09-04 y 2026-09-11 (que por fecha son de la Q2 de agosto) archivados
+// en la Q1 de septiembre, porque esa era la pantalla abierta al
+// registrarlos. Eso inflaba una quincena y vaciaba la otra sin que se
+// notara, hasta que los totales dejaron de cuadrar.
+function quincenaDeFecha(fechaStr) {
+  if (!fechaStr) return quincenaId();
+  return quincenaId(new Date(`${fechaStr}T12:00:00`));
+}
+
 const router = Router();
 
 const CATEGORIAS_POR_TIPO = {
@@ -32,14 +47,15 @@ router.post("/", async (req, res) => {
         e.status = 400;
         throw e;
       }
+      const fecha = mov.fecha || new Date().toISOString().slice(0, 10);
       const item = {
         id: `mov-${Date.now()}-${Math.round(Math.random() * 1000)}`,
-        quincenaId: mov.quincenaId || quincenaId(),
+        quincenaId: quincenaDeFecha(fecha),
         tipo: mov.tipo,
         categoria: mov.categoria,
         monto: Number(mov.monto),
         descripcion: mov.descripcion || "",
-        fecha: mov.fecha || new Date().toISOString().slice(0, 10),
+        fecha,
         registradoPor: mov.registradoPor || "rafael",
         confirmado: mov.confirmado !== false,
       };
@@ -81,7 +97,10 @@ router.put("/:id", async (req, res) => {
         actual.monto = Number(cambios.monto);
       }
       if (cambios.descripcion !== undefined) actual.descripcion = cambios.descripcion;
-      if (cambios.fecha !== undefined) actual.fecha = cambios.fecha;
+      if (cambios.fecha !== undefined) {
+        actual.fecha = cambios.fecha;
+        actual.quincenaId = quincenaDeFecha(cambios.fecha);
+      }
       if (cambios.confirmado !== undefined) actual.confirmado = !!cambios.confirmado;
       db.movimientos[idx] = actual;
       return actual;
