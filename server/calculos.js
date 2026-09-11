@@ -461,21 +461,51 @@ export function calcularEvolucionNUMensual(db) {
   return meses;
 }
 
-// Veredicto crudo del MES completo (las dos quincenas juntas), pensado para
-// verse ANTES de entrar a registrar nada: "vamos a alcanzar con lo
-// estimado, estamos bien, o toca frenar" -- sin obligar a sumar dos
-// quincenas en la cabeza para saberlo. Reusa calcularEstadoQuincena de cada
-// quincena (que ya trae el arrastre encadenado) y los combina.
+// A que mes CALENDARIO pertenecen los dias que en verdad se viven en una
+// quincena. Ojo: no es el mismo "mes" que trae el id de la quincena --
+// quincenaId() ya etiqueta la Q2 con el mes ANTERIOR precisamente porque
+// esos dias (1 al 15) se viven del sueldo de esa Q2 (ver el comentario de
+// quincenaId arriba). Entonces el mes calendario real de una Q1 es el mismo
+// de su id, pero el de una Q2 es el mes SIGUIENTE al de su id.
+function mesCalendarioDeQuincena(anio, mes, q) {
+  if (q === 1) return { anio, mes };
+  return mes === 12 ? { anio: anio + 1, mes: 1 } : { anio, mes: mes + 1 };
+}
+
+// Veredicto crudo del MES CALENDARIO completo, pensado para verse ANTES de
+// entrar a registrar nada: "vamos a alcanzar con lo estimado, estamos
+// bien, o toca frenar" -- sin obligar a sumar dos quincenas en la cabeza
+// para saberlo.
+//
+// Las dos mitades que de verdad viven un mes calendario NO son la Q1 y la
+// Q2 del mismo id (esas serian del 16 de este mes al 15 del siguiente): son
+// la Q2 del id del mes anterior (dias 1-15, sueldo que llego a fin del mes
+// pasado) y la Q1 de este id (dias 16-fin, sueldo que llega a mitad de
+// mes). Rafael lo describio el 2026-09-14: "el mes inicia con la segunda
+// quincena de agosto... y llega la primera de septiembre y rematamos" --
+// eso es exactamente septiembre completo (dias 1 a 30). Agruparlas por el
+// mismo numero de mes del id (como se hacia antes) mostraba un "mes" que en
+// realidad eran los ultimos 15 dias de un mes calendario mas los primeros
+// 15 del siguiente, y por eso un mes podia verse "bien" y el que le seguia
+// "critico" sin que calzara con como se vive el dinero de verdad.
 export function calcularEstadoMensual(db, id) {
-  const { anio, mes } = partesQuincena(id);
-  const idQ1 = idQuincena(anio, mes, 1);
-  const idQ2 = idQuincena(anio, mes, 2);
+  const partes = partesQuincena(id);
+  const { anio, mes } = mesCalendarioDeQuincena(partes.anio, partes.mes, partes.q);
+
+  let anioAnt = anio;
+  let mesAnt = mes - 1;
+  if (mesAnt === 0) {
+    mesAnt = 12;
+    anioAnt -= 1;
+  }
+  const idQ1 = idQuincena(anioAnt, mesAnt, 2); // dias 1-15 del mes calendario
+  const idQ2 = idQuincena(anio, mes, 1); // dias 16-fin del mes calendario
   const q1 = calcularEstadoQuincena(db, idQ1);
   const q2 = calcularEstadoQuincena(db, idQ2);
 
-  // El arrastre de ENTRADA al mes es el de la Q1 (lo que traia de antes);
-  // el resto se suma quincena a quincena, no se reusa el balance de cada
-  // una para no arrastrar dos veces el mismo saldo inicial.
+  // El arrastre de ENTRADA al mes es el de la primera mitad (lo que traia
+  // de antes); el resto se suma quincena a quincena, no se reusa el
+  // balance de cada una para no arrastrar dos veces el mismo saldo inicial.
   const saldoInicial = q1.saldoInicial;
   const ingresosConfirmado = q1.ingresosConfirmado + q2.ingresosConfirmado;
   const ingresosTotal = q1.ingresosTotal + q2.ingresosTotal;
