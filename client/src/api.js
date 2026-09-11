@@ -77,6 +77,8 @@ export const api = {
   moverCuota: (categoria, quincena) =>
     request("/api/plan/reparto", { method: "PUT", body: JSON.stringify({ categoria, quincena }) }),
   soltarCuota: (categoria) => request(`/api/plan/reparto/${categoria}`, { method: "DELETE" }),
+  editarGastoFijo: (quincena, categoria, valor) =>
+    request("/api/plan/gasto-fijo", { method: "PUT", body: JSON.stringify({ quincena, categoria, valor }) }),
 
   getRespaldos: () => request("/api/respaldos"),
 

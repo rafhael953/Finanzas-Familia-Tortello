@@ -348,5 +348,6 @@ export function calcularAsesor(db) {
     meses: semaforoMeses(db),
     quincenaActual: estadoQuincenaActual(db),
     trayectoria: trayectoriaBalance(db),
+    gastosFijos: db.gastosFijos || { q1: {}, q2: {} },
   };
 }

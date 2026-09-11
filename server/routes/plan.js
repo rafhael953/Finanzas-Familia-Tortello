@@ -64,6 +64,32 @@ router.delete("/reparto/:categoria", async (req, res) => {
   res.json(calcularAsesor(await readDB()));
 });
 
+// Editar un gasto fijo puntual (arriendo, servicios, etc) en una quincena.
+// Esto es lo que de verdad usa calcularEstadoQuincena/asesor para decidir
+// si alcanza o no -- distinto del presupuestoIdeal de abajo, que es solo
+// comparativo. No habia forma de tocar esto desde el celular: quedaba fijo
+// en lo que trajo la importacion original del Excel, y ahi quedaban cosas
+// mal ubicadas (ej. arriendo en la quincena que no es).
+router.put("/gasto-fijo", async (req, res) => {
+  const { quincena, categoria, valor } = req.body || {};
+  if (quincena !== "q1" && quincena !== "q2") {
+    return res.status(400).json({ error: "Quincena inválida" });
+  }
+  if (!categoria) {
+    return res.status(400).json({ error: "Falta la categoría" });
+  }
+  const num = Number(valor);
+  if (!Number.isFinite(num) || num < 0) {
+    return res.status(400).json({ error: "Valor inválido" });
+  }
+  await withDB(async (db) => {
+    db.gastosFijos = db.gastosFijos || { q1: {}, q2: {} };
+    db.gastosFijos[quincena] = db.gastosFijos[quincena] || {};
+    db.gastosFijos[quincena][categoria] = num;
+  });
+  res.json(calcularAsesor(await readDB()));
+});
+
 router.get("/", async (req, res) => {
   const db = await readDB();
   if (!db.presupuestoIdeal) return res.json(null);

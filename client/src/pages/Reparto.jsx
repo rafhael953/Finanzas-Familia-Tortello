@@ -116,14 +116,26 @@ export default function Reparto() {
     }
   }
 
+  async function editarFijo(quincena, categoria, valor) {
+    setOcupado(true);
+    try {
+      setDatos(await api.editarGastoFijo(quincena, categoria, valor));
+    } finally {
+      setOcupado(false);
+    }
+  }
+
   useEffect(() => {
     cargar();
   }, []);
 
   if (!datos) return <div className="p-6 text-center font-serif-num text-lg">Cargando...</div>;
 
-  const { meta, tarjetas, cupoCredito, reparto, meses, quincenaActual } = datos;
+  const { meta, tarjetas, cupoCredito, reparto, meses, quincenaActual, gastosFijos } = datos;
   const enRojo = meses.filter((m) => m.estado !== "bien");
+  const categoriasFijas = [
+    ...new Set([...Object.keys(gastosFijos?.q1 || {}), ...Object.keys(gastosFijos?.q2 || {})]),
+  ];
 
   return (
     <div className="min-h-screen px-5 py-6 flex flex-col max-w-lg mx-auto">
@@ -174,6 +186,37 @@ export default function Reparto() {
         Así queda repartida la carga entre las dos quincenas para que ninguna
         se ahogue. Es la guía: si pagas siguiendo esto, el mes cierra.
       </p>
+
+      {/* Gastos fijos: la fuente real detras del "Gastos fijos" de cada
+          quincena de abajo. Antes no habia como tocar esto desde el celular
+          y quedaba lo que trajo la importacion original -- por eso cosas
+          como el arriendo podian quedar en la quincena que no era. */}
+      <div className="ledger-card p-6 mb-6">
+        <h2 className="section-title-editorial mb-1">Gastos fijos por quincena</h2>
+        <p className="text-xs text-[var(--color-muted)] mb-3">
+          Toca un monto para ajustarlo. Esto es lo que de verdad se usa para
+          saber si cada quincena alcanza — si algo quedó en la que no es
+          (como el arriendo), muévelo aquí: pon el monto en la quincena
+          correcta y deja la otra en $0.
+        </p>
+        {categoriasFijas.map((cat) => (
+          <div key={cat} className="mb-3 last:mb-0">
+            <div className="text-[12px] font-semibold text-[var(--color-muted)] mb-0.5">
+              {ETIQUETAS_CATEGORIA[cat] || cat}
+            </div>
+            <FilaValorEditable
+              etiqueta="Quincena 1 · del 16 al 31"
+              valor={gastosFijos.q1?.[cat] || 0}
+              onGuardar={(v) => editarFijo("q1", cat, v)}
+            />
+            <FilaValorEditable
+              etiqueta="Quincena 2 · del 1 al 15"
+              valor={gastosFijos.q2?.[cat] || 0}
+              onGuardar={(v) => editarFijo("q2", cat, v)}
+            />
+          </div>
+        ))}
+      </div>
 
       <Quincena
         titulo="Quincena 1 · del 16 al 31"
