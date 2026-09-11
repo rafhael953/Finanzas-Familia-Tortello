@@ -4,6 +4,7 @@ import Navegacion from "../components/Navegacion";
 import { api, formatoCOP, ETIQUETAS_CATEGORIA } from "../api";
 import BarraDeuda from "../components/BarraDeuda";
 import FilaValorEditable from "../components/FilaValorEditable";
+import DetalleDeuda from "../components/DetalleDeuda";
 
 const TARJETAS = ["falabella", "rappi"];
 
@@ -255,6 +256,7 @@ export default function Deudas() {
   const [mostrarPlan, setMostrarPlan] = useState(false);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [cargando, setCargando] = useState(true);
+  const [detalleAbierto, setDetalleAbierto] = useState(null);
 
   function cargar() {
     return Promise.all([api.getDeudas(), api.getComprasTarjeta()]).then(([d, c]) => {
@@ -323,15 +325,27 @@ export default function Deudas() {
       ) : (
         <>
           <div className="ledger-card p-6 mb-6">
-            <h2 className="section-title-editorial mb-2">Estado actual</h2>
+            <h2 className="section-title-editorial mb-1">Estado actual</h2>
+            <p className="text-xs text-[var(--color-muted)] mb-2">
+              Toca "ver radiografía" en cualquiera para ver compra por compra
+              y pago por pago de dónde sale el saldo.
+            </p>
             {deudas.map((d) => (
-              <BarraDeuda
-              key={d.nombre}
-              nombre={d.nombre}
-              saldo={d.saldo}
-              saldoInicial={d.saldoInicial}
-              comprado={d.comprado}
-            />
+              <div key={d.nombre}>
+                <BarraDeuda
+                  nombre={d.nombre}
+                  saldo={d.saldo}
+                  saldoInicial={d.saldoInicial}
+                  comprado={d.comprado}
+                />
+                <button
+                  onClick={() => setDetalleAbierto(detalleAbierto === d.nombre ? null : d.nombre)}
+                  className="text-[11px] text-[var(--color-acento)] underline decoration-dotted -mt-3 mb-1 block"
+                >
+                  {detalleAbierto === d.nombre ? "ocultar radiografía" : "ver radiografía →"}
+                </button>
+                {detalleAbierto === d.nombre && <DetalleDeuda categoria={d.nombre} />}
+              </div>
             ))}
           </div>
 

@@ -295,6 +295,47 @@ router.get("/", async (req, res) => {
   res.json(detalle);
 });
 
+// Radiografia de una deuda: saldo inicial mas cada compra y cada pago que
+// se le ha registrado, en orden, con el saldo que iba quedando despues de
+// cada uno. Nace de que Rafael no tenia como ver por que el saldo total de
+// Rappi no le cuadraba -- con la lista completa a la vista se puede
+// comparar contra lo que el recuerda haber hecho y encontrar donde esta el
+// hueco (una compra que no se borro bien, un pago que no quedo, etc).
+router.get("/:categoria/detalle", async (req, res) => {
+  const { categoria } = req.params;
+  const db = await readDB();
+  if (!(categoria in (db.deudasIniciales || {}))) {
+    return res.status(404).json({ error: "Esa deuda no existe" });
+  }
+
+  const eventos = (db.movimientos || [])
+    .filter((m) => m.categoria === categoria && (m.tipo === "deuda" || m.tipo === "compraTarjeta"))
+    .map((m) => ({
+      id: m.id,
+      fecha: m.fecha,
+      tipo: m.tipo === "deuda" ? "pago" : "compra",
+      monto: Number(m.monto || 0),
+      descripcion: m.descripcion || "",
+      cuotas: m.cuotas || null,
+      cuotaMensual: m.cuotaMensual || null,
+      confirmado: m.confirmado !== false,
+    }))
+    .sort((a, b) => (a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : 0));
+
+  // El saldo corrido solo cuenta lo firme (confirmado): un pago o una
+  // compra pendiente todavia no movio la plata de verdad.
+  let saldo = db.deudasIniciales[categoria] || 0;
+  const saldoInicial = saldo;
+  const detalle = eventos.map((e) => {
+    if (e.confirmado) {
+      saldo += e.tipo === "compra" ? e.monto : -e.monto;
+    }
+    return { ...e, saldoDespues: Math.round(saldo) };
+  });
+
+  res.json({ categoria, saldoInicial, eventos: detalle, saldoFinal: Math.round(saldo) });
+});
+
 // Proyeccion mensual sep-2026 a dic-2028
 router.get("/proyeccion", async (req, res) => {
   const db = await readDB();

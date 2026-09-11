@@ -42,6 +42,7 @@ export const api = {
   getDeudasProyeccion: () => request("/api/deudas/proyeccion"),
   getAlertasDeudas: () => request("/api/deudas/alertas"),
   getComprasTarjeta: () => request("/api/deudas/compras"),
+  getDetalleDeuda: (categoria) => request(`/api/deudas/${categoria}/detalle`),
   registrarCompraTarjeta: (compra) =>
     request("/api/deudas/compra", { method: "POST", body: JSON.stringify(compra) }),
   editarCuotaDeuda: (categoria, valor) =>
