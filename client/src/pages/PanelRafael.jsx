@@ -18,10 +18,12 @@ import GraficoDona from "../components/GraficoDona";
 import SelectorQuincena from "../components/SelectorQuincena";
 import SeccionPlegable from "../components/SeccionPlegable";
 import PlanIdeal from "../components/PlanIdeal";
+import EstadoMensual from "../components/EstadoMensual";
 
 export default function PanelRafael() {
   const [quincenaIdActual, setQuincenaIdActual] = useState(null);
   const [estado, setEstado] = useState(null);
+  const [estadoMensual, setEstadoMensual] = useState(null);
   const [deudas, setDeudas] = useState([]);
   const [cuentas, setCuentas] = useState(null);
   const [resumenJerardith, setResumenJerardith] = useState(null);
@@ -33,14 +35,16 @@ export default function PanelRafael() {
   const inicioDeslizar = useRef(null);
 
   const cargarTodo = useCallback(async (id) => {
-    const [est, d, c, j, a] = await Promise.all([
+    const [est, em, d, c, j, a] = await Promise.all([
       api.getEstadoQuincena(id),
+      api.getEstadoMensual(id),
       api.getDeudas(),
       api.getCuentas(),
       api.getResumenJerardith(),
       api.getAlertasDeudas(),
     ]);
     setEstado(est);
+    setEstadoMensual(em);
     setDeudas(d);
     setCuentas(c);
     setResumenJerardith(j);
@@ -138,6 +142,8 @@ export default function PanelRafael() {
       </div>
       <div className="h-px bg-[var(--color-ledger-rule)] my-5" />
       <Navegacion />
+
+      <EstadoMensual estado={estadoMensual} />
 
       {alertas.length > 0 && (
         <div className="tile-suave bg-[var(--color-suave-ambar)] mb-4">

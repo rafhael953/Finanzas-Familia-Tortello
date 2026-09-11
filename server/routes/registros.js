@@ -1,6 +1,11 @@
 import { Router } from "express";
 import { readDB } from "../db.js";
-import { quincenaId, calcularEstadoQuincena, calcularResumenMensual } from "../calculos.js";
+import {
+  quincenaId,
+  calcularEstadoQuincena,
+  calcularEstadoMensual,
+  calcularResumenMensual,
+} from "../calculos.js";
 
 const router = Router();
 
@@ -24,6 +29,13 @@ router.get("/estado/:id", async (req, res) => {
 router.get("/mensual/:id", async (req, res) => {
   const db = await readDB();
   res.json(calcularResumenMensual(db, req.params.id));
+});
+
+// Veredicto crudo del mes completo (ver calcularEstadoMensual): esto es lo
+// que Rafael quiere ver PRIMERO, antes de entrar a registrar nada.
+router.get("/estado-mensual/:id", async (req, res) => {
+  const db = await readDB();
+  res.json(calcularEstadoMensual(db, req.params.id));
 });
 
 // Historial completo: todos los movimientos desde el inicio, mas recientes

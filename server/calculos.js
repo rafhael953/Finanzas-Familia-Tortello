@@ -449,6 +449,74 @@ export function calcularEvolucionNUMensual(db) {
   return meses;
 }
 
+// Veredicto crudo del MES completo (las dos quincenas juntas), pensado para
+// verse ANTES de entrar a registrar nada: "vamos a alcanzar con lo
+// estimado, estamos bien, o toca frenar" -- sin obligar a sumar dos
+// quincenas en la cabeza para saberlo. Reusa calcularEstadoQuincena de cada
+// quincena (que ya trae el arrastre encadenado) y los combina.
+export function calcularEstadoMensual(db, id) {
+  const { anio, mes } = partesQuincena(id);
+  const idQ1 = idQuincena(anio, mes, 1);
+  const idQ2 = idQuincena(anio, mes, 2);
+  const q1 = calcularEstadoQuincena(db, idQ1);
+  const q2 = calcularEstadoQuincena(db, idQ2);
+
+  // El arrastre de ENTRADA al mes es el de la Q1 (lo que traia de antes);
+  // el resto se suma quincena a quincena, no se reusa el balance de cada
+  // una para no arrastrar dos veces el mismo saldo inicial.
+  const saldoInicial = q1.saldoInicial;
+  const ingresosConfirmado = q1.ingresosConfirmado + q2.ingresosConfirmado;
+  const ingresosTotal = q1.ingresosTotal + q2.ingresosTotal;
+  const egresoConfirmado = q1.egresoConfirmado + q2.egresoConfirmado;
+  const egresoTotal = q1.egresoTotal + q2.egresoTotal;
+
+  const balanceConfirmado = saldoInicial + ingresosConfirmado - egresoConfirmado;
+  const balanceProyectado = saldoInicial + ingresosTotal - egresoTotal;
+
+  // Mismo criterio que "riesgoGasto" por quincena (ver calcularEstadoQuincena):
+  // se reserva lo comprometido de las DOS quincenas (mayor entre presupuesto
+  // y lo real) y se compara contra lo que de verdad ha entrado en el mes.
+  const egresoEsperadoQuincena = (estado) => {
+    const egresoEsperado = (lista) => lista.reduce((a, x) => a + Math.max(x.presupuesto, x.total), 0);
+    return egresoEsperado(estado.gastos) + egresoEsperado(estado.deudas) + estado.inversionesTotal;
+  };
+  const egresoEsperadoTotal = egresoEsperadoQuincena(q1) + egresoEsperadoQuincena(q2);
+  const sobranteSeguro = saldoInicial + ingresosConfirmado - egresoEsperadoTotal;
+  const sobrante = sobranteSeguro > 0 ? sobranteSeguro : 0;
+  const riesgoGasto = sobranteSeguro < 0;
+
+  const idHoy = quincenaId();
+
+  return {
+    mes: `${anio}-${String(mes).padStart(2, "0")}`,
+    idQ1,
+    idQ2,
+    quincenaActivaId: idHoy === idQ1 || idHoy === idQ2 ? idHoy : null,
+    saldoInicial,
+    ingresosConfirmado,
+    ingresosTotal,
+    egresoConfirmado,
+    egresoTotal,
+    balanceConfirmado,
+    balanceProyectado,
+    sobrante,
+    sobranteSeguro,
+    riesgoGasto,
+    q1: {
+      id: idQ1,
+      balanceConfirmado: q1.balanceConfirmado,
+      balanceProyectado: q1.balanceProyectado,
+      riesgoGasto: q1.riesgoGasto,
+    },
+    q2: {
+      id: idQ2,
+      balanceConfirmado: q2.balanceConfirmado,
+      balanceProyectado: q2.balanceProyectado,
+      riesgoGasto: q2.riesgoGasto,
+    },
+  };
+}
+
 // Resumen del mismo mes calendario (ambas quincenas), por categoria de gasto.
 export function calcularResumenMensual(db, id) {
   const { mes, anio } = partesQuincena(id);

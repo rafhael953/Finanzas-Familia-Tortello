@@ -28,6 +28,7 @@ export const api = {
   getListaQuincenas: () => request("/api/registros/lista"),
   getEstadoQuincena: (id) => request(`/api/registros/estado/${id}`),
   getResumenMensual: (id) => request(`/api/registros/mensual/${id}`),
+  getEstadoMensual: (id) => request(`/api/registros/estado-mensual/${id}`),
   getHistorial: () => request(`/api/registros/historial`),
   getAnalisis: () => request(`/api/registros/analisis`),
 
@@ -120,7 +121,7 @@ export const ETIQUETAS_CATEGORIA = {
   extra: "Extra",
 };
 
-const NOMBRES_MES = [
+export const NOMBRES_MES = [
   "", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ];
