@@ -23,6 +23,7 @@ import TrayectoriaBalance from "../components/TrayectoriaBalance";
 
 export default function PanelRafael() {
   const [quincenaIdActual, setQuincenaIdActual] = useState(null);
+  const [quincenaViva, setQuincenaViva] = useState(null);
   const [estado, setEstado] = useState(null);
   const [estadoMensual, setEstadoMensual] = useState(null);
   const [trayectoria, setTrayectoria] = useState(null);
@@ -63,6 +64,7 @@ export default function PanelRafael() {
       // un periodo que no corresponde.
       const idInicial = actual.id;
       setQuincenaIdActual(idInicial);
+      setQuincenaViva(actual.id);
       await cargarTodo(idInicial);
       setCargando(false);
     })();
@@ -92,6 +94,12 @@ export default function PanelRafael() {
   const balanceNegativo = estado.balanceConfirmado < 0;
   const proyeccionNegativa = estado.balanceProyectado < 0 && !balanceNegativo;
   const riesgoGastoActivo = estado.riesgoGasto && !balanceNegativo;
+  // "No gastes más" solo tiene sentido como orden urgente si es la quincena
+  // que se esta viviendo hoy. Si se esta previsualizando otra (deslizando
+  // adelante o atras), lo mismo comprometido/lo mismo corto no es un aviso
+  // de "frena ya" sino de "asi como esta planeada, no va a alcanzar" -- son
+  // avisos distintos aunque compartan el mismo numero.
+  const esQuincenaViva = quincenaIdActual === quincenaViva;
 
   // Deslizar la tarjeta de quincena para moverse entre periodos, ademas de
   // las flechas: en el celular es el gesto natural.
@@ -272,8 +280,21 @@ export default function PanelRafael() {
 
         {riesgoGastoActivo && (
           <div className="mb-3 text-xs text-[var(--color-negativo-alto)] font-medium">
-            🛑 No gastes más: ya no alcanza ni para lo comprometido de esta quincena (
-            {formatoCOP(-estado.sobranteSeguro)} corto)
+            {esQuincenaViva ? (
+              <>
+                🛑 No gastes más: ya no alcanza ni para lo comprometido de esta quincena (
+                {formatoCOP(-estado.sobranteSeguro)} corto)
+              </>
+            ) : (
+              <>
+                ⚠ Tal como está planeada, esta quincena no va a alcanzar para lo comprometido (
+                {formatoCOP(-estado.sobranteSeguro)} corto) — todavía no es hoy, es aviso de lo
+                que viene.
+              </>
+            )}
+            <span className="block mt-1 font-normal opacity-70">
+              Ya cuenta dentro del balance del mes de arriba, no es un corto aparte.
+            </span>
           </div>
         )}
 
