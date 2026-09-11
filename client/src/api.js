@@ -132,6 +132,12 @@ export function formatoQuincena(id) {
   return `Quincena ${q} · ${NOMBRES_MES[Number(mes)]} ${anio}`;
 }
 
+export function formatoQuincenaCorta(id) {
+  const [anio, mes, qStr] = id.split("-");
+  const q = qStr.replace("Q", "");
+  return `${NOMBRES_MES[Number(mes)].slice(0, 3)} Q${q}`;
+}
+
 export function partesQuincena(id) {
   const [anio, mes, qStr] = id.split("-");
   return { anio: Number(anio), mes: Number(mes), q: Number(qStr.replace("Q", "")) };

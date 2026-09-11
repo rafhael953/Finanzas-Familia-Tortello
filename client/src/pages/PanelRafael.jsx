@@ -19,11 +19,13 @@ import SelectorQuincena from "../components/SelectorQuincena";
 import SeccionPlegable from "../components/SeccionPlegable";
 import PlanIdeal from "../components/PlanIdeal";
 import EstadoMensual from "../components/EstadoMensual";
+import TrayectoriaBalance from "../components/TrayectoriaBalance";
 
 export default function PanelRafael() {
   const [quincenaIdActual, setQuincenaIdActual] = useState(null);
   const [estado, setEstado] = useState(null);
   const [estadoMensual, setEstadoMensual] = useState(null);
+  const [trayectoria, setTrayectoria] = useState(null);
   const [deudas, setDeudas] = useState([]);
   const [cuentas, setCuentas] = useState(null);
   const [resumenJerardith, setResumenJerardith] = useState(null);
@@ -35,9 +37,10 @@ export default function PanelRafael() {
   const inicioDeslizar = useRef(null);
 
   const cargarTodo = useCallback(async (id) => {
-    const [est, em, d, c, j, a] = await Promise.all([
+    const [est, em, asesor, d, c, j, a] = await Promise.all([
       api.getEstadoQuincena(id),
       api.getEstadoMensual(id),
+      api.getAsesor(),
       api.getDeudas(),
       api.getCuentas(),
       api.getResumenJerardith(),
@@ -45,6 +48,7 @@ export default function PanelRafael() {
     ]);
     setEstado(est);
     setEstadoMensual(em);
+    setTrayectoria(asesor.trayectoria);
     setDeudas(d);
     setCuentas(c);
     setResumenJerardith(j);
@@ -143,6 +147,7 @@ export default function PanelRafael() {
       <div className="h-px bg-[var(--color-ledger-rule)] my-5" />
       <Navegacion />
 
+      <TrayectoriaBalance trayectoria={trayectoria} />
       <EstadoMensual estado={estadoMensual} />
 
       {alertas.length > 0 && (

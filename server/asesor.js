@@ -5,7 +5,13 @@
 // Se separó del resto porque son cuentas de planeación, no de registro: no
 // miran solo lo que pasó, sino lo que va a pasar si nada cambia.
 
-import { quincenaId, partesQuincena } from "./calculos.js";
+import {
+  quincenaId,
+  partesQuincena,
+  quincenaAnterior,
+  quincenaSiguiente,
+  calcularEstadoQuincena,
+} from "./calculos.js";
 import { saldosActuales } from "./routes/deudas.js";
 
 const CUPO_TARJETAS_POR_DEFECTO = 500000;
@@ -258,6 +264,72 @@ export function estadoQuincenaActual(db) {
   };
 }
 
+// Trayectoria de balance encadenada a lo largo de un semestre: unas
+// quincenas atras (reales, ya con su arrastre) mas la actual, y varias
+// adelante proyectadas con el plan de hoy repetido "si nada cambia" --
+// pero SIN reiniciar en cada quincena. Nace de que Rafael noto que ver
+// agosto "bien" y septiembre "critico" como dos cuadros sueltos no tiene
+// sentido: lo que sobra en una quincena es justo lo que sostiene (o no) la
+// siguiente, asi que hay que verlo como una sola linea, no como meses
+// aislados. Ver semaforoMeses arriba para el semaforo por mes calendario
+// (que si evalua cada mes contra si mismo); esto es el complemento
+// encadenado que faltaba.
+export function trayectoriaBalance(db, atras = 3, adelante = 9) {
+  const idHoy = quincenaId();
+  const reparto = repartoQuincenas(db);
+
+  const idsAtras = [];
+  let cursor = idHoy;
+  for (let i = 0; i < atras; i++) {
+    cursor = quincenaAnterior(cursor);
+    idsAtras.unshift(cursor);
+  }
+
+  const puntos = idsAtras.map((id) => {
+    const estado = calcularEstadoQuincena(db, id);
+    return {
+      quincenaId: id,
+      balance: Math.round(estado.balanceConfirmado),
+      tipo: "real",
+      enRiesgo: estado.balanceConfirmado < 0,
+    };
+  });
+
+  const estadoHoy = calcularEstadoQuincena(db, idHoy);
+  puntos.push({
+    quincenaId: idHoy,
+    balance: Math.round(estadoHoy.balanceConfirmado),
+    tipo: "actual",
+    enRiesgo: estadoHoy.balanceConfirmado < 0 || estadoHoy.riesgoGasto,
+  });
+
+  // No hay movimientos todavia en el futuro: se proyecta con el mismo plan
+  // de fijos y cuotas de hoy (repartoQuincenas), encadenando el resultado
+  // de una quincena como punto de partida real de la siguiente.
+  let saldo = estadoHoy.balanceProyectado;
+  let cursorAdelante = idHoy;
+  for (let i = 0; i < adelante; i++) {
+    cursorAdelante = quincenaSiguiente(cursorAdelante);
+    const { q, mes } = partesQuincena(cursorAdelante);
+    const plan = reparto[q === 1 ? "q1" : "q2"];
+    const prima = [6, 12].includes(mes) ? Number(db.config.prima || 0) : 0;
+    saldo = saldo + plan.ingreso + prima - plan.fijos - plan.totalCuotas;
+    puntos.push({
+      quincenaId: cursorAdelante,
+      balance: Math.round(saldo),
+      tipo: "proyectado",
+      enRiesgo: saldo < 0,
+    });
+  }
+
+  const primerRiesgo = puntos.find((p) => p.tipo !== "real" && p.enRiesgo);
+
+  return {
+    puntos,
+    primerRiesgoId: primerRiesgo ? primerRiesgo.quincenaId : null,
+  };
+}
+
 export function calcularAsesor(db) {
   return {
     meta: metaSugerida(db),
@@ -266,5 +338,6 @@ export function calcularAsesor(db) {
     reparto: repartoQuincenas(db),
     meses: semaforoMeses(db),
     quincenaActual: estadoQuincenaActual(db),
+    trayectoria: trayectoriaBalance(db),
   };
 }

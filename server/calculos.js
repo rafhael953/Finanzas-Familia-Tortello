@@ -26,6 +26,18 @@ export function idQuincena(anio, mes, q) {
   return `${anio}-${String(mes).padStart(2, "0")}-Q${q}`;
 }
 
+export function quincenaAnterior(id) {
+  const { anio, mes, q } = partesQuincena(id);
+  if (q === 2) return idQuincena(anio, mes, 1);
+  return mes === 1 ? idQuincena(anio - 1, 12, 2) : idQuincena(anio, mes - 1, 2);
+}
+
+export function quincenaSiguiente(id) {
+  const { anio, mes, q } = partesQuincena(id);
+  if (q === 1) return idQuincena(anio, mes, 2);
+  return mes === 12 ? idQuincena(anio + 1, 1, 1) : idQuincena(anio, mes + 1, 1);
+}
+
 export const NOMBRES_MES = [
   "", "enero", "febrero", "marzo", "abril", "mayo", "junio",
   "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
