@@ -11,6 +11,7 @@ import {
   quincenaAnterior,
   quincenaSiguiente,
   calcularEstadoQuincena,
+  ANCLA_ARRASTRE,
 } from "./calculos.js";
 import { saldosActuales } from "./routes/deudas.js";
 
@@ -278,10 +279,18 @@ export function trayectoriaBalance(db, atras = 3, adelante = 9) {
   const idHoy = quincenaId();
   const reparto = repartoQuincenas(db);
 
+  // No se retrocede antes del ancla: de ahi para atras es historia
+  // importada del Excel base, que Rafael confirmo incompleta (gastos que
+  // nunca registro ahi, antes de pasarse a esta app) -- encadenarla como si
+  // fuera un balance real inflaba quincenas como agosto Q1 con plata que
+  // en la practica nunca tuvo en la mano. Mostrar esos puntos como "real"
+  // en la trayectoria viciaba la lectura de como esta hoy.
   const idsAtras = [];
   let cursor = idHoy;
   for (let i = 0; i < atras; i++) {
-    cursor = quincenaAnterior(cursor);
+    const anterior = quincenaAnterior(cursor);
+    if (anterior < ANCLA_ARRASTRE) break;
+    cursor = anterior;
     idsAtras.unshift(cursor);
   }
 

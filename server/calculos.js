@@ -120,7 +120,7 @@ function totales(movs, tipo, categoria) {
 // vivo; antes de aqui, enero-julio sigue existiendo para graficas,
 // promedios y el semaforo de meses, pero como historia, no como saldo que
 // se siga acumulando.
-const ANCLA_ARRASTRE = "2026-08-Q2";
+export const ANCLA_ARRASTRE = "2026-08-Q2";
 
 // Cuanto se trae de la quincena anterior. Se arrastra completo, en los dos
 // sentidos: ni el rojo ni el sobrante desaparecen solos. Un hueco hay que
