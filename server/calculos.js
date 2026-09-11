@@ -288,7 +288,28 @@ export function calcularEstadoQuincena(db, id) {
   const egresoEsperadoTotal = egresoEsperado(gastos) + egresoEsperado(deudas) + inversionesTotal;
   const sobranteSeguro = saldoInicial + ingresosConfirmado - egresoEsperadoTotal;
 
-  const sobrante = sobranteSeguro > 0 ? sobranteSeguro : 0;
+  const sobranteBruto = sobranteSeguro > 0 ? sobranteSeguro : 0;
+
+  // Antes de repartir el sobrante a NU/abono-extra, hay que revisar si la
+  // SIGUIENTE quincena (misma logica de reparto, pero el otro bloque)
+  // alcanza por si sola con su propio sueldo. Si no alcanza, ese hueco hay
+  // que taparlo con lo que sobra aqui -- si no, "sugerir" mover plata a NU
+  // ahora mismo deja a la siguiente quincena sin con que cubrir lo suyo, y
+  // el arrastre real (calcularSaldoInicial) terminaria en rojo apenas se
+  // confirmara el movimiento sugerido.
+  const keySiguiente = key === "q1" ? "q2" : "q1";
+  const fijosSiguiente = sumaValores(db.gastosFijos[keySiguiente]);
+  const cuotasSiguiente = Object.entries(db.cuotasRecomendadas || {})
+    .filter(([cat]) => asignacion[cat] === keySiguiente)
+    .reduce((a, [, valor]) => a + Number(valor || 0), 0);
+  const comprometidoSiguiente = fijosSiguiente + cuotasSiguiente;
+  const ingresoSiguienteDefault = Number(
+    (keySiguiente === "q1" ? db.config.ingresoQ1 : db.config.ingresoQ2) || 0
+  );
+  const margenSiguiente = ingresoSiguienteDefault - comprometidoSiguiente;
+  const reservaSiguiente = margenSiguiente < 0 ? Math.round(-margenSiguiente) : 0;
+
+  const sobrante = Math.max(0, sobranteBruto - reservaSiguiente);
   const aNU = Math.round(sobrante * 0.5);
   const aDeuda = sobrante - aNU;
 
@@ -330,6 +351,8 @@ export function calcularEstadoQuincena(db, id) {
     balanceConfirmado,
     balanceProyectado,
     sobrante,
+    sobranteBruto,
+    reservaSiguiente,
     sobranteSeguro,
     riesgoGasto,
     aNU,

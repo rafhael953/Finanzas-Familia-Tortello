@@ -356,6 +356,21 @@ export default function PanelRafael() {
           </div>
         )}
 
+        {estado.reservaSiguiente > 0 && (
+          <div className="mt-2 text-xs text-[#E8C468]">
+            ⚠ De lo que sobra aquí se están reservando {formatoCOP(estado.reservaSiguiente)}{" "}
+            porque la siguiente quincena no alcanza a cubrirse solo con su propio sueldo — eso no
+            se sugiere mover a NU.
+          </div>
+        )}
+
+        {estado.sobranteBruto > 0 && estado.sobrante === 0 && (
+          <div className="mt-2 text-xs text-[#E8C468]">
+            ⚠ Aunque aquí sobran {formatoCOP(estado.sobranteBruto)}, la siguiente quincena los
+            necesita completos para cubrirse — no hay margen seguro para mover nada a NU todavía.
+          </div>
+        )}
+
         <Link
           to="/historial"
           className="text-xs text-white/50 underline hover:text-white mt-3 block text-center"
