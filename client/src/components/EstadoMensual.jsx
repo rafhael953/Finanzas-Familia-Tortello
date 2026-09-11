@@ -37,14 +37,14 @@ export default function EstadoMensual({ estado }) {
     titulo = "Este mes no va a alcanzar";
     detalle = `Con lo comprometido (fijos, cuotas y lo ya gastado) faltan ${formatoCOP(
       -estado.sobranteSeguro
-    )} frente a lo que de verdad ha entrado. Frena gasto extra ya.`;
+    )} frente al sueldo completo que se espera este mes. Frena gasto extra ya.`;
   } else if (ratio < 0) {
     tono = "ambar";
     icono = "⚠";
     titulo = "Estás al límite este mes";
     detalle = `Faltan ${formatoCOP(
       -estado.sobranteSeguro
-    )} para cubrir lo comprometido — es poco frente al total del mes. Con un ajuste chico en algún rubro cierras bien.`;
+    )} para cubrir lo comprometido con el sueldo completo del mes — es poco frente al total. Con un ajuste chico en algún rubro cierras bien.`;
   } else if (ratio < UMBRAL_SIN_MARGEN) {
     tono = "verde";
     icono = "🙂";

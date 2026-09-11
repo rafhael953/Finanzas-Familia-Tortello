@@ -546,15 +546,32 @@ export function calcularEstadoMensual(db, id) {
     return egresoEsperado(estado.gastos) + egresoEsperado(estado.deudas) + estado.inversionesTotal;
   };
   const egresoEsperadoTotal = egresoEsperadoQuincena(q1) + egresoEsperadoQuincena(q2);
+
+  // A diferencia de calcularEstadoQuincena (donde "solo lo confirmado"
+  // tiene sentido porque es plata que hay que tener EN LA MANO ahora
+  // mismo), un mes completo siempre incluye un pago de sueldo que, al
+  // principio del mes, todavia no se ha confirmado en la app -- no porque
+  // sea incierto, sino porque el dia simplemente no ha llegado. Medir el
+  // mes contra solo lo confirmado hace que CUALQUIER mes se vea en rojo
+  // profundo hasta que ya paso su segunda quincena, sin importar que tan
+  // bien este el presupuesto: no es una señal de riesgo real, es un efecto
+  // de que el mes no ha terminado. Por eso aca se usa el sueldo por
+  // defecto de las dos quincenas (mas la prima si el mes la trae), no solo
+  // lo confirmado -- para responder "si este mes va como se espera, alcanza
+  // o no", que es la pregunta que se esta haciendo.
+  const primaDelMes = [6, 12].includes(mes) ? Number(db.config.prima || 0) : 0;
+  const ingresoEsperadoTotal =
+    Number(db.config.ingresoQ1 || 0) + Number(db.config.ingresoQ2 || 0) + primaDelMes;
+
   // sobranteSeguro YA es un balance (no solo un "cuanto sobra"): saldo
-  // inicial mas lo confirmado que ha entrado, menos TODO lo comprometido
-  // del mes aunque todavia no se haya registrado como movimiento. Es la
-  // cifra que hay que mostrar como "balance esperado", no balanceProyectado
-  // (que solo suma lo que ya se registro como pendiente, y por eso al
+  // inicial mas el sueldo esperado del mes, menos TODO lo comprometido
+  // aunque todavia no se haya registrado como movimiento. Es la cifra que
+  // hay que mostrar como "balance esperado", no balanceProyectado (que
+  // solo suma lo que ya quedo registrado como pendiente, y por eso al
   // principio del mes se ve mas optimista de lo real: la mayoria de los
   // gastos fijos y cuotas del mes todavia no se han registrado como
   // movimiento, aunque ya se sabe que van a caer).
-  const sobranteSeguro = saldoInicial + ingresosConfirmado - egresoEsperadoTotal;
+  const sobranteSeguro = saldoInicial + ingresoEsperadoTotal - egresoEsperadoTotal;
   const sobrante = sobranteSeguro > 0 ? sobranteSeguro : 0;
   const riesgoGasto = sobranteSeguro < 0;
 
@@ -573,6 +590,7 @@ export function calcularEstadoMensual(db, id) {
     balanceConfirmado,
     balanceProyectado,
     egresoEsperadoTotal,
+    ingresoEsperadoTotal,
     sobrante,
     sobranteSeguro,
     riesgoGasto,
