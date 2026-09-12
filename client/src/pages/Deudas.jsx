@@ -350,6 +350,26 @@ export default function Deudas() {
           </div>
 
           <div className="ledger-card p-6 mb-6">
+            <h2 className="section-title-editorial mb-1">Ajustar saldo contra el extracto</h2>
+            <p className="text-xs text-[var(--color-muted)] mb-2">
+              Si el saldo de aquí no coincide con lo que dice el banco hoy,
+              pon aquí el número real (sin contar el pago de este mes si aún
+              no lo has hecho) — no se borra ni se toca el historial de
+              compras y pagos ya registrados.
+            </p>
+            {deudas
+              .filter((d) => TARJETAS.includes(d.nombre))
+              .map((d) => (
+                <FilaValorEditable
+                  key={d.nombre}
+                  etiqueta={ETIQUETAS_CATEGORIA[d.nombre] || d.nombre}
+                  valor={d.saldo}
+                  onGuardar={(v) => api.ajustarSaldoDeuda(d.nombre, v).then(recargarTodo)}
+                />
+              ))}
+          </div>
+
+          <div className="ledger-card p-6 mb-6">
             <h2 className="section-title-editorial mb-1">Cuota mensual recomendada</h2>
             <p className="text-xs text-[var(--color-muted)] mb-2">
               Es una línea base, no un valor fijo — tócala para ajustarla.

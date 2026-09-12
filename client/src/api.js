@@ -47,6 +47,8 @@ export const api = {
     request("/api/deudas/compra", { method: "POST", body: JSON.stringify(compra) }),
   editarCuotaDeuda: (categoria, valor) =>
     request("/api/deudas/cuota", { method: "PUT", body: JSON.stringify({ categoria, valor }) }),
+  ajustarSaldoDeuda: (categoria, saldoHoy) =>
+    request("/api/deudas/ajustar-saldo", { method: "PUT", body: JSON.stringify({ categoria, saldoHoy }) }),
   editarCompraTarjeta: (id, compra) =>
     request(`/api/deudas/compra/${id}`, { method: "PUT", body: JSON.stringify(compra) }),
   borrarCompraTarjeta: (id) => request(`/api/deudas/compra/${id}`, { method: "DELETE" }),

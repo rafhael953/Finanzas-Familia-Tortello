@@ -118,6 +118,32 @@ router.put("/cupo-credito", async (req, res) => {
   res.json({ ok: true, categoria, valor: valorNum });
 });
 
+// Ajustar el saldo de HOY de una tarjeta cuando no cuadra con el extracto
+// real del banco (ej. algo quedo mal importado o se le escapo un movimiento).
+// No se toca el historial de compras/pagos ya registrado: en vez de eso se
+// corrige `deudasIniciales`, el punto de partida, en lo que haga falta para
+// que inicial + compras - pagos ya confirmados vuelva a dar el saldo de hoy
+// que Rafael acaba de confirmar contra el extracto.
+router.put("/ajustar-saldo", async (req, res) => {
+  const { categoria, saldoHoy } = req.body || {};
+  if (!TARJETAS.includes(categoria)) {
+    return res.status(400).json({ error: "Esa tarjeta no existe" });
+  }
+  const saldoHoyNum = Number(saldoHoy);
+  if (!Number.isFinite(saldoHoyNum) || saldoHoyNum < 0) {
+    return res.status(400).json({ error: "Valor inválido" });
+  }
+
+  const resultado = await withDB(async (db) => {
+    const actual = saldosActuales(db)[categoria] || 0;
+    const diferencia = saldoHoyNum - actual;
+    db.deudasIniciales[categoria] = (db.deudasIniciales[categoria] || 0) + diferencia;
+    return { saldoAnterior: actual, saldoInicial: db.deudasIniciales[categoria] };
+  });
+
+  res.json({ ok: true, categoria, saldoHoy: saldoHoyNum, ...resultado });
+});
+
 // Registrar una compra nueva con tarjeta: se suma al saldo pendiente de esa
 // tarjeta, y la cuota mensual recomendada sube lo necesario para pagarla en
 // el numero de cuotas elegido (ademas de lo que ya se venia pagando).
