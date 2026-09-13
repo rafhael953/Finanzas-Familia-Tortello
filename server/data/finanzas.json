@@ -2345,6 +2345,17 @@
       "descripcion": "Bebe",
       "fecha": "2026-09-06",
       "confirmado": true
+    },
+    {
+      "id": "mov-1789340968411-176",
+      "quincenaId": "2026-08-Q2",
+      "tipo": "ingreso",
+      "categoria": "salario",
+      "monto": 100,
+      "descripcion": "",
+      "fecha": "2026-09-04",
+      "registradoPor": "rafael",
+      "confirmado": true
     }
   ],
   "registros": [],
