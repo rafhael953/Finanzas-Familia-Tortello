@@ -11,7 +11,9 @@ async function request(path, options = {}) {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `Error ${res.status}`);
+    const err = new Error(body.error || `Error ${res.status}`);
+    err.duplicado = body.duplicado;
+    throw err;
   }
   return res.json();
 }

@@ -17,22 +17,18 @@
     "binanceUSD": 95
   },
   "deudasIniciales": {
-    "falabella": 3300000,
-    "rappi": 5200000,
-    "auteco": 7000000,
-    "numama": 5740000,
-    "decameron": 3960000,
-    "nohora": 3185000,
-    "bancolombia": 5000000
+    "falabella": 5500000,
+    "rappi": 5670652,
+    "auteco": 5500000,
+    "numama": 3400000,
+    "decameron": 3960000
   },
   "cuotasRecomendadas": {
-    "falabella": 700000,
-    "rappi": 1228100,
-    "auteco": 600000,
+    "falabella": 500000,
+    "rappi": 700000,
+    "auteco": 500000,
     "numama": 600000,
-    "decameron": 220000,
-    "nohora": 0,
-    "bancolombia": 0
+    "decameron": 200000
   },
   "gastosFijos": {
     "q1": {
@@ -68,127 +64,6 @@
   },
   "decameronMesesRestantes": 9,
   "movimientos": [
-    {
-      "id": "mov-1788578032011-82",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "gasto",
-      "categoria": "ocio",
-      "monto": 768000,
-      "descripcion": "",
-      "fecha": "2026-09-05",
-      "registradoPor": "rafael",
-      "confirmado": true
-    },
-    {
-      "id": "mov-1788578201315-725",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "gasto",
-      "categoria": "salud",
-      "monto": 178000,
-      "descripcion": "",
-      "fecha": "2026-08-31",
-      "registradoPor": "rafael",
-      "confirmado": true
-    },
-    {
-      "id": "mov-1788578264983-827",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "gasto",
-      "categoria": "salud",
-      "monto": 130000,
-      "descripcion": "Viaje a Bucaramanga ",
-      "fecha": "2026-09-05",
-      "registradoPor": "rafael",
-      "confirmado": true
-    },
-    {
-      "id": "mov-1788578363234-216",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "gasto",
-      "categoria": "ocio",
-      "monto": 25300,
-      "descripcion": "Varios ",
-      "fecha": "2026-09-01",
-      "registradoPor": "rafael",
-      "confirmado": true
-    },
-    {
-      "id": "mov-1788657898389-69",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "gasto",
-      "categoria": "ocio",
-      "monto": 151500,
-      "descripcion": "Salida a comer",
-      "fecha": "2026-09-06",
-      "registradoPor": "rafael",
-      "confirmado": true
-    },
-    {
-      "id": "mov-1788668341794-181",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "gasto",
-      "categoria": "mercado",
-      "monto": 145260,
-      "descripcion": "D1 aseo y comida ",
-      "fecha": "2026-09-02",
-      "registradoPor": "jerardith",
-      "confirmado": true
-    },
-    {
-      "id": "mov-1788668515672-275",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "gasto",
-      "categoria": "mercado",
-      "monto": 145125,
-      "descripcion": "Supermercado comida ",
-      "fecha": "2026-09-02",
-      "registradoPor": "jerardith",
-      "confirmado": true
-    },
-    {
-      "id": "mov-1788668609854-413",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "gasto",
-      "categoria": "mercado",
-      "monto": 100000,
-      "descripcion": "Carnes ",
-      "fecha": "2026-09-03",
-      "registradoPor": "jerardith",
-      "confirmado": true
-    },
-    {
-      "id": "mov-1788668659034-880",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "gasto",
-      "categoria": "cuidado",
-      "monto": 33000,
-      "descripcion": "Jabón de cuerpo ",
-      "fecha": "2026-09-06",
-      "registradoPor": "jerardith",
-      "confirmado": true
-    },
-    {
-      "id": "mov-1788668843347-474",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "gasto",
-      "categoria": "cuidado",
-      "monto": 114000,
-      "descripcion": "Pijama-óleo-ritual ",
-      "fecha": "2026-09-03",
-      "registradoPor": "jerardith",
-      "confirmado": true
-    },
-    {
-      "id": "mov-1788714829767-343",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "gasto",
-      "categoria": "ocio",
-      "monto": 104000,
-      "descripcion": "Rifas y juguetes ",
-      "fecha": "2026-09-02",
-      "registradoPor": "jerardith",
-      "confirmado": true
-    },
     {
       "id": "imp-1788665790744-1",
       "quincenaId": "2025-12-Q2",
@@ -2146,205 +2021,6 @@
       "fecha": "2026-08-28",
       "registradoPor": "rafael",
       "confirmado": true
-    },
-    {
-      "id": "mov-1788561323306-840",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "ingreso",
-      "categoria": "salario",
-      "monto": 4441500,
-      "descripcion": "",
-      "fecha": "2026-09-04",
-      "registradoPor": "rafael",
-      "confirmado": true
-    },
-    {
-      "id": "mov-1788561347160-822",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "gasto",
-      "categoria": "mercado",
-      "monto": 500000,
-      "descripcion": "",
-      "fecha": "2026-09-04",
-      "registradoPor": "rafael",
-      "confirmado": true
-    },
-    {
-      "id": "mov-1788561347669-998",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "gasto",
-      "categoria": "cuidado",
-      "monto": 500000,
-      "descripcion": "",
-      "fecha": "2026-09-04",
-      "registradoPor": "rafael",
-      "confirmado": true
-    },
-    {
-      "id": "mov-1788561352791-576",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "gasto",
-      "categoria": "efectivo",
-      "monto": 200000,
-      "descripcion": "",
-      "fecha": "2026-09-04",
-      "registradoPor": "rafael",
-      "confirmado": true
-    },
-    {
-      "id": "mov-1788561819432-509",
-      "quincenaId": "2026-09-Q1",
-      "tipo": "ingreso",
-      "categoria": "salario",
-      "monto": 4714000,
-      "descripcion": "Salario quincena",
-      "fecha": "2026-09-04",
-      "registradoPor": "rafael",
-      "confirmado": false
-    },
-    {
-      "id": "mov-1788561819478-884",
-      "quincenaId": "2026-09-Q1",
-      "tipo": "gasto",
-      "categoria": "arriendo",
-      "monto": 500000,
-      "descripcion": "Arriendo",
-      "fecha": "2026-09-04",
-      "registradoPor": "rafael",
-      "confirmado": false
-    },
-    {
-      "id": "mov-1788561819519-298",
-      "quincenaId": "2026-09-Q1",
-      "tipo": "gasto",
-      "categoria": "servicios",
-      "monto": 200000,
-      "descripcion": "Servicios",
-      "fecha": "2026-09-04",
-      "registradoPor": "rafael",
-      "confirmado": false
-    },
-    {
-      "id": "mov-1788561819557-881",
-      "quincenaId": "2026-09-Q1",
-      "tipo": "gasto",
-      "categoria": "mercado",
-      "monto": 500000,
-      "descripcion": "Mercado",
-      "fecha": "2026-09-04",
-      "registradoPor": "rafael",
-      "confirmado": false
-    },
-    {
-      "id": "mov-1788561819603-860",
-      "quincenaId": "2026-09-Q1",
-      "tipo": "gasto",
-      "categoria": "cuidado",
-      "monto": 500000,
-      "descripcion": "Cuidado",
-      "fecha": "2026-09-04",
-      "registradoPor": "rafael",
-      "confirmado": false
-    },
-    {
-      "id": "mov-1788561819651-232",
-      "quincenaId": "2026-09-Q1",
-      "tipo": "gasto",
-      "categoria": "salud",
-      "monto": 200000,
-      "descripcion": "Salud",
-      "fecha": "2026-09-04",
-      "registradoPor": "rafael",
-      "confirmado": false
-    },
-    {
-      "id": "mov-1788561819708-399",
-      "quincenaId": "2026-09-Q1",
-      "tipo": "gasto",
-      "categoria": "ocio",
-      "monto": 250500,
-      "descripcion": "Ocio",
-      "fecha": "2026-09-04",
-      "registradoPor": "rafael",
-      "confirmado": false
-    },
-    {
-      "id": "mov-1788561819748-728",
-      "quincenaId": "2026-09-Q1",
-      "tipo": "gasto",
-      "categoria": "efectivo",
-      "monto": 200000,
-      "descripcion": "Efectivo",
-      "fecha": "2026-09-04",
-      "registradoPor": "rafael",
-      "confirmado": false
-    },
-    {
-      "id": "mov-1788561819789-332",
-      "quincenaId": "2026-09-Q1",
-      "tipo": "deuda",
-      "categoria": "decameron",
-      "monto": 220000,
-      "descripcion": "Decamer�n",
-      "fecha": "2026-09-04",
-      "registradoPor": "rafael",
-      "confirmado": false
-    },
-    {
-      "id": "mov-1788561819829-182",
-      "quincenaId": "2026-09-Q1",
-      "tipo": "deuda",
-      "categoria": "falabella",
-      "monto": 700000,
-      "descripcion": "Cuota Falabella",
-      "fecha": "2026-09-04",
-      "registradoPor": "rafael",
-      "confirmado": false
-    },
-    {
-      "id": "mov-1788561819870-365",
-      "quincenaId": "2026-09-Q1",
-      "tipo": "deuda",
-      "categoria": "rappi",
-      "monto": 1100000,
-      "descripcion": "Cuota Rappi",
-      "fecha": "2026-09-04",
-      "registradoPor": "rafael",
-      "confirmado": false
-    },
-    {
-      "id": "mov-1788561819911-497",
-      "quincenaId": "2026-09-Q1",
-      "tipo": "deuda",
-      "categoria": "auteco",
-      "monto": 600000,
-      "descripcion": "Cuota Auteco",
-      "fecha": "2026-09-04",
-      "registradoPor": "rafael",
-      "confirmado": false
-    },
-    {
-      "id": "mov-1788561819950-952",
-      "quincenaId": "2026-09-Q1",
-      "tipo": "deuda",
-      "categoria": "numama",
-      "monto": 600000,
-      "descripcion": "Cuota NU mam�",
-      "fecha": "2026-09-04",
-      "registradoPor": "rafael",
-      "confirmado": false
-    },
-    {
-      "id": "compra-1788719516713-781",
-      "quincenaId": "2026-08-Q2",
-      "tipo": "compraTarjeta",
-      "categoria": "rappi",
-      "monto": 128100,
-      "cuotas": 1,
-      "cuotaMensual": 128100,
-      "descripcion": "Bebe",
-      "fecha": "2026-09-06",
-      "confirmado": true
     }
   ],
   "registros": [],
@@ -2370,11 +2046,9 @@
   "comprasTarjeta": [],
   "deudasFechaCreacion": {
     "decameron": "2026-09",
-    "nohora": "2026-01",
     "rappi": "2026-01",
     "falabella": "2026-01",
     "numama": "2026-01",
-    "bancolombia": "2026-01",
     "auteco": "2026-01"
   },
   "historialCuotas": {

@@ -41,15 +41,17 @@ export default function FilaCategoria({ categoria, tipo, confirmado, pendiente, 
       }
       setGuardando(true);
       setError("");
+      const item = { tipo, categoria, monto: Number(monto), quincenaId, confirmado: true, descripcion: "" };
       try {
-        await api.agregarMovimiento({
-          tipo,
-          categoria,
-          monto: Number(monto),
-          quincenaId,
-          confirmado: true,
-          descripcion: "",
-        });
+        try {
+          await api.agregarMovimiento(item);
+        } catch (err) {
+          if (err.duplicado && window.confirm(err.message)) {
+            await api.agregarMovimiento({ ...item, forzar: true });
+          } else {
+            throw err;
+          }
+        }
         await onCambio();
       } catch (err) {
         setError(err.message);

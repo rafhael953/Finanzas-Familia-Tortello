@@ -48,9 +48,25 @@ router.post("/", async (req, res) => {
         throw e;
       }
       const fecha = mov.fecha || new Date().toISOString().slice(0, 10);
+      const quincena = quincenaDeFecha(fecha);
+      // El salario llega una sola vez por quincena. Sin este aviso, un doble
+      // toque o volver a registrar el mismo pago por error se suma sin que
+      // nada lo note -- paso real en 2026-08-Q2 y 2026-09-Q1, donde el
+      // balance quedo inflado hasta que alguien se dio cuenta a mano.
+      if (mov.tipo === "ingreso" && mov.categoria === "salario" && !mov.forzar) {
+        const yaExiste = (db.movimientos || []).some(
+          (m) => m.tipo === "ingreso" && m.categoria === "salario" && m.quincenaId === quincena
+        );
+        if (yaExiste) {
+          const e = new Error("Ya hay un salario registrado en esta quincena. ¿Seguro que quieres agregar otro?");
+          e.status = 409;
+          e.duplicado = true;
+          throw e;
+        }
+      }
       const item = {
         id: `mov-${Date.now()}-${Math.round(Math.random() * 1000)}`,
-        quincenaId: quincenaDeFecha(fecha),
+        quincenaId: quincena,
         tipo: mov.tipo,
         categoria: mov.categoria,
         monto: Number(mov.monto),
@@ -65,7 +81,7 @@ router.post("/", async (req, res) => {
     });
     res.json(nuevo);
   } catch (err) {
-    res.status(err.status || 500).json({ error: err.message });
+    res.status(err.status || 500).json({ error: err.message, duplicado: err.duplicado });
   }
 });
 

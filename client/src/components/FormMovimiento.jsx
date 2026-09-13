@@ -91,7 +91,15 @@ export default function FormMovimiento({ quincenaId, onGuardado, onCancelar }) {
     }
     setGuardando(true);
     try {
-      await onGuardado({ tipo, categoria, monto: Number(monto), descripcion, fecha, quincenaId, confirmado });
+      try {
+        await onGuardado({ tipo, categoria, monto: Number(monto), descripcion, fecha, quincenaId, confirmado });
+      } catch (err) {
+        if (err.duplicado && window.confirm(err.message)) {
+          await onGuardado({ tipo, categoria, monto: Number(monto), descripcion, fecha, quincenaId, confirmado, forzar: true });
+        } else {
+          throw err;
+        }
+      }
     } catch (err) {
       setError(err.message);
     } finally {
