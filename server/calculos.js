@@ -450,7 +450,7 @@ export function calcularAlertasDeudas(db, fechaRef = new Date()) {
         categoria,
         tipo: "atrasada",
         faltante,
-        mensaje: `No quedó completa la cuota de ${NOMBRES_MES[mesAnt]}. Faltan ${faltante.toLocaleString("es-CO")} — págalo antes del 15 de ${NOMBRES_MES[mes]} para no atrasarte más.`,
+        mensaje: `No quedó completa la cuota de ${NOMBRES_MES[mesAnt]} — págalo antes del 15 de ${NOMBRES_MES[mes]} para no atrasarte más.`,
       });
     }
   }

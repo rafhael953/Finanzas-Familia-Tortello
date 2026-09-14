@@ -181,16 +181,18 @@ export default function PanelRafael() {
           {alertaAbierta && (
             <div className="mt-3 pt-3 border-t border-[#e7c98f]">
               {alertas.map((a) => (
-                <div
-                  key={a.categoria}
-                  className="flex justify-between items-baseline py-1.5 text-[12.5px]"
-                >
-                  <span className="text-[var(--color-suave-ambar-texto)] font-semibold">
-                    {ETIQUETAS_CATEGORIA[a.categoria] || a.categoria}
-                  </span>
-                  <span className="font-serif-num font-bold text-[var(--color-suave-ambar-texto)]">
-                    {formatoCOP(a.faltante)}
-                  </span>
+                <div key={a.categoria} className="py-1.5">
+                  <div className="flex justify-between items-baseline text-[12.5px]">
+                    <span className="text-[var(--color-suave-ambar-texto)] font-semibold">
+                      {ETIQUETAS_CATEGORIA[a.categoria] || a.categoria}
+                    </span>
+                    <span className="font-serif-num font-bold text-[var(--color-suave-ambar-texto)]">
+                      {formatoCOP(a.faltante)}
+                    </span>
+                  </div>
+                  {a.mensaje && (
+                    <p className="text-[11px] text-[#9a7434] mt-0.5">{a.mensaje}</p>
+                  )}
                 </div>
               ))}
               <Link
