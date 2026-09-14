@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { readDB, withDB } from "../db.js";
-import { calcularAlertasDeudas, quincenaId } from "../calculos.js";
+import { calcularAlertasDeudas, quincenaId, saldosDeuda } from "../calculos.js";
 
 const router = Router();
 
@@ -272,17 +272,7 @@ router.delete("/compra/:id", async (req, res) => {
 // tarjeta - lo que se ha abonado. Antes las compras se sumaban al saldo
 // inicial, lo que borraba el sentido de ese numero y del "% pagado".
 export function saldosActuales(db) {
-  const saldos = { ...db.deudasIniciales };
-  for (const m of db.movimientos || []) {
-    if (saldos[m.categoria] === undefined || !esFirme(m)) continue;
-    if (m.tipo === "deuda") saldos[m.categoria] -= Number(m.monto || 0);
-    else if (m.tipo === "compraTarjeta") saldos[m.categoria] += Number(m.monto || 0);
-  }
-  return saldos;
-}
-
-function esFirme(m) {
-  return m.confirmado !== false;
+  return saldosDeuda(db);
 }
 
 const ORDEN_ABONO_EXTRA = ["rappi", "falabella", "auteco"];

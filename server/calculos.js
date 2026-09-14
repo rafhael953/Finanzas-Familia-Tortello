@@ -64,12 +64,7 @@ export function asignacionDeudas(db) {
   const ingresos = { q1: Number(db.config.ingresoQ1 || 0), q2: Number(db.config.ingresoQ2 || 0) };
   const fijos = { q1: sumaValores(db.gastosFijos?.q1), q2: sumaValores(db.gastosFijos?.q2) };
 
-  const saldos = { ...db.deudasIniciales };
-  for (const m of db.movimientos || []) {
-    if (saldos[m.categoria] === undefined || m.confirmado === false) continue;
-    if (m.tipo === "deuda") saldos[m.categoria] -= Number(m.monto || 0);
-    else if (m.tipo === "compraTarjeta") saldos[m.categoria] += Number(m.monto || 0);
-  }
+  const saldos = saldosDeuda(db);
 
   const cuotas = Object.entries(db.cuotasRecomendadas || {})
     .filter(([cat, valor]) => Number(valor) > 0 && (saldos[cat] || 0) > 0)
@@ -121,6 +116,34 @@ function totales(movs, tipo, categoria) {
 // promedios y el semaforo de meses, pero como historia, no como saldo que
 // se siga acumulando.
 export const ANCLA_ARRASTRE = "2026-08-Q2";
+
+export function quincenaAntes(a, b) {
+  const pa = partesQuincena(a);
+  const pb = partesQuincena(b);
+  if (pa.anio !== pb.anio) return pa.anio < pb.anio;
+  if (pa.mes !== pb.mes) return pa.mes < pb.mes;
+  return pa.q < pb.q;
+}
+
+// Saldo de hoy de cada deuda: el punto de partida (deudasIniciales) menos
+// los pagos y mas las compras, pero solo desde el ancla del arrastre en
+// adelante -- mismo criterio que el arrastre de balance. deudasIniciales
+// se trata como "lo que se debia ese dia", no "lo que se debia al
+// principio de los tiempos": si tambien se restaran los pagos de antes
+// del ancla, un pago ya reflejado en ese numero se restaria de nuevo (paso
+// el 2026-09-13 al reconstruir la contabilidad desde 2026-08-Q2: Auteco y
+// Numama quedaron con saldo de menos porque sus pagos viejos, que seguian
+// en el historial, se contaban otra vez).
+export function saldosDeuda(db) {
+  const saldos = { ...db.deudasIniciales };
+  for (const m of db.movimientos || []) {
+    if (saldos[m.categoria] === undefined || m.confirmado === false) continue;
+    if (quincenaAntes(m.quincenaId, ANCLA_ARRASTRE)) continue;
+    if (m.tipo === "deuda") saldos[m.categoria] -= Number(m.monto || 0);
+    else if (m.tipo === "compraTarjeta") saldos[m.categoria] += Number(m.monto || 0);
+  }
+  return saldos;
+}
 
 // Cuanto se trae de la quincena anterior. Se arrastra completo, en los dos
 // sentidos: ni el rojo ni el sobrante desaparecen solos. Un hueco hay que
@@ -212,22 +235,19 @@ export function calcularEstadoQuincena(db, id) {
   // es 0 aca aunque la cuota exista, porque le toca a la otra quincena.
   const asignacion = asignacionDeudas(db);
 
+  // Una deuda ya saldada no deberia seguir pidiendo que se confirme una
+  // cuota: se marca para que la interfaz la deje de ofrecer.
+  const saldosDeHoy = saldosDeuda(db);
+
   const deudas = Object.keys(presupuestoDeudas).map((cat) => {
     const propios = totales(movsCasa, "deuda", cat);
     const enHermana = totales(movsHermana, "deuda", cat).confirmado;
-
-    // Una deuda ya saldada no deberia seguir pidiendo que se confirme una
-    // cuota: se marca para que la interfaz la deje de ofrecer.
-    const pagadoSiempre = (db.movimientos || [])
-      .filter((m) => m.tipo === "deuda" && m.categoria === cat && esConfirmado(m))
-      .reduce((a, m) => a + Number(m.monto || 0), 0);
-    const saldoPendiente = (db.deudasIniciales?.[cat] || 0) - pagadoSiempre;
 
     return {
       categoria: cat,
       presupuesto: asignacion[cat] === key ? presupuestoDeudas[cat] : 0,
       pagadoEnOtraQuincena: enHermana,
-      saldada: saldoPendiente <= 0,
+      saldada: (saldosDeHoy[cat] ?? 0) <= 0,
       ...propios,
     };
   });
@@ -408,15 +428,12 @@ export function calcularAlertasDeudas(db, fechaRef = new Date()) {
   const prefijoActual = `${anio}-${String(mes).padStart(2, "0")}`;
 
   const alertas = [];
+  const saldosDeHoy = saldosDeuda(db);
   for (const categoria of Object.keys(db.cuotasRecomendadas || {})) {
     // Si ya se pago por completo, no hay cuota que reclamar -- sin este
     // chequeo, una deuda saldada hace meses sigue apareciendo "atrasada"
     // para siempre (se detecto probando el historial con un año de datos).
-    const saldoInicial = (db.deudasIniciales || {})[categoria] || 0;
-    const pagadoTotal = (db.movimientos || [])
-      .filter((m) => m.tipo === "deuda" && m.categoria === categoria && esConfirmado(m))
-      .reduce((a, m) => a + Number(m.monto || 0), 0);
-    if (saldoInicial - pagadoTotal <= 0) continue;
+    if ((saldosDeHoy[categoria] ?? 0) <= 0) continue;
 
     // Si la deuda se registro este mismo mes (recien agregada al sistema),
     // no tiene sentido reclamarle una cuota de un mes anterior en el que

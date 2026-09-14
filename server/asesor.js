@@ -12,6 +12,7 @@ import {
   quincenaSiguiente,
   calcularEstadoQuincena,
   ANCLA_ARRASTRE,
+  saldosDeuda,
 } from "./calculos.js";
 import { saldosActuales } from "./routes/deudas.js";
 
@@ -127,12 +128,7 @@ export function repartoQuincenas(db) {
   const fijos = { q1: suma(db.gastosFijos?.q1), q2: suma(db.gastosFijos?.q2) };
 
   // Solo las deudas que todavia se deben algo.
-  const saldos = { ...db.deudasIniciales };
-  for (const m of db.movimientos || []) {
-    if (saldos[m.categoria] === undefined || m.confirmado === false) continue;
-    if (m.tipo === "deuda") saldos[m.categoria] -= Number(m.monto || 0);
-    else if (m.tipo === "compraTarjeta") saldos[m.categoria] += Number(m.monto || 0);
-  }
+  const saldos = saldosDeuda(db);
 
   const cuotas = Object.entries(db.cuotasRecomendadas || {})
     .filter(([cat, valor]) => Number(valor) > 0 && (saldos[cat] || 0) > 0)
