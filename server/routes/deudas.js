@@ -126,22 +126,27 @@ router.put("/cupo-credito", async (req, res) => {
 // que Rafael acaba de confirmar contra el extracto.
 router.put("/ajustar-saldo", async (req, res) => {
   const { categoria, saldoHoy } = req.body || {};
-  if (!TARJETAS.includes(categoria)) {
-    return res.status(400).json({ error: "Esa tarjeta no existe" });
-  }
   const saldoHoyNum = Number(saldoHoy);
   if (!Number.isFinite(saldoHoyNum) || saldoHoyNum < 0) {
     return res.status(400).json({ error: "Valor inválido" });
   }
 
-  const resultado = await withDB(async (db) => {
-    const actual = saldosActuales(db)[categoria] || 0;
-    const diferencia = saldoHoyNum - actual;
-    db.deudasIniciales[categoria] = (db.deudasIniciales[categoria] || 0) + diferencia;
-    return { saldoAnterior: actual, saldoInicial: db.deudasIniciales[categoria] };
-  });
-
-  res.json({ ok: true, categoria, saldoHoy: saldoHoyNum, ...resultado });
+  try {
+    const resultado = await withDB(async (db) => {
+      if (!(categoria in (db.deudasIniciales || {}))) {
+        const e = new Error("Esa deuda no existe");
+        e.status = 400;
+        throw e;
+      }
+      const actual = saldosActuales(db)[categoria] || 0;
+      const diferencia = saldoHoyNum - actual;
+      db.deudasIniciales[categoria] = (db.deudasIniciales[categoria] || 0) + diferencia;
+      return { saldoAnterior: actual, saldoInicial: db.deudasIniciales[categoria] };
+    });
+    res.json({ ok: true, categoria, saldoHoy: saldoHoyNum, ...resultado });
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
 });
 
 // Registrar una compra nueva con tarjeta: se suma al saldo pendiente de esa

@@ -357,16 +357,14 @@ export default function Deudas() {
               no lo has hecho) — no se borra ni se toca el historial de
               compras y pagos ya registrados.
             </p>
-            {deudas
-              .filter((d) => TARJETAS.includes(d.nombre))
-              .map((d) => (
-                <FilaValorEditable
-                  key={d.nombre}
-                  etiqueta={ETIQUETAS_CATEGORIA[d.nombre] || d.nombre}
-                  valor={d.saldo}
-                  onGuardar={(v) => api.ajustarSaldoDeuda(d.nombre, v).then(recargarTodo)}
-                />
-              ))}
+            {deudas.map((d) => (
+              <FilaValorEditable
+                key={d.nombre}
+                etiqueta={ETIQUETAS_CATEGORIA[d.nombre] || d.nombre}
+                valor={d.saldo}
+                onGuardar={(v) => api.ajustarSaldoDeuda(d.nombre, v).then(recargarTodo)}
+              />
+            ))}
           </div>
 
           <div className="ledger-card p-6 mb-6">
