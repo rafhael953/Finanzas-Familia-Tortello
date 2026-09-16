@@ -160,7 +160,14 @@ export function saldosDeuda(db) {
 // taparse -- eso paso el 2026-09-10 con la Q2 de septiembre, que seguia
 // mostrando el mismo numero en rojo.
 export function calcularSaldoInicial(db, id) {
-  if (id === ANCLA_ARRASTRE) return 0;
+  // Antes de la ancla no hay arrastre en vivo (ver el comentario de
+  // ANCLA_ARRASTRE arriba) -- cortar aqui con "<=" y no solo "===" importa:
+  // sin el "<=", pedir el saldo de un mes de ANTES del ancla (ej. navegar
+  // al historial de enero-julio 2026) nunca llega a igualar el ancla
+  // exactamente yendo hacia atras, y la recursion de abajo se vuelve
+  // infinita hasta tumbar el servidor (RangeError: Maximum call stack
+  // size exceeded, se detecto escribiendo las pruebas el 2026-09-16).
+  if (id === ANCLA_ARRASTRE || quincenaAntes(id, ANCLA_ARRASTRE)) return 0;
 
   const idAnterior = quincenaAnterior(id);
 
@@ -180,7 +187,7 @@ export function calcularSaldoInicial(db, id) {
 
 // Estado en vivo de una quincena, con separacion confirmado (real, ya paso)
 // vs pendiente (planeado/estimado, aun no confirmado item a item).
-export function calcularEstadoQuincena(db, id) {
+export function calcularEstadoQuincena(db, id, fechaRef = new Date()) {
   const { q, mes, anio } = partesQuincena(id);
   const key = q === 1 ? "q1" : "q2";
   const movs = (db.movimientos || []).filter((m) => m.quincenaId === id);
@@ -243,9 +250,9 @@ export function calcularEstadoQuincena(db, id) {
   // dentro de este mismo ciclo. Sin esto, sobranteSeguro/riesgoGasto y la
   // sugerencia de aNU/aDeuda ignoraban el atraso por completo y podian
   // sugerir mover a ahorro la misma plata que hacia falta para pagarlo.
-  const esQuincenaViva = id === quincenaId();
+  const esQuincenaViva = id === quincenaId(fechaRef);
   const atrasos = esQuincenaViva
-    ? Object.fromEntries(calcularAlertasDeudas(db).map((a) => [a.categoria, a.faltante]))
+    ? Object.fromEntries(calcularAlertasDeudas(db, fechaRef).map((a) => [a.categoria, a.faltante]))
     : {};
 
   const deudas = Object.keys(presupuestoDeudas).map((cat) => {
