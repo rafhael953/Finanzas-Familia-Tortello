@@ -162,21 +162,18 @@ export function saldosDeuda(db) {
 export function calcularSaldoInicial(db, id) {
   if (id === ANCLA_ARRASTRE) return 0;
 
-  const { anio, mes, q } = partesQuincena(id);
-  let anioAnt = anio;
-  let mesAnt = mes;
-  if (q === 1) {
-    mesAnt -= 1;
-    if (mesAnt === 0) {
-      mesAnt = 12;
-      anioAnt -= 1;
-    }
-  }
-  const idAnterior = idQuincena(anioAnt, mesAnt, q === 1 ? 2 : 1);
+  const idAnterior = quincenaAnterior(id);
 
-  const huboAntes = (db.movimientos || []).some((m) => m.quincenaId === idAnterior);
-  if (!huboAntes) return 0;
-
+  // Antes se cortaba aqui si la quincena INMEDIATAMENTE anterior no tenia
+  // movimientos todavia (ej. al navegar dos o mas quincenas hacia el
+  // futuro, saltando una que aun no empieza), devolviendo 0 en vez de
+  // seguir la cadena un paso mas atras -- eso hacia que una quincena futura
+  // se viera sin arrastre, contradiciendo el balance del mes y la
+  // trayectoria de arriba, que si encadenan sin ese corte (paso el
+  // 2026-09-16 al mirar octubre Q1 desde hoy, 16 de septiembre: octubre Q1
+  // caia dos pasos adelante y su saldo se mostraba en $0). Ahora siempre se
+  // recorre hacia atras -- termina si o si en ANCLA_ARRASTRE, que es el
+  // unico punto real de partida.
   const estadoAnterior = calcularEstadoQuincena(db, idAnterior);
   return estadoAnterior.balanceConfirmado;
 }
