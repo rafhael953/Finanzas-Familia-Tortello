@@ -317,7 +317,21 @@ export function calcularEstadoQuincena(db, id) {
   // se considera sobrante seguro para mover a NU.
   const egresoEsperado = (lista) => lista.reduce((a, x) => a + Math.max(x.presupuesto, x.total), 0);
   const egresoEsperadoTotal = egresoEsperado(gastos) + egresoEsperado(deudas) + inversionesTotal;
-  const sobranteSeguro = saldoInicial + ingresosConfirmado - egresoEsperadoTotal;
+
+  // Si esta NO es la quincena que se esta viviendo hoy (se esta
+  // previsualizando una futura), medir "lo seguro" solo contra lo ya
+  // confirmado no tiene sentido: en una quincena que ni siquiera ha
+  // empezado, ingresosConfirmado SIEMPRE es 0 porque nada de ahi ha
+  // pasado todavia -- este aviso saldria en rojo por estructura sin
+  // importar que tan sano este el plan, contradiciendo la trayectoria y
+  // el balance del mes de arriba (que si asumen el sueldo esperado cuando
+  // el dia no ha llegado). Solo en la quincena viva "lo confirmado" es la
+  // pregunta correcta: ahi si importa no gastar mas alla de lo que de
+  // verdad hay en la mano.
+  const ingresoParaSobranteSeguro = esQuincenaViva
+    ? ingresosConfirmado
+    : Math.max(ingresosConfirmado, salarioDefault);
+  const sobranteSeguro = saldoInicial + ingresoParaSobranteSeguro - egresoEsperadoTotal;
 
   const sobranteBruto = sobranteSeguro > 0 ? sobranteSeguro : 0;
 
