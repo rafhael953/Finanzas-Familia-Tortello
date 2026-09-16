@@ -633,9 +633,28 @@ export function calcularEstadoMensual(db, id) {
   // defecto de las dos quincenas (mas la prima si el mes la trae), no solo
   // lo confirmado -- para responder "si este mes va como se espera, alcanza
   // o no", que es la pregunta que se esta haciendo.
+  // Pero "el sueldo por defecto de las dos quincenas" a secas ignoraba
+  // cualquier ingreso extra que YA de verdad entro (ej. un extra
+  // confirmado en la primera mitad del mes) -- ese dinero es tan real como
+  // el sueldo, y no contarlo hacia ver un mes "corto" que en la practica
+  // ya tenia con que cubrirse (paso el 2026-09-16: $900.000 de extra
+  // confirmados en la Q2 de agosto desaparecian del balance esperado de
+  // septiembre). Se usa lo mayor entre el sueldo por defecto y lo
+  // confirmado (sin la prima, que se trata aparte para no duplicarla si
+  // ya se registro un movimiento de esa categoria).
+  const primaConfirmada = (estado) => {
+    const p = estado.ingresos.find((i) => i.categoria === "prima");
+    return p ? p.confirmado : 0;
+  };
+  const ingresoEsperadoQuincena = (estado, salarioDefault) =>
+    Math.max(estado.ingresosConfirmado - primaConfirmada(estado), salarioDefault);
+
   const primaDelMes = [6, 12].includes(mes) ? Number(db.config.prima || 0) : 0;
+  const primaEsperada = Math.max(primaConfirmada(q1) + primaConfirmada(q2), primaDelMes);
   const ingresoEsperadoTotal =
-    Number(db.config.ingresoQ1 || 0) + Number(db.config.ingresoQ2 || 0) + primaDelMes;
+    ingresoEsperadoQuincena(q1, Number(db.config.ingresoQ2 || 0)) +
+    ingresoEsperadoQuincena(q2, Number(db.config.ingresoQ1 || 0)) +
+    primaEsperada;
 
   // sobranteSeguro YA es un balance (no solo un "cuanto sobra"): saldo
   // inicial mas el sueldo esperado del mes, menos TODO lo comprometido
