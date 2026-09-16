@@ -410,15 +410,18 @@ export function calcularEstadoQuincena(db, id) {
 // hecho el 15 (ej. Rappi/Falabella, que pagan ese dia) se contaba para el
 // mes anterior en vez del que en verdad le corresponde, y el 1-15 real del
 // mes nunca se miraba.
-function pagadoDeudaEnMes(db, categoria, anio, mes) {
+function quincenasDelMesReal(anio, mes) {
   let anioPrev = anio;
   let mesPrev = mes - 1;
   if (mesPrev === 0) {
     mesPrev = 12;
     anioPrev -= 1;
   }
-  const primeraMitad = idQuincena(anioPrev, mesPrev, 2); // dias 1-15
-  const segundaMitad = idQuincena(anio, mes, 1); // dias 16-fin
+  return [idQuincena(anioPrev, mesPrev, 2), idQuincena(anio, mes, 1)]; // dias 1-15, dias 16-fin
+}
+
+function pagadoDeudaEnMes(db, categoria, anio, mes) {
+  const [primeraMitad, segundaMitad] = quincenasDelMesReal(anio, mes);
   return (db.movimientos || [])
     .filter(
       (m) =>
@@ -458,6 +461,17 @@ export function calcularAlertasDeudas(db, fechaRef = new Date()) {
     anioAnt -= 1;
   }
   const prefijoActual = `${anio}-${String(mes).padStart(2, "0")}`;
+
+  // Si la ventana del mes anterior cae (total o parcialmente) antes del
+  // ancla del arrastre, es historia importada del Excel que Rafael mismo
+  // confirmo incompleta (pagos que nunca quedaron registrados ahi) -- no
+  // hay forma confiable de distinguir "no se pago" de "no quedo importado".
+  // Sin este corte, cualquier mes pegado al ancla (como agosto 2026, justo
+  // el que la toca) reportaba TODAS las deudas como atrasadas por completo
+  // así estuvieran pagadas al dia, y esa cuota fantasma se sumaba encima de
+  // la real (paso el 2026-09-16 con Auteco, NU mama, Rappi y Falabella).
+  const [primeraMitadMesAnt] = quincenasDelMesReal(anioAnt, mesAnt);
+  if (quincenaAntes(primeraMitadMesAnt, ANCLA_ARRASTRE)) return [];
 
   const alertas = [];
   const saldosDeHoy = saldosDeuda(db);
