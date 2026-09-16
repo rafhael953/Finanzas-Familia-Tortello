@@ -239,13 +239,27 @@ export function calcularEstadoQuincena(db, id) {
   // cuota: se marca para que la interfaz la deje de ofrecer.
   const saldosDeHoy = saldosDeuda(db);
 
+  // Si esta es la quincena que se esta viviendo hoy, lo que quedo atrasado
+  // de un mes anterior (calcularAlertasDeudas) se suma al presupuesto
+  // esperado de esa deuda, sin importar a cual quincena le toque su cuota
+  // normal -- la alerta ya avisa que hay que ponerse al dia "antes del 15",
+  // dentro de este mismo ciclo. Sin esto, sobranteSeguro/riesgoGasto y la
+  // sugerencia de aNU/aDeuda ignoraban el atraso por completo y podian
+  // sugerir mover a ahorro la misma plata que hacia falta para pagarlo.
+  const esQuincenaViva = id === quincenaId();
+  const atrasos = esQuincenaViva
+    ? Object.fromEntries(calcularAlertasDeudas(db).map((a) => [a.categoria, a.faltante]))
+    : {};
+
   const deudas = Object.keys(presupuestoDeudas).map((cat) => {
     const propios = totales(movsCasa, "deuda", cat);
     const enHermana = totales(movsHermana, "deuda", cat).confirmado;
+    const atraso = atrasos[cat] || 0;
 
     return {
       categoria: cat,
-      presupuesto: asignacion[cat] === key ? presupuestoDeudas[cat] : 0,
+      presupuesto: (asignacion[cat] === key ? presupuestoDeudas[cat] : 0) + atraso,
+      atraso,
       pagadoEnOtraQuincena: enHermana,
       saldada: (saldosDeHoy[cat] ?? 0) <= 0,
       ...propios,
@@ -333,6 +347,8 @@ export function calcularEstadoQuincena(db, id) {
   const aNU = Math.round(sobrante * 0.5);
   const aDeuda = sobrante - aNU;
 
+  const atrasoTotal = sumaValores(atrasos);
+
   // Advertencia activa de "no gastes mas": si sobranteSeguro ya esta en
   // negativo, ni siquiera reservando solo lo comprometido (presupuesto y lo
   // que ya se registro) alcanza con lo que de verdad ha entrado. No es una
@@ -377,6 +393,7 @@ export function calcularEstadoQuincena(db, id) {
     riesgoGasto,
     aNU,
     aDeuda,
+    atrasoTotal,
     ideal,
     movimientos: [...movs].sort((a, b) => (a.fecha < b.fecha ? 1 : -1)),
   };
@@ -384,16 +401,31 @@ export function calcularEstadoQuincena(db, id) {
 
 // Cuanto se pago (confirmado) de una deuda en un mes calendario completo
 // (sumando sus dos quincenas).
+// El mes calendario real de "anio-mes" se vive en dos quincenas: los dias
+// 1-15 (que llevan el id del mes ANTERIOR, Q2 -- ver quincenaId) y los dias
+// 16-fin (Q1 de este mismo id de mes). Sumar Q1+Q2 del MISMO numero de mes
+// del id (como se hacia antes) junta el 16 de este mes con el 1-15 del
+// SIGUIENTE -- el mismo error que ya se habia corregido en
+// calcularEstadoMensual (ver mesCalendarioDeQuincena). Sin este fix, un pago
+// hecho el 15 (ej. Rappi/Falabella, que pagan ese dia) se contaba para el
+// mes anterior en vez del que en verdad le corresponde, y el 1-15 real del
+// mes nunca se miraba.
 function pagadoDeudaEnMes(db, categoria, anio, mes) {
-  const q1 = idQuincena(anio, mes, 1);
-  const q2 = idQuincena(anio, mes, 2);
+  let anioPrev = anio;
+  let mesPrev = mes - 1;
+  if (mesPrev === 0) {
+    mesPrev = 12;
+    anioPrev -= 1;
+  }
+  const primeraMitad = idQuincena(anioPrev, mesPrev, 2); // dias 1-15
+  const segundaMitad = idQuincena(anio, mes, 1); // dias 16-fin
   return (db.movimientos || [])
     .filter(
       (m) =>
         m.tipo === "deuda" &&
         m.categoria === categoria &&
         esConfirmado(m) &&
-        (m.quincenaId === q1 || m.quincenaId === q2)
+        (m.quincenaId === primeraMitad || m.quincenaId === segundaMitad)
     )
     .reduce((a, m) => a + Number(m.monto || 0), 0);
 }

@@ -310,8 +310,13 @@ export function trayectoriaBalance(db, atras = 3, adelante = 9) {
 
   // No hay movimientos todavia en el futuro: se proyecta con el mismo plan
   // de fijos y cuotas de hoy (repartoQuincenas), encadenando el resultado
-  // de una quincena como punto de partida real de la siguiente.
-  let saldo = estadoHoy.balanceProyectado;
+  // de una quincena como punto de partida real de la siguiente. Arranca de
+  // balanceConfirmado, no de balanceProyectado: ese es el mismo numero que
+  // se ve en la burbuja "hoy" de este mismo grafico (y en "Balance al dia"
+  // del panel) -- arrancar de balanceProyectado hacia adelante metia de
+  // contrabando lo pendiente de hoy en el primer salto proyectado, sin que
+  // se viera reflejado en el punto "hoy" que el usuario tiene enfrente.
+  let saldo = estadoHoy.balanceConfirmado;
   let cursorAdelante = idHoy;
   for (let i = 0; i < adelante; i++) {
     cursorAdelante = quincenaSiguiente(cursorAdelante);

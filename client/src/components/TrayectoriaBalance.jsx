@@ -44,6 +44,13 @@ export default function TrayectoriaBalance({ trayectoria }) {
         </p>
       )}
 
+      {puntos.some((p) => p.tipo === "real" && p.balance < 0) && (
+        <p className={`text-[10.5px] mt-1 opacity-70 ${estilos.texto}`}>
+          Un número en rojo de una quincena ya pasada es historia, no un riesgo hacia
+          adelante — el mensaje de arriba solo mira lo que viene.
+        </p>
+      )}
+
       <div className="flex gap-2 overflow-x-auto mt-3 pb-1 -mx-1 px-1">
         {puntos.map((p) => {
           const esActual = p.tipo === "actual";

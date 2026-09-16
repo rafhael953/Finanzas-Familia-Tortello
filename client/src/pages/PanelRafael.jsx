@@ -295,8 +295,15 @@ export default function PanelRafael() {
               </>
             )}
             <span className="block mt-1 font-normal opacity-70">
-              Ya cuenta dentro del balance del mes de arriba, no es un corto aparte.
+              {estadoMensual?.riesgoGasto
+                ? "Ya cuenta dentro del balance del mes de arriba, no es un corto aparte."
+                : "El balance del mes de arriba todavía no se ve en rojo porque parte del sueldo completo que se espera — esto de aquí es solo con lo que ya está confirmado ahora mismo."}
             </span>
+            {estado.atrasoTotal > 0 && (
+              <span className="block mt-1 font-normal opacity-70">
+                Incluye {formatoCOP(estado.atrasoTotal)} de cuota atrasada.
+              </span>
+            )}
           </div>
         )}
 
@@ -355,6 +362,12 @@ export default function PanelRafael() {
             Sugerencia con lo confirmado: {formatoCOP(estado.aNU)} al NU ·{" "}
             {formatoCOP(estado.aDeuda)} a abono extra de deuda. Confírmalo abajo en Inversiones
             cuando de verdad muevas la plata.
+            {estado.atrasoTotal > 0 && (
+              <span className="block mt-1">
+                Ya se descontaron {formatoCOP(estado.atrasoTotal)} de cuota atrasada antes de
+                sugerir esto.
+              </span>
+            )}
           </div>
         )}
 
