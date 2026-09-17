@@ -59,7 +59,7 @@ export default function TrayectoriaBalance({ trayectoria }) {
             <div
               key={p.quincenaId}
               className={`flex-shrink-0 rounded-xl px-2.5 py-1.5 text-center ${
-                esActual ? "bg-white/70 ring-2 ring-black/10" : "bg-white/40"
+                esActual ? "bg-[var(--color-fondo)]/70 ring-2 ring-[var(--color-texto)]/15" : "bg-[var(--color-fondo)]/40"
               } ${p.tipo === "proyectado" ? "opacity-80" : ""}`}
             >
               <div className={`text-[9.5px] font-semibold ${estilos.texto} opacity-70`}>

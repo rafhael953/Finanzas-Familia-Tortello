@@ -47,7 +47,7 @@ function FormCompraTarjeta({ onGuardado, onCancelar }) {
               type="button"
               onClick={() => setTarjeta(t)}
               className={`rounded-lg py-2 text-xs font-medium ${
-                tarjeta === t ? "bg-[var(--color-acento)] text-white" : "bg-black/5"
+                tarjeta === t ? "bg-[var(--color-acento)] text-white" : "bg-[var(--color-texto)]/8 text-[var(--color-texto)]"
               }`}
             >
               {ETIQUETAS_CATEGORIA[t]}

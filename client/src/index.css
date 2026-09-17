@@ -2,44 +2,9 @@
 @import "tailwindcss";
 
 @theme {
-  /* Crema calido y verde profundo: se siente de la casa, no de un banco. */
-  --color-fondo: #fdf6ec;
-  --color-texto: #2e2519;
-  --color-muted: #8c7b66;
-
-  --color-acento: #2e5e4e;      /* verde profundo, para lo importante */
-  --color-acento-vivo: #b0673a; /* terracota, para acciones */
-
-  --color-positivo: #3e6b34;
-  --color-negativo: #a8453c;
-
-  --color-ledger: #ffffff;
-  --color-ledger-border: #efe3d2;
-  --color-ledger-rule: #f0e6d8;
-
-  /* Bloques suaves de color, uno por tono emocional */
-  --color-suave-rojo: #f7ddd4;
-  --color-suave-rojo-texto: #8e4535;
-  --color-suave-verde: #dce9d5;
-  --color-suave-verde-texto: #3e6b34;
-  --color-suave-ambar: #fbe8c8;
-  --color-suave-ambar-texto: #7a5410;
-
-  /* Sobre el verde profundo hacen falta tonos mas claros para contrastar */
-  --color-positivo-alto: #b8dba8;
-  --color-negativo-alto: #ffb3a6;
-
-  /* Esta direccion no usa serif: el token conserva el nombre para no tener
-     que tocar cada uso de font-serif repartido por la app. */
-  --font-serif: "Inter", sans-serif;
-}
-
-/* Muestra del estilo "neobank oscuro" (Nu/Revolut): redefine los mismos
-   tokens de color pero solo dentro de esta clase, asi Panel Rafael se ve
-   distinto sin tocar el resto de la app (Panel Jerardith, Deudas, etc.)
-   mientras se decide si se adopta en todos lados. Si se confirma, estos
-   valores se mueven al bloque @theme de arriba y esta clase se borra. */
-.tema-oscuro-preview {
+  /* Neobank oscuro (tipo Nu/Revolut), adoptado el 2026-09-17 tras probarlo
+     primero solo en Panel Rafael. Reemplaza el crema/verde original
+     ("se siente de la casa, no de un banco") por decision de Rafael. */
   --color-fondo: #0b1220;
   --color-texto: #f1f5f9;
   --color-muted: #94a3b8;
@@ -54,6 +19,7 @@
   --color-ledger-border: #263145;
   --color-ledger-rule: #1e2a3e;
 
+  /* Bloques suaves de color, uno por tono emocional */
   --color-suave-rojo: #3b1e22;
   --color-suave-rojo-texto: #f87171;
   --color-suave-verde: #16321f;
@@ -63,6 +29,10 @@
 
   --color-positivo-alto: #86efac;
   --color-negativo-alto: #fca5a5;
+
+  /* Esta direccion no usa serif: el token conserva el nombre para no tener
+     que tocar cada uso de font-serif repartido por la app. */
+  --font-serif: "Inter", sans-serif;
 }
 
 body {
