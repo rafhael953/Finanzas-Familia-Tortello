@@ -140,7 +140,7 @@ export default function PanelRafael() {
   }
 
   return (
-    <div className="min-h-screen px-5 py-6 flex flex-col max-w-lg mx-auto">
+    <div className="tema-oscuro-preview min-h-screen px-5 py-6 flex flex-col max-w-lg mx-auto bg-[var(--color-fondo)] text-[var(--color-texto)]">
       <header className="flex justify-between items-baseline mb-1">
         <div>
           <div className="kicker">Tortello · Libro de finanzas</div>

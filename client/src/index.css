@@ -34,6 +34,37 @@
   --font-serif: "Inter", sans-serif;
 }
 
+/* Muestra del estilo "neobank oscuro" (Nu/Revolut): redefine los mismos
+   tokens de color pero solo dentro de esta clase, asi Panel Rafael se ve
+   distinto sin tocar el resto de la app (Panel Jerardith, Deudas, etc.)
+   mientras se decide si se adopta en todos lados. Si se confirma, estos
+   valores se mueven al bloque @theme de arriba y esta clase se borra. */
+.tema-oscuro-preview {
+  --color-fondo: #0b1220;
+  --color-texto: #f1f5f9;
+  --color-muted: #94a3b8;
+
+  --color-acento: #15803d;
+  --color-acento-vivo: #f59e0b;
+
+  --color-positivo: #4ade80;
+  --color-negativo: #f87171;
+
+  --color-ledger: #161f32;
+  --color-ledger-border: #263145;
+  --color-ledger-rule: #1e2a3e;
+
+  --color-suave-rojo: #3b1e22;
+  --color-suave-rojo-texto: #f87171;
+  --color-suave-verde: #16321f;
+  --color-suave-verde-texto: #4ade80;
+  --color-suave-ambar: #3a2a0f;
+  --color-suave-ambar-texto: #fbbf24;
+
+  --color-positivo-alto: #86efac;
+  --color-negativo-alto: #fca5a5;
+}
+
 body {
   background-color: var(--color-fondo);
   color: var(--color-texto);
