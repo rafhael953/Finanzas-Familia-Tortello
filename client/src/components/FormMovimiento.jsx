@@ -118,7 +118,7 @@ export default function FormMovimiento({ quincenaId, onGuardado, onCancelar }) {
               type="button"
               onClick={() => cambiarTipo(t)}
               className={`rounded-lg py-2 text-xs font-medium ${
-                tipo === t ? "bg-[var(--color-acento)] text-white" : "bg-black/5"
+                tipo === t ? "bg-[var(--color-acento)] text-white" : "bg-[var(--color-texto)]/8 text-[var(--color-texto)]"
               }`}
             >
               {ETIQUETAS_TIPO[t]}
@@ -202,7 +202,7 @@ export default function FormMovimiento({ quincenaId, onGuardado, onCancelar }) {
             type="button"
             onClick={() => setConfirmado(true)}
             className={`rounded-lg py-2 text-xs font-medium ${
-              confirmado ? "bg-[var(--color-positivo)] text-white" : "bg-black/5"
+              confirmado ? "bg-[var(--color-positivo)] text-white" : "bg-[var(--color-texto)]/8 text-[var(--color-texto)]"
             }`}
           >
             ✓ Ya sucedió
@@ -211,7 +211,7 @@ export default function FormMovimiento({ quincenaId, onGuardado, onCancelar }) {
             type="button"
             onClick={() => setConfirmado(false)}
             className={`rounded-lg py-2 text-xs font-medium ${
-              !confirmado ? "bg-[#B0842A] text-white" : "bg-black/5"
+              !confirmado ? "bg-[#B0842A] text-white" : "bg-[var(--color-texto)]/8 text-[var(--color-texto)]"
             }`}
           >
             ● Plan / estimado

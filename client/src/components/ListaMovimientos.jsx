@@ -117,7 +117,7 @@ export default function ListaMovimientos({ movimientos, onCambio, soloLectura = 
                       inputMode="numeric"
                       value={valorEdit}
                       onChange={(e) => setValorEdit(e.target.value)}
-                      className="font-serif-num w-24 text-right border border-[var(--color-ledger-border)] rounded-md px-2 py-1 text-[13px]"
+                      className="font-serif-num w-24 text-right border border-[var(--color-ledger-border)] rounded-md px-2 py-1 text-[13px] bg-[var(--color-fondo)]/40 text-[var(--color-texto)]"
                       autoFocus
                     />
                     <button

@@ -21,7 +21,7 @@ function BarrasComparadas({ titulo, meta, real, colorReal, invertido = false }) 
       <div className="flex items-center gap-2 mb-1">
         <span className="text-[9px] text-[var(--color-muted)] w-8 flex-shrink-0">plan</span>
         <div className="flex-1 h-[6px] bg-[var(--color-ledger-rule)] rounded-full overflow-hidden">
-          <div className="h-full rounded-full bg-[#cfc3ae]" style={{ width: `${(meta / tope) * 100}%` }} />
+          <div className="h-full rounded-full bg-[var(--color-muted)]/50" style={{ width: `${(meta / tope) * 100}%` }} />
         </div>
       </div>
       <div className="flex items-center gap-2">
