@@ -161,13 +161,24 @@ export function saldosDeuda(db) {
 // mostrando el mismo numero en rojo.
 export function calcularSaldoInicial(db, id) {
   // Antes de la ancla no hay arrastre en vivo (ver el comentario de
-  // ANCLA_ARRASTRE arriba) -- cortar aqui con "<=" y no solo "===" importa:
-  // sin el "<=", pedir el saldo de un mes de ANTES del ancla (ej. navegar
-  // al historial de enero-julio 2026) nunca llega a igualar el ancla
-  // exactamente yendo hacia atras, y la recursion de abajo se vuelve
-  // infinita hasta tumbar el servidor (RangeError: Maximum call stack
-  // size exceeded, se detecto escribiendo las pruebas el 2026-09-16).
-  if (id === ANCLA_ARRASTRE || quincenaAntes(id, ANCLA_ARRASTRE)) return 0;
+  // ANCLA_ARRASTRE arriba) -- cortar aqui importa: sin esto, pedir el saldo
+  // de un mes de ANTES del ancla (ej. navegar al historial de enero-julio
+  // 2026) nunca llega a igualar el ancla exactamente yendo hacia atras, y
+  // la recursion de abajo se vuelve infinita hasta tumbar el servidor
+  // (RangeError: Maximum call stack size exceeded, se detecto escribiendo
+  // las pruebas el 2026-09-16).
+  if (quincenaAntes(id, ANCLA_ARRASTRE)) return 0;
+
+  // El punto exacto del ancla no arranca necesariamente en $0: eso solo
+  // vale como "no hay arrastre en vivo ANTES de aqui". Rafael si tenia
+  // plata real en el banco ese dia, solo que la app nunca la supo (nadie
+  // la cargo). "Balance al dia" es un cambio NETO desde el ancla, no el
+  // saldo bancario absoluto -- sin este numero, Rafael veia un balance que
+  // no coincidia con su cuenta real y pensaba que habia un error de calculo
+  // (paso el 2026-09-18: su cuenta real eran $1.472.542 pero la app
+  // mostraba $972.529, un cambio neto correcto pero sin el punto de
+  // partida real sumado).
+  if (id === ANCLA_ARRASTRE) return Number(db.config?.saldoInicialReal || 0);
 
   const idAnterior = quincenaAnterior(id);
 

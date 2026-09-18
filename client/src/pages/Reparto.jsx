@@ -90,10 +90,14 @@ function Quincena({ titulo, plan, quincena, onMover, onSoltar, ocupado }) {
 
 export default function Reparto() {
   const [datos, setDatos] = useState(null);
+  const [config, setConfig] = useState(null);
   const [ocupado, setOcupado] = useState(false);
 
   function cargar() {
-    return api.getAsesor().then(setDatos);
+    return Promise.all([api.getAsesor(), api.getConfig()]).then(([a, c]) => {
+      setDatos(a);
+      setConfig(c.config);
+    });
   }
 
   // Mover una cuota la deja fijada a esa quincena; las demás se siguen
@@ -284,6 +288,25 @@ export default function Reparto() {
           ))}
         </div>
       </div>
+
+      {/* Saldo real al empezar a usar la app en vivo: "Balance al dia" en
+          el Panel Rafael es un cambio NETO desde el ancla del arrastre, no
+          el saldo bancario absoluto -- sin este numero, coincidia con la
+          cuenta real solo por casualidad. Se ajusta una vez y ya queda. */}
+      {config && (
+        <div className="ledger-card p-6 mb-6">
+          <h2 className="section-title-editorial mb-1">Saldo real de partida</h2>
+          <p className="text-xs text-[var(--color-muted)] mb-2">
+            Lo que de verdad tenías en la cuenta cuando empezaste a usar la app en vivo
+            (16 de agosto). "Balance al día" en Quincena se calcula sumando esto.
+          </p>
+          <FilaValorEditable
+            etiqueta="Saldo real"
+            valor={config.saldoInicialReal || 0}
+            onGuardar={(v) => api.editarConfig("saldoInicialReal", v).then(cargar)}
+          />
+        </div>
+      )}
 
       {/* El cupo de tarjetas: la causa de los meses en rojo */}
       <div className="ledger-card p-6 mb-6">

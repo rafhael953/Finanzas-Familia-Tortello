@@ -85,6 +85,13 @@ test("calcularSaldoInicial no se resetea a 0 al saltar dos o mas quincenas al fu
   assert.equal(calcularSaldoInicial(db, dosAdelante), balanceHoy);
 });
 
+test("calcularSaldoInicial parte del saldo real configurado, no siempre de 0", () => {
+  const db = dbBase({ config: { ingresoQ1: 4714000, ingresoQ2: 4441500, prima: 3575000, saldoInicialReal: 500013 } });
+  assert.equal(calcularSaldoInicial(db, ANCLA_ARRASTRE), 500013);
+  // Antes de la ancla sigue sin arrastre en vivo, sin importar el saldo real.
+  assert.equal(calcularSaldoInicial(db, quincenaAnterior(ANCLA_ARRASTRE)), 0);
+});
+
 test("el atraso de una cuota vencida se suma al presupuesto solo en la quincena viva", () => {
   const { anio, mes } = partesQuincena(ANCLA_ARRASTRE);
   const fechaRef = new Date(anio, mes + 1, 16); // dos meses despues de la ancla: zona confiable
