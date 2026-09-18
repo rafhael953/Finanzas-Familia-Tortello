@@ -128,6 +128,25 @@ test("calcularEstadoMensual cuenta un ingreso extra ya confirmado, no solo el su
   assert.equal(conExtra - sinExtra, 900000);
 });
 
+test("una cuota pagada en la quincena hermana real no se reserva dos veces", () => {
+  // La cuota de rappi se asigna a la quincena "2026-08-Q2" (1-15 de
+  // septiembre), pero se paga de verdad en "2026-09-Q1" (16-30, la hermana
+  // real del mismo mes calendario) -- antes, la reserva de la primera
+  // quedaba fantasma (nunca se cancelaba) y se sumaba encima del pago real.
+  const db = dbBase({
+    cuotasRecomendadas: { rappi: 700000 },
+    deudasIniciales: { rappi: 3000000 },
+    repartoCuotas: { rappi: 2 },
+    movimientos: [
+      { tipo: "deuda", categoria: "rappi", monto: 1300000, confirmado: true, quincenaId: "2026-09-Q1", registradoPor: "rafael" },
+    ],
+  });
+  const q1 = calcularEstadoQuincena(db, "2026-08-Q2");
+  const q2 = calcularEstadoQuincena(db, "2026-09-Q1");
+  assert.equal(q1.deudas.find((d) => d.categoria === "rappi").presupuesto, 0);
+  assert.equal(q2.deudas.find((d) => d.categoria === "rappi").total, 1300000);
+});
+
 test("calcularEstadoMensual no duplica la prima ya confirmada", () => {
   const idJunio = "2026-06-Q1"; // real junio = 2026-05-Q2 + 2026-06-Q1
   const db = dbBase({

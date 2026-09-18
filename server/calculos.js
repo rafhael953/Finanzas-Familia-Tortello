@@ -230,8 +230,16 @@ export function calcularEstadoQuincena(db, id, fechaRef = new Date()) {
   const gastos = [...gastosPresupuestados, ...gastosVariables, ...gastosPersonalizados];
 
   // Las cuotas de deuda son mensuales, no por quincena: si ya se pago en la
-  // otra quincena del mismo mes, no hay que volver a sugerirla aqui.
-  const idHermana = idQuincena(anio, mes, q === 1 ? 2 : 1);
+  // otra quincena del mismo MES CALENDARIO REAL, no hay que volver a
+  // sugerirla aqui. Ojo: la hermana real NO es "el otro Q del mismo numero
+  // de mes del id" (eso junta el 16 de este mes con el 1-15 del SIGUIENTE,
+  // el mismo error ya corregido en otros lados -- ver mesCalendarioDeQuincena).
+  // Sin este fix, una cuota pagada en la quincena de hoy pero reservada sin
+  // pagar en la quincena real-hermana (ya pasada) se contaba DOBLE en el
+  // balance del mes: la reserva vieja (nunca se cancelaba) mas el pago real
+  // (paso el 2026-09-18 con Rappi: $700.000 reservados en 1-15 de sept +
+  // $1.300.000 pagados de verdad el 16-30, sin que el sistema los cruzara).
+  const idHermana = q === 1 ? quincenaAnterior(id) : quincenaSiguiente(id);
   const movsHermana = (db.movimientos || []).filter((m) => m.quincenaId === idHermana);
 
   // Cada deuda tiene una sola cuota al mes: solo cuenta como presupuesto de
@@ -260,9 +268,17 @@ export function calcularEstadoQuincena(db, id, fechaRef = new Date()) {
     const enHermana = totales(movsHermana, "deuda", cat).confirmado;
     const atraso = atrasos[cat] || 0;
 
+    // Si la cuota asignada a esta quincena ya se pago (total o
+    // parcialmente) en la hermana real del mes, lo que falta reservar aqui
+    // baja en esa misma medida -- si no, egresoEsperado la contaba dos
+    // veces: la reserva que nunca se cancelaba en la quincena vieja, mas el
+    // pago real en la que de verdad se hizo.
+    const presupuestoAsignado = asignacion[cat] === key ? presupuestoDeudas[cat] : 0;
+    const presupuesto = Math.max(0, presupuestoAsignado - enHermana) + atraso;
+
     return {
       categoria: cat,
-      presupuesto: (asignacion[cat] === key ? presupuestoDeudas[cat] : 0) + atraso,
+      presupuesto,
       atraso,
       pagadoEnOtraQuincena: enHermana,
       saldada: (saldosDeHoy[cat] ?? 0) <= 0,
