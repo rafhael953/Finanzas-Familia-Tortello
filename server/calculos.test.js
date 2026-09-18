@@ -92,6 +92,34 @@ test("calcularSaldoInicial parte del saldo real configurado, no siempre de 0", (
   assert.equal(calcularSaldoInicial(db, quincenaAnterior(ANCLA_ARRASTRE)), 0);
 });
 
+test("siempre sugiere un minimo a NU si el mes esta apretado pero no en riesgo", () => {
+  const hoy = quincenaId();
+  const { q } = partesQuincena(hoy);
+  const salarioDefault = q === 1 ? 4714000 : 4441500;
+  const gastosFijos = { q1: {}, q2: {}, [q === 1 ? "q1" : "q2"]: { arriendo: salarioDefault } };
+  const db = dbBase({
+    gastosFijos,
+    movimientos: [
+      { tipo: "ingreso", categoria: "salario", monto: salarioDefault, confirmado: true, quincenaId: hoy, registradoPor: "rafael" },
+      { tipo: "gasto", categoria: "arriendo", monto: salarioDefault, confirmado: true, quincenaId: hoy, registradoPor: "rafael" },
+    ],
+  });
+  const estado = calcularEstadoQuincena(db, hoy);
+  assert.equal(estado.sobrante, 0);
+  assert.equal(estado.riesgoGasto, false);
+  assert.equal(estado.aNU, 100000);
+});
+
+test("no sugiere NU si esta activo el aviso de no gastes mas", () => {
+  const hoy = quincenaId();
+  const db = dbBase({
+    gastosFijos: { q1: { arriendo: 5000000 }, q2: { arriendo: 5000000 } },
+  });
+  const estado = calcularEstadoQuincena(db, hoy);
+  assert.equal(estado.riesgoGasto, true);
+  assert.equal(estado.aNU, 0);
+});
+
 test("el atraso de una cuota vencida se suma al presupuesto solo en la quincena viva", () => {
   const { anio, mes } = partesQuincena(ANCLA_ARRASTRE);
   const fechaRef = new Date(anio, mes + 1, 16); // dos meses despues de la ancla: zona confiable

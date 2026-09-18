@@ -389,8 +389,18 @@ export function calcularEstadoQuincena(db, id, fechaRef = new Date()) {
   const reservaSiguiente = margenSiguiente < 0 ? Math.round(-margenSiguiente) : 0;
 
   const sobrante = Math.max(0, sobranteBruto - reservaSiguiente);
-  const aNU = Math.round(sobrante * 0.5);
-  const aDeuda = sobrante - aNU;
+
+  // NU es la prioridad de ahorro, no un 50/50 estricto: aunque el sobrante
+  // real de la quincena quede en $0 (un mes apretado, como paso en
+  // septiembre 2026 por gastos no declarados), Rafael pidio que SIEMPRE se
+  // sugiera un minimo a NU mientras no este sonando "no gastes mas" -- para
+  // no perder la costumbre de ahorrar, aceptando una pequeña desviacion del
+  // reparto balanceado (2026-09-18). Solo se activa si sobranteSeguro no
+  // esta en rojo: sugerir ahorro mientras se avisa que no alcanza para lo
+  // comprometido seria contradictorio.
+  const PISO_NU = 100000;
+  const aNU = sobranteSeguro >= 0 ? Math.max(Math.round(sobrante * 0.5), PISO_NU) : 0;
+  const aDeuda = Math.max(0, sobrante - aNU);
 
   const atrasoTotal = sumaValores(atrasos);
 
