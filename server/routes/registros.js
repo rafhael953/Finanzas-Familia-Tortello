@@ -4,6 +4,7 @@ import {
   quincenaId,
   calcularEstadoQuincena,
   calcularEstadoMensual,
+  calcularComprometidoMensual,
   calcularResumenMensual,
 } from "../calculos.js";
 
@@ -36,6 +37,14 @@ router.get("/mensual/:id", async (req, res) => {
 router.get("/estado-mensual/:id", async (req, res) => {
   const db = await readDB();
   res.json(calcularEstadoMensual(db, req.params.id));
+});
+
+// Desglose de "a que se comprometio la plata este mes" (ver
+// calcularComprometidoMensual): lo reservado, lo pagado y lo que falta,
+// categoria por categoria y quincena por quincena.
+router.get("/comprometido/:id", async (req, res) => {
+  const db = await readDB();
+  res.json(calcularComprometidoMensual(db, req.params.id));
 });
 
 // Historial completo: todos los movimientos desde el inicio, mas recientes

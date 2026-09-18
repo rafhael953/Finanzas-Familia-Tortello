@@ -31,6 +31,7 @@ export const api = {
   getEstadoQuincena: (id) => request(`/api/registros/estado/${id}`),
   getResumenMensual: (id) => request(`/api/registros/mensual/${id}`),
   getEstadoMensual: (id) => request(`/api/registros/estado-mensual/${id}`),
+  getComprometidoMensual: (id) => request(`/api/registros/comprometido/${id}`),
   getHistorial: () => request(`/api/registros/historial`),
   getAnalisis: () => request(`/api/registros/analisis`),
 

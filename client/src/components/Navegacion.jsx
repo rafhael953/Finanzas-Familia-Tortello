@@ -6,6 +6,7 @@ import { Link, useLocation } from "react-router-dom";
 export const SECCIONES = [
   { a: "/rafael", texto: "Quincena" },
   { a: "/reparto", texto: "Reparto" },
+  { a: "/comprometido", texto: "Comprometido" },
   { a: "/graficas", texto: "Gráficas" },
   { a: "/rafael/deudas", texto: "Deudas" },
   { a: "/ahorro", texto: "Ahorro" },

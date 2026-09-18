@@ -128,23 +128,42 @@ test("calcularEstadoMensual cuenta un ingreso extra ya confirmado, no solo el su
   assert.equal(conExtra - sinExtra, 900000);
 });
 
-test("una cuota pagada en la quincena hermana real no se reserva dos veces", () => {
-  // La cuota de rappi se asigna a la quincena "2026-08-Q2" (1-15 de
-  // septiembre), pero se paga de verdad en "2026-09-Q1" (16-30, la hermana
-  // real del mismo mes calendario) -- antes, la reserva de la primera
-  // quedaba fantasma (nunca se cancelaba) y se sumaba encima del pago real.
-  const db = dbBase({
-    cuotasRecomendadas: { rappi: 700000 },
-    deudasIniciales: { rappi: 3000000 },
-    repartoCuotas: { rappi: 2 },
-    movimientos: [
-      { tipo: "deuda", categoria: "rappi", monto: 1300000, confirmado: true, quincenaId: "2026-09-Q1", registradoPor: "rafael" },
-    ],
-  });
-  const q1 = calcularEstadoQuincena(db, "2026-08-Q2");
-  const q2 = calcularEstadoQuincena(db, "2026-09-Q1");
-  assert.equal(q1.deudas.find((d) => d.categoria === "rappi").presupuesto, 0);
-  assert.equal(q2.deudas.find((d) => d.categoria === "rappi").total, 1300000);
+// Una cuota asignada a "idPrimeraMitad" (dias 1-15) pero pagada de verdad
+// en "idSegundaMitad" (dias 16-fin, la hermana real del mismo mes
+// calendario) no debe reservarse dos veces. Se corre para varios pares de
+// meses -- incluido el salto de diciembre a enero -- para probar que el
+// fix no depende de una fecha puntual, sino de la regla en general (ver
+// quincenaAnterior/quincenaSiguiente, no hay ningun "2026-09" quemado en
+// calcularEstadoQuincena).
+test("una cuota pagada en la quincena hermana real no se reserva dos veces (varios meses)", () => {
+  const pares = [
+    ["2026-01-Q2", "2026-02-Q1"], // enero-febrero, mitad de año
+    ["2026-08-Q2", "2026-09-Q1"], // el caso real que reporto Rafael
+    ["2026-12-Q2", "2027-01-Q1"], // cambio de año
+  ];
+
+  for (const [idPrimeraMitad, idSegundaMitad] of pares) {
+    const db = dbBase({
+      cuotasRecomendadas: { rappi: 700000 },
+      deudasIniciales: { rappi: 3000000 },
+      repartoCuotas: { rappi: 2 }, // fuerza la cuota a la primera mitad
+      movimientos: [
+        { tipo: "deuda", categoria: "rappi", monto: 1300000, confirmado: true, quincenaId: idSegundaMitad, registradoPor: "rafael" },
+      ],
+    });
+    const primeraMitad = calcularEstadoQuincena(db, idPrimeraMitad);
+    const segundaMitad = calcularEstadoQuincena(db, idSegundaMitad);
+    assert.equal(
+      primeraMitad.deudas.find((d) => d.categoria === "rappi").presupuesto,
+      0,
+      `presupuesto deberia quedar en 0 en ${idPrimeraMitad}`
+    );
+    assert.equal(
+      segundaMitad.deudas.find((d) => d.categoria === "rappi").total,
+      1300000,
+      `el pago real deberia seguir viendose en ${idSegundaMitad}`
+    );
+  }
 });
 
 test("calcularEstadoMensual no duplica la prima ya confirmada", () => {

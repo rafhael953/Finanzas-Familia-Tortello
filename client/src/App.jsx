@@ -9,6 +9,7 @@ import Historial from "./pages/Historial";
 import Ahorro from "./pages/Ahorro";
 import Graficas from "./pages/Graficas";
 import Reparto from "./pages/Reparto";
+import Comprometido from "./pages/Comprometido";
 import Login from "./pages/Login";
 import Deslizable from "./components/Deslizable";
 import { api, aplicarCategoriasPersonalizadas } from "./api";
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="/ahorro" element={<Ahorro />} />
           <Route path="/graficas" element={<Graficas />} />
           <Route path="/reparto" element={<Reparto />} />
+          <Route path="/comprometido" element={<Comprometido />} />
           <Route path="/jerardith" element={<PanelJerardith />} />
         </Routes>
       </Deslizable>

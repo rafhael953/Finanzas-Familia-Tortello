@@ -725,6 +725,60 @@ export function calcularEstadoMensual(db, id) {
   };
 }
 
+// Desglose categoria por categoria de "a que se comprometio la plata este
+// mes": para cada gasto/cuota se muestra lo reservado (lo mayor entre
+// presupuesto y lo real, el mismo criterio de egresoEsperado), lo ya
+// pagado, y lo que falta. Nace de que "balance esperado" por si solo
+// (calcularEstadoMensual) no explica POR QUE el margen quedo chico -- esto
+// es el detalle que Rafael pedia ver en su propia pantalla, en vez de que
+// se lo arme uno a mano cada vez (2026-09-18).
+export function calcularComprometidoMensual(db, id) {
+  const partes = partesQuincena(id);
+  const { anio, mes } = mesCalendarioDeQuincena(partes.anio, partes.mes, partes.q);
+
+  let anioAnt = anio;
+  let mesAnt = mes - 1;
+  if (mesAnt === 0) {
+    mesAnt = 12;
+    anioAnt -= 1;
+  }
+  const idQ1 = idQuincena(anioAnt, mesAnt, 2); // dias 1-15
+  const idQ2 = idQuincena(anio, mes, 1); // dias 16-fin
+  const q1 = calcularEstadoQuincena(db, idQ1);
+  const q2 = calcularEstadoQuincena(db, idQ2);
+
+  function filas(estado, idQuincenaMitad, etiqueta) {
+    return [...estado.gastos, ...estado.deudas]
+      .map((x) => {
+        const reservado = Math.max(x.presupuesto, x.total);
+        return {
+          quincenaId: idQuincenaMitad,
+          etiqueta,
+          categoria: x.categoria,
+          presupuesto: x.presupuesto,
+          pagado: x.total,
+          reservado,
+          falta: Math.max(0, reservado - x.total),
+        };
+      })
+      .filter((f) => f.reservado > 0);
+  }
+
+  const filas1a15 = filas(q1, idQ1, "1-15");
+  const filas16fin = filas(q2, idQ2, "16-fin");
+  const todas = [...filas1a15, ...filas16fin];
+
+  return {
+    mes: `${anio}-${String(mes).padStart(2, "0")}`,
+    idQ1,
+    idQ2,
+    filas: todas,
+    totalReservado: todas.reduce((a, f) => a + f.reservado, 0),
+    totalPagado: todas.reduce((a, f) => a + f.pagado, 0),
+    totalFalta: todas.reduce((a, f) => a + f.falta, 0),
+  };
+}
+
 // Resumen del mismo mes calendario (ambas quincenas), por categoria de gasto.
 export function calcularResumenMensual(db, id) {
   const { mes, anio } = partesQuincena(id);
