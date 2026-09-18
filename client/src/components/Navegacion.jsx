@@ -5,8 +5,8 @@ import { Link, useLocation } from "react-router-dom";
 // encuentran; aqui estan siempre visibles.
 export const SECCIONES = [
   { a: "/rafael", texto: "Quincena" },
-  { a: "/reparto", texto: "Reparto" },
   { a: "/comprometido", texto: "Comprometido" },
+  { a: "/reparto", texto: "Reparto" },
   { a: "/graficas", texto: "Gráficas" },
   { a: "/rafael/deudas", texto: "Deudas" },
   { a: "/ahorro", texto: "Ahorro" },

@@ -26,6 +26,7 @@ export default function PanelRafael() {
   const [quincenaViva, setQuincenaViva] = useState(null);
   const [estado, setEstado] = useState(null);
   const [estadoMensual, setEstadoMensual] = useState(null);
+  const [comprometido, setComprometido] = useState(null);
   const [trayectoria, setTrayectoria] = useState(null);
   const [deudas, setDeudas] = useState([]);
   const [cuentas, setCuentas] = useState(null);
@@ -38,9 +39,10 @@ export default function PanelRafael() {
   const inicioDeslizar = useRef(null);
 
   const cargarTodo = useCallback(async (id) => {
-    const [est, em, asesor, d, c, j, a] = await Promise.all([
+    const [est, em, comp, asesor, d, c, j, a] = await Promise.all([
       api.getEstadoQuincena(id),
       api.getEstadoMensual(id),
+      api.getComprometidoMensual(id),
       api.getAsesor(),
       api.getDeudas(),
       api.getCuentas(),
@@ -49,6 +51,7 @@ export default function PanelRafael() {
     ]);
     setEstado(est);
     setEstadoMensual(em);
+    setComprometido(comp);
     setTrayectoria(asesor.trayectoria);
     setDeudas(d);
     setCuentas(c);
@@ -157,6 +160,25 @@ export default function PanelRafael() {
 
       <TrayectoriaBalance trayectoria={trayectoria} />
       <EstadoMensual estado={estadoMensual} />
+
+      {comprometido && (
+        <Link
+          to="/comprometido"
+          className="ledger-card p-4 mb-4 flex justify-between items-center hover:shadow-md transition-shadow"
+        >
+          <div>
+            <div className="text-[11px] font-semibold text-[var(--color-muted)] uppercase tracking-wide">
+              Comprometido este mes
+            </div>
+            <div className="text-[12.5px] text-[var(--color-muted)] mt-0.5">
+              {comprometido.totalFalta > 0
+                ? `Falta pagar ${formatoCOP(comprometido.totalFalta)} de lo ya reservado`
+                : "Todo lo reservado ya está pagado"}
+            </div>
+          </div>
+          <span className="text-[var(--color-muted)] text-lg flex-shrink-0 ml-3">›</span>
+        </Link>
+      )}
 
       {alertas.length > 0 && (
         <div className="tile-suave bg-[var(--color-suave-ambar)] mb-4">
