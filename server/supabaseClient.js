@@ -1,4 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
+import dns from "dns";
+
+// En algunas funciones de Vercel, Node resuelve el dominio de Supabase a una
+// direccion IPv6 y la conexion se queda colgada sin dar error ni respuesta
+// (timeout de 300s) porque la red de salida no tiene ruta IPv6 completa.
+// Forzar IPv4 primero evita ese cuelgue.
+dns.setDefaultResultOrder("ipv4first");
 
 // Vercel a veces guarda las env vars con comillas o espacios de mas si se
 // pegaron asi en el dashboard; limpiamos eso para no romper createClient.
