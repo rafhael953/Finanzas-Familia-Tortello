@@ -1,4 +1,13 @@
 import "./asyncWrap.js";
+
+// Red de seguridad extra: si alguna promesa se escapa sin catch (ej. un
+// .then() suelto en writeDB), que no tumbe el proceso entero -- eso mataria
+// tambien otras peticiones que esten corriendo en la misma instancia
+// (Vercel reusa instancias entre invocaciones con Fluid Compute).
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Rejection:", err);
+});
+
 import express from "express";
 import cors from "cors";
 import path from "path";
