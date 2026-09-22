@@ -35,6 +35,7 @@ export default function PanelRafael() {
   const [mostrarSelector, setMostrarSelector] = useState(false);
   const [alertaAbierta, setAlertaAbierta] = useState(false);
   const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
   const inicioDeslizar = useRef(null);
 
   const cargarTodo = useCallback(async (id) => {
@@ -58,15 +59,20 @@ export default function PanelRafael() {
 
   useEffect(() => {
     (async () => {
-      const actual = await api.getQuincenaActual();
-      // Siempre abre en la quincena del sueldo con el que se esta viviendo
-      // hoy (ver quincenaId en el servidor), para no registrar por error en
-      // un periodo que no corresponde.
-      const idInicial = actual.id;
-      setQuincenaIdActual(idInicial);
-      setQuincenaViva(actual.id);
-      await cargarTodo(idInicial);
-      setCargando(false);
+      try {
+        const actual = await api.getQuincenaActual();
+        // Siempre abre en la quincena del sueldo con el que se esta viviendo
+        // hoy (ver quincenaId en el servidor), para no registrar por error en
+        // un periodo que no corresponde.
+        const idInicial = actual.id;
+        setQuincenaIdActual(idInicial);
+        setQuincenaViva(actual.id);
+        await cargarTodo(idInicial);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setCargando(false);
+      }
     })();
   }, [cargarTodo]);
 
@@ -74,15 +80,28 @@ export default function PanelRafael() {
     setCargando(true);
     setQuincenaIdActual(id);
     localStorage.setItem("ultimaQuincena", id);
-    await cargarTodo(id);
-    setCargando(false);
-    setMostrarSelector(false);
+    try {
+      await cargarTodo(id);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCargando(false);
+      setMostrarSelector(false);
+    }
   }
 
   async function guardarMovimiento(mov) {
     await api.agregarMovimiento(mov);
     setMostrarForm(false);
     await cargarTodo(quincenaIdActual);
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 text-center font-serif-num text-lg text-[var(--color-negativo)]">
+        Error al cargar: {error}
+      </div>
+    );
   }
 
   if (cargando || !estado) {

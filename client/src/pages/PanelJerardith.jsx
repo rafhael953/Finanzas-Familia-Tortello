@@ -30,6 +30,7 @@ export default function PanelJerardith() {
   const [deudaTotal, setDeudaTotal] = useState(null);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
 
   function cargar() {
     // Se piden tambien las categorias personalizadas para que un rubro
@@ -38,12 +39,14 @@ export default function PanelJerardith() {
       api.getResumenJerardith(),
       api.getDeudas(),
       api.getCategoriasPersonalizadas().catch(() => null),
-    ]).then(([r, d, cats]) => {
-      if (cats) aplicarCategoriasPersonalizadas(cats);
-      setResumen(r);
-      setDeudaTotal(d.reduce((a, x) => a + x.saldo, 0));
-      setCargando(false);
-    });
+    ])
+      .then(([r, d, cats]) => {
+        if (cats) aplicarCategoriasPersonalizadas(cats);
+        setResumen(r);
+        setDeudaTotal(d.reduce((a, x) => a + x.saldo, 0));
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setCargando(false));
   }
 
   useEffect(() => {
@@ -54,6 +57,14 @@ export default function PanelJerardith() {
     await api.postGastoJerardith({ ...gasto, quincena: resumen.quincenaActual });
     setMostrarForm(false);
     cargar();
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 text-center font-serif-num text-lg text-[var(--color-negativo)]">
+        Error al cargar: {error}
+      </div>
+    );
   }
 
   if (cargando) return <div className="p-6 text-center font-serif-num text-lg">Cargando...</div>;
