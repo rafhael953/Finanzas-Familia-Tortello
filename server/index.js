@@ -10,7 +10,7 @@ import jerardithRouter from "./routes/jerardith.js";
 import movimientosRouter from "./routes/movimientos.js";
 import categoriasRouter from "./routes/categorias.js";
 import planRouter from "./routes/plan.js";
-import { readDB, withDB, listarRespaldos, carpetaDatos } from "./db.js";
+import { readDB, withDB, listarRespaldos, obtenerRespaldo } from "./db.js";
 import {
   leerSesion,
   exigirSesion,
@@ -70,24 +70,19 @@ app.get("/api/respaldo", async (req, res) => {
   res.send(JSON.stringify(db, null, 2));
 });
 
-// Copias de seguridad que quedaron en el volumen (antes de un reemplazo,
-// de una importacion, o el .bak de la ultima escritura). Sirven para
-// recuperar algo que se haya perdido sin tener que entrar al servidor.
+// Copias de seguridad guardadas en Supabase antes de cada escritura. Sirven
+// para recuperar algo que se haya perdido sin tener que entrar al servidor.
 app.get("/api/respaldos", async (req, res) => {
   res.json(await listarRespaldos());
 });
 
 app.get("/api/respaldos/:nombre", async (req, res) => {
-  // Solo el nombre de archivo, nunca una ruta: asi no se puede pedir
-  // cualquier archivo del servidor poniendo ../ en la direccion.
-  const nombre = path.basename(req.params.nombre);
-  if (!nombre.startsWith("finanzas.json.") || nombre.includes("..")) {
-    return res.status(400).json({ error: "Nombre no válido" });
-  }
-  const ruta = path.join(carpetaDatos(), nombre);
-  res.download(ruta, nombre, (err) => {
-    if (err && !res.headersSent) res.status(404).json({ error: "No existe ese respaldo" });
-  });
+  const nombre = req.params.nombre;
+  const datos = await obtenerRespaldo(nombre);
+  if (!datos) return res.status(404).json({ error: "No existe ese respaldo" });
+  res.setHeader("Content-Disposition", `attachment; filename="${nombre}"`);
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.send(JSON.stringify(datos, null, 2));
 });
 
 app.get("/api/config", async (req, res) => {
@@ -119,10 +114,11 @@ app.put("/api/config", async (req, res) => {
   res.json({ ok: true, campo, valor: num });
 });
 
-// En produccion, el cliente se compila en client/dist y este mismo servidor
-// lo sirve, para que todo quede en una sola direccion (un solo servicio).
+// En Vercel el cliente lo sirve la plataforma como sitio estatico (ver
+// vercel.json), asi que este bloque solo aplica a Railway/local, donde el
+// mismo servidor Express sirve tambien client/dist.
 const CLIENT_DIST = path.join(__dirname, "..", "client", "dist");
-if (existsSync(CLIENT_DIST)) {
+if (!process.env.VERCEL && existsSync(CLIENT_DIST)) {
   // Los archivos de /assets llevan un hash en el nombre y cambian en cada
   // despliegue, asi que se pueden cachear para siempre sin riesgo.
   app.use(express.static(CLIENT_DIST, { index: false, maxAge: "1y" }));
@@ -143,6 +139,12 @@ if (existsSync(CLIENT_DIST)) {
   });
 }
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Servidor Tortello Finanzas escuchando en puerto ${PORT}`);
-});
+// En Vercel no hay que escuchar un puerto: la plataforma invoca este mismo
+// app (ver api/index.js) como funcion serverless en cada request.
+if (!process.env.VERCEL) {
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Servidor Tortello Finanzas escuchando en puerto ${PORT}`);
+  });
+}
+
+export default app;

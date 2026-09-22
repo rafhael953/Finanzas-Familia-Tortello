@@ -6,7 +6,7 @@ const APP_USERS = (process.env.APP_USERS || "tortello")
   .map((u) => u.trim().toLowerCase())
   .filter(Boolean);
 const APP_PASS = process.env.APP_PASS || "cambiaesto";
-const EXIGIR_AUTH = !!process.env.RAILWAY_ENVIRONMENT;
+const EXIGIR_AUTH = !!process.env.RAILWAY_ENVIRONMENT || process.env.VERCEL_ENV === "production";
 
 function firmar(valor) {
   return crypto.createHmac("sha256", SECRET).update(valor).digest("hex");
