@@ -1,3 +1,4 @@
+import "./asyncWrap.js";
 import express from "express";
 import cors from "cors";
 import path from "path";
@@ -62,36 +63,52 @@ app.use("/api/plan", planRouter);
 // Descarga todo lo registrado, tal cual esta guardado. Sirve como copia
 // de seguridad y para traer lo del celular al computador cuando haya que
 // trabajar con los datos de verdad.
-app.get("/api/respaldo", async (req, res) => {
-  const db = await readDB();
-  const fecha = new Date().toISOString().slice(0, 10);
-  res.setHeader("Content-Disposition", `attachment; filename="finanzas-${fecha}.json"`);
-  res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.send(JSON.stringify(db, null, 2));
+app.get("/api/respaldo", async (req, res, next) => {
+  try {
+    const db = await readDB();
+    const fecha = new Date().toISOString().slice(0, 10);
+    res.setHeader("Content-Disposition", `attachment; filename="finanzas-${fecha}.json"`);
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.send(JSON.stringify(db, null, 2));
+  } catch (err) {
+    next(err);
+  }
 });
 
 // Copias de seguridad guardadas en Supabase antes de cada escritura. Sirven
 // para recuperar algo que se haya perdido sin tener que entrar al servidor.
-app.get("/api/respaldos", async (req, res) => {
-  res.json(await listarRespaldos());
+app.get("/api/respaldos", async (req, res, next) => {
+  try {
+    res.json(await listarRespaldos());
+  } catch (err) {
+    next(err);
+  }
 });
 
-app.get("/api/respaldos/:nombre", async (req, res) => {
-  const nombre = req.params.nombre;
-  const datos = await obtenerRespaldo(nombre);
-  if (!datos) return res.status(404).json({ error: "No existe ese respaldo" });
-  res.setHeader("Content-Disposition", `attachment; filename="${nombre}"`);
-  res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.send(JSON.stringify(datos, null, 2));
+app.get("/api/respaldos/:nombre", async (req, res, next) => {
+  try {
+    const nombre = req.params.nombre;
+    const datos = await obtenerRespaldo(nombre);
+    if (!datos) return res.status(404).json({ error: "No existe ese respaldo" });
+    res.setHeader("Content-Disposition", `attachment; filename="${nombre}"`);
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.send(JSON.stringify(datos, null, 2));
+  } catch (err) {
+    next(err);
+  }
 });
 
-app.get("/api/config", async (req, res) => {
-  const db = await readDB();
-  res.json({
-    config: db.config,
-    gastosFijos: db.gastosFijos,
-    cuotasRecomendadas: db.cuotasRecomendadas,
-  });
+app.get("/api/config", async (req, res, next) => {
+  try {
+    const db = await readDB();
+    res.json({
+      config: db.config,
+      gastosFijos: db.gastosFijos,
+      cuotasRecomendadas: db.cuotasRecomendadas,
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // Valores de configuracion que se ajustan a mano desde la app (la TRM
@@ -99,19 +116,23 @@ app.get("/api/config", async (req, res) => {
 // meterle de mas a las deudas ese mes).
 const CONFIG_EDITABLE = ["trm", "abonoExtraMensual", "rendNU", "cupoTarjetasMensual", "saldoInicialReal"];
 
-app.put("/api/config", async (req, res) => {
-  const { campo, valor } = req.body || {};
-  if (!CONFIG_EDITABLE.includes(campo)) {
-    return res.status(400).json({ error: "Ese valor no se puede editar" });
+app.put("/api/config", async (req, res, next) => {
+  try {
+    const { campo, valor } = req.body || {};
+    if (!CONFIG_EDITABLE.includes(campo)) {
+      return res.status(400).json({ error: "Ese valor no se puede editar" });
+    }
+    const num = Number(valor);
+    if (!Number.isFinite(num) || num < 0) {
+      return res.status(400).json({ error: "Valor inválido" });
+    }
+    await withDB(async (db) => {
+      db.config[campo] = num;
+    });
+    res.json({ ok: true, campo, valor: num });
+  } catch (err) {
+    next(err);
   }
-  const num = Number(valor);
-  if (!Number.isFinite(num) || num < 0) {
-    return res.status(400).json({ error: "Valor inválido" });
-  }
-  await withDB(async (db) => {
-    db.config[campo] = num;
-  });
-  res.json({ ok: true, campo, valor: num });
 });
 
 // En Vercel el cliente lo sirve la plataforma como sitio estatico (ver
@@ -138,6 +159,15 @@ if (!process.env.VERCEL && existsSync(CLIENT_DIST)) {
     res.sendFile(path.join(CLIENT_DIST, "index.html"));
   });
 }
+
+// Red de seguridad: cualquier error que llegue hasta aca (via next(err) o
+// una ruta async envuelta por asyncWrap.js) termina en una respuesta JSON,
+// nunca en una conexion que se queda colgada sin responder nada.
+app.use((err, req, res, next) => {
+  console.error(err);
+  if (res.headersSent) return next(err);
+  res.status(err.status || 500).json({ error: err.message || "Error interno del servidor" });
+});
 
 // En Vercel no hay que escuchar un puerto: la plataforma invoca este mismo
 // app (ver api/index.js) como funcion serverless en cada request.
