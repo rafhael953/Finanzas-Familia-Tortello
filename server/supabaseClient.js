@@ -26,9 +26,20 @@ if (!/^https?:\/\//.test(SUPABASE_URL)) {
   );
 }
 
+// Sin esto, una llamada que se cuelga en la red (ej. problema de ruta hacia
+// Supabase) tarda los 300s completos del limite de Vercel antes de fallar.
+// Con esto falla en 10s y el log muestra el motivo real en vez de un timeout
+// generico de la plataforma.
+function fetchConLimite(url, opciones = {}) {
+  const control = new AbortController();
+  const aviso = setTimeout(() => control.abort(), 10_000);
+  return fetch(url, { ...opciones, signal: control.signal }).finally(() => clearTimeout(aviso));
+}
+
 // El servidor es el unico que habla con Supabase (el cliente sigue hablando
 // solo con /api/*), asi que usa la service role key: necesita poder leer y
 // escribir el estado sin pelear con RLS. Esta key nunca debe llegar al navegador.
 export const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
+  global: { fetch: fetchConLimite },
 });
